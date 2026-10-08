@@ -84,8 +84,18 @@ bin/compare_structures.py \
 - `--af_write_superimposed true|false`
 - `--usalign_bin USalign` — set `''` to skip TM-score
 
-## Later enhancements (not implemented)
+## Functional feature mapping & multimers
 
-- Pocket/interface proximity flags (requires domain/site annotations)
-- PAE-based interface confidence for multimers
-- ChimeraX / PyMOL session scripts coloring substitutions
+See [`structure_feature_mapping.md`](structure_feature_mapping.md).
+
+- `workflows/map_structure_features.nf` — SignalP/InterPro/TM/glyco → structure residues; MSA-transferred curated sites; defense surface RSA; multimer interface PAE  
+- `bin/prepare_multimer_inputs.py` — scion ligand × rootstock receptor FASTAs for ColabFold multimer  
+- `bin/parse_multimer_interfaces.py` — contacts + mean/min interface PAE; compatible vs incompatible summary  
+- `bin/compute_surface_rsa.py` — Biopython/FreeSASA RSA (defense surface)  
+- `bin/transfer_curated_sites.py` — curated active-site/pore residues → orthologs via OrthoFinder MSA  
+
+
+## Later enhancements
+
+- Pocket/interface proximity flags from multimer contacts  
+- ChimeraX / PyMOL session scripts coloring feature-overlapping substitutions

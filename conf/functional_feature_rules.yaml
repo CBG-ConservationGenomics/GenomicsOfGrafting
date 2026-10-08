@@ -1,0 +1,107 @@
+# Rules for classifying proteins / orthogroups and which structural features to emphasize.
+# Matching is case-insensitive substring search against eggNOG description + InterProScan text.
+
+classes:
+  cell_wall_enzyme:
+    description: "Secreted / cell-wall remodeling enzymes"
+    keywords:
+      - "glycoside hydrolase family 9"
+      - "gh9"
+      - "glucanase"
+      - "cellulase"
+      - "expansin"
+      - "pectinesterase"
+      - "pectin methylesterase"
+      - "pmei"
+      - "xyloglucan"
+      - "xth"
+      - "xet"
+    features_to_map:
+      - signal_peptide
+      - interpro_domain
+      - active_site
+      - glycosylation_sequon
+    structure_focus: "active-site and substrate-binding residues; glyco sequons; SP (trafficking)"
+
+  ligand:
+    description: "Small secreted peptides / ligands (e.g. RALF)"
+    keywords:
+      - "ralf"
+      - "rapid alkalinization"
+      - "peptide ligand"
+      - "phytosulfokine"
+    features_to_map:
+      - signal_peptide
+      - interpro_domain
+      - mature_peptide
+    structure_focus: "multimer with partner receptor; interface contacts"
+    multimer_role: ligand
+
+  receptor:
+    description: "LRR-RLKs, FER-like, WAKs"
+    keywords:
+      - "leucine-rich repeat"
+      - "lrr receptor"
+      - "receptor-like kinase"
+      - "serine/threonine-protein kinase"
+      - "wall-associated kinase"
+      - "wak"
+      - "feronia"
+      - "malectin"
+    features_to_map:
+      - signal_peptide
+      - interpro_domain
+      - transmembrane
+      - kinase_domain
+      - lrr_domain
+    structure_focus: "ectodomain interface with ligand; AF-Multimer"
+    multimer_role: receptor
+
+  defense:
+    description: "Defense / recognition / hypervariable surface proteins"
+    keywords:
+      - "nbs-lrr"
+      - "nb-arc"
+      - "disease resistance"
+      - "pathogenesis-related"
+      - "defensin"
+    features_to_map:
+      - interpro_domain
+      - selection_site
+    structure_focus: "solvent-exposed hypervariable residues + diversifying selection"
+
+  transporter_pd:
+    description: "Transporters and plasmodesmata-associated proteins"
+    keywords:
+      - "aquaporin"
+      - "major intrinsic protein"
+      - "abc transporter"
+      - "plasmodesmata"
+      - "pdlp"
+      - "remorin"
+    features_to_map:
+      - transmembrane
+      - interpro_domain
+      - pore_site
+    structure_focus: "pore-lining and gating residues"
+
+# Curated sites on a REFERENCE sequence only. Transfer to orthologs with:
+#   bin/transfer_curated_sites.py --rules conf/functional_feature_rules.yaml \
+#       --alignments-dir .../MultipleSequenceAlignments --selected-ogs ... --out-tsv ...
+#
+# residues: 1-based positions on the reference ungapped protein (NOT on other species).
+curated_sites:
+  - orthogroup: OG0000000   # replace with real OG after OrthoFinder
+    reference_id: "Sly|Solanum_lycopersicum|Solyc03g116610.3.1"  # example placeholder
+    feature: active_site
+    residues: [198, 201, 310]
+    note: "Example GH9 catalytic residues — replace with literature numbers on THIS reference"
+
+  # - orthogroup: OG0000001
+  #   reference_id: "Ath|Arabidopsis_thaliana|AT2G36830.1"
+  #   feature: pore_site
+  #   residues: [86, 88, 200, 202]
+  #   note: "Example aquaporin NPA-region placeholders"
+
+# N-glycosylation sequon (Asn-X-Ser/Thr, X ≠ Pro)
+glycosylation_motif: "N[^P][ST]"

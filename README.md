@@ -232,6 +232,8 @@ Toggle with `--run_eggnog false`, etc. Point DB/tool installs with `--eggnog_dat
 
 See [`docs/alphafold_plan.md`](docs/alphafold_plan.md).
 
+**Functional domains on structures:** map SignalP / InterProScan / DeepTMHMM / N-glycosylation sequons onto AF residue numbers; flag scion–rootstock substitutions inside those features; prepare AF-Multimer jobs for scion ligand × rootstock receptor. Also: multimer interface PAE/contacts (`parse_multimer_interfaces.py`), defense-protein surface RSA (`compute_surface_rsa.py`), and curated active-site/pore residues transferred via OrthoFinder MSA (`transfer_curated_sites.py`). See [`docs/structure_feature_mapping.md`](docs/structure_feature_mapping.md) and `workflows/map_structure_features.nf`.
+
 ### 11. Graft phenotype association (optional)
 
 Enable with `--run_graft_phenotype true` or run `workflows/graft_phenotype.nf` after OrthoFinder.
@@ -397,7 +399,8 @@ GraftingGeneFamilies/
 │   └── graft_outcomes.example.tsv
 ├── docs/
 │   ├── alphafold_plan.md
-│   └── graft_phenotype.md
+│   ├── graft_phenotype.md
+│   └── structure_feature_mapping.md
 └── assets/empty.tsv
 ```
 
