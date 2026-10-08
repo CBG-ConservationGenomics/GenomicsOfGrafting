@@ -1,0 +1,48 @@
+# Proteome + CDS sources for the GraftingGeneFamilies pipeline.
+# Prefer community annotations that preserve familiar locus IDs
+# (e.g. Solyc*, AT*) so genes-of-interest matching is straightforward.
+#
+# source:
+#   ncbi  - NCBI Datasets (protein + CDS + GFF3)
+#   url   - direct FASTA URLs (fasta_url, cds_url, optional gff_url)
+#   local - fasta_path / cds_path / gff_path on the server
+#
+# busco_lineage: optional per-species override (default: params.busco_lineage)
+
+species:
+  - id: Sly
+    genus: Solanum
+    species: lycopersicum
+    source: url
+    fasta_url: "https://solgenomics.net/ftp/tomato_genome/annotation/ITAG4.0_release/ITAG4.0_proteins.fasta"
+    cds_url: "https://solgenomics.net/ftp/tomato_genome/annotation/ITAG4.0_release/ITAG4.0_CDS.fasta"
+    gff_url: "https://solgenomics.net/ftp/tomato_genome/annotation/ITAG4.0_release/ITAG4.0_gene_models.gff"
+    busco_lineage: embryophyta_odb10
+    notes: "Tomato ITAG4.0; Solyc locus IDs"
+
+  - id: Nbe
+    genus: Nicotiana
+    species: benthamiana
+    source: url
+    fasta_url: "https://solgenomics.net/ftp/genomes/Nicotiana_benthamiana/annotation/Niben101/Niben101_annotation.proteins.fasta.gz"
+    # Transcripts include UTRs; QC trims ORFs to match proteins
+    cds_url: "https://solgenomics.net/ftp/genomes/Nicotiana_benthamiana/annotation/Niben101/Niben101_annotation.transcripts.fasta.gz"
+    gff_url: "https://solgenomics.net/ftp/genomes/Nicotiana_benthamiana/annotation/Niben101/Niben101_annotation.gene_models.gff"
+    busco_lineage: embryophyta_odb10
+    notes: "N. benthamiana Niben101"
+
+  - id: Ath
+    genus: Arabidopsis
+    species: thaliana
+    source: ncbi
+    accession: GCF_000001735.4
+    busco_lineage: embryophyta_odb10
+    notes: "Arabidopsis TAIR10 / RefSeq"
+
+  - id: Cpe
+    genus: Cucurbita
+    species: pepo
+    source: ncbi
+    accession: GCF_002766695.1
+    busco_lineage: embryophyta_odb10
+    notes: "Zucchini / squash RefSeq proteome"

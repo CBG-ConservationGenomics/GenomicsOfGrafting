@@ -1,0 +1,13 @@
+# Mixed-species genes of interest — one entry per line.
+# Supported formats:
+#   Solyc01g000570                 bare ID (species inferred when possible)
+#   Ath:AT1G01010                  explicit species:gene  (Sly Ath Nbe Cpe)
+#   AT1G01010	Ath                 tab-separated gene_id <tab> species_id
+#   Cpe:XP_023545678.1             use explicit species for ambiguous NCBI XP_/NP_ IDs
+#
+# Replace these examples with your list:
+
+Solyc01g000570
+Ath:AT1G01010
+Nbe:Niben101Scf01786g00001
+Cpe:XP_023545678.1

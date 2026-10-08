@@ -1,0 +1,31 @@
+# Nextflow
+.work/
+.nextflow/
+.nextflow.log*
+work/
+results/
+*.html
+*.svg
+
+# Data dumps / large intermediates
+data/raw/
+data/clean/
+*.faa
+*.fasta
+*.zip
+*.tar.gz
+
+# Keep example inputs
+!data/genes_of_interest.txt
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/

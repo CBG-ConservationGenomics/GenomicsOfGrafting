@@ -1,0 +1,26 @@
+name: grafting-gene-families
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.11
+  - biopython>=1.81
+  - pandas>=2.0
+  - pyyaml>=6.0
+  - orthofinder>=2.5.5
+  - diamond>=2.1
+  - mcl
+  - fasttree
+  - muscle
+  - mafft
+  - blast
+  - eggnog-mapper>=2.1
+  - busco>=5.4
+  - iqtree>=2.2
+  - hyphy>=2.5
+  - ncbi-datasets-cli
+  - curl
+  - wget
+  - pigz
+  - unzip
