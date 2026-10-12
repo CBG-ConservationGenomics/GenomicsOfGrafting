@@ -16,6 +16,11 @@ process ANNOTATE_DEEPTMHMM {
     """
     set -euo pipefail
 
+    if [ ! -s "${fasta}" ]; then
+        echo "ERROR: ${fasta} is empty, so DeepTMHMM was not started." >&2
+        exit 1
+    fi
+
     # DeepTMHMM is commonly run via BioLib. Override params.deeptmhmm_bin on your server.
     # Expected: produces predicted_topologies.3line or similar.
     mkdir -p deeptmhmm_out

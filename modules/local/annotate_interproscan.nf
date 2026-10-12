@@ -17,6 +17,11 @@ process ANNOTATE_INTERPROSCAN {
     """
     set -euo pipefail
 
+    if [ ! -s "${fasta}" ]; then
+        echo "ERROR: ${fasta} is empty, so InterProScan was not started." >&2
+        exit 1
+    fi
+
     # InterProScan dislikes '*' stop codons in some builds — strip them
     sed 's/\\*//g' ${fasta} > proteins_nostop.faa
 

@@ -20,7 +20,15 @@ process FILTER_BUSCO {
     COMPLETE=\$(awk -F'\\t' 'NR==2 {print \$3}' ${metrics})
     THRESH=${params.busco_min_complete}
 
-    cp ${metrics} ${meta.id}.busco_metrics.tsv
+    # Inputs are often already staged under the output name.
+    stage_copy() {
+        if [ "\$1" -ef "\$2" ]; then
+            return 0
+        fi
+        cp "\$1" "\$2"
+    }
+
+    stage_copy ${metrics} ${meta.id}.busco_metrics.tsv
 
     {
       echo "species_id=${meta.id}"
@@ -31,8 +39,8 @@ process FILTER_BUSCO {
     } > ${meta.id}.busco_gate.log
 
     if [ "\$STATUS" = "pass" ]; then
-        cp ${fasta} ${meta.id}.clean.faa
-        cp ${id_map} ${meta.id}.id_map.tsv
+        stage_copy ${fasta} ${meta.id}.clean.faa
+        stage_copy ${id_map} ${meta.id}.id_map.tsv
         echo "GATE=PASS — ${meta.id} proceeds to OrthoFinder" >> ${meta.id}.busco_gate.log
     else
         echo "GATE=FAIL — ${meta.id} EXCLUDED from OrthoFinder and downstream analyses" >> ${meta.id}.busco_gate.log

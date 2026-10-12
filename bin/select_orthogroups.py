@@ -428,8 +428,15 @@ def main() -> None:
             "[select_orthogroups] WARNING: matched a protein that is not in any orthogroup: "
             + ", ".join(q.gene_name for q in not_in_og[:20])
         )
-    if not found_queries and not rows_out:
-        print("[select_orthogroups] WARNING: no genes of interest were placed in an orthogroup")
+    if not rows_out:
+        unmatched = ", ".join(f"{q.gene_name} ({q.taxon})" for q in (missing + not_in_og)[:20])
+        raise SystemExit(
+            "[select_orthogroups] ERROR: no orthogroups contain the literature genes, "
+            "so annotation was not started. Unmatched: "
+            + (unmatched or "(none resolved)")
+            + ". Use a locus ID or a GFF gene symbol, then genus and species "
+            "(for example: WOX4<TAB>Solanum lycopersicum)."
+        )
 
 
 if __name__ == "__main__":

@@ -18,6 +18,11 @@ process ANNOTATE_EGGNOG {
     """
     set -euo pipefail
 
+    if [ ! -s "${fasta}" ]; then
+        echo "ERROR: ${fasta} is empty, so eggNOG was not started. No orthogroup proteins were extracted." >&2
+        exit 1
+    fi
+
     emapper.py \\
         -i ${fasta} \\
         -o eggnog \\

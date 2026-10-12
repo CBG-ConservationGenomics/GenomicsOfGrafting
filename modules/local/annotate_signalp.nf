@@ -16,6 +16,11 @@ process ANNOTATE_SIGNALP {
     """
     set -euo pipefail
 
+    if [ ! -s "${fasta}" ]; then
+        echo "ERROR: ${fasta} is empty, so SignalP was not started." >&2
+        exit 1
+    fi
+
     # SignalP 6.x typical CLI; adjust on your server if needed
     ${params.signalp_bin} \\
         --fastafile ${fasta} \\
