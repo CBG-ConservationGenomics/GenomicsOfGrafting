@@ -2,7 +2,7 @@
 
 Nextflow pipeline for **plant gene-family analysis** in a grafting / scion–rootstock context.
 
-It downloads proteomes and CDS for a set of species, QC’s them, gates annotation quality with BUSCO, builds orthogroups with OrthoFinder, pulls out families containing genes of interest, annotates those proteins, computes protein % identity, prepares AlphaFold inputs, and (optionally) links a bidirectional graft-outcome matrix to candidate sequence changes via ancestral reconstruction, selection, convergence, and divergence tests.
+It downloads proteomes and CDS for a set of species, QC’s them, gates annotation quality with BUSCO, builds orthogroups with OrthoFinder, pulls out families containing genes of interest, annotates those proteins, and computes protein % identity. Optionally it then links a bidirectional graft-outcome matrix to candidate sequence changes via ancestral reconstruction, selection, convergence, and divergence tests. The AlphaFold handoff is the last CPU step, so the GPU queue can be limited to families that ranking (or % identity, if phenotype is off) actually selects.
 
 **Status:** v0.1 scaffold — core workflow is implemented and partially run-tested on the HPC (`curie`). Several server-side tool paths and a full end-to-end production run still need to be completed.
 
@@ -22,7 +22,7 @@ Produce:
 - Gene families of interest with annotations and % identity  
 - Codon alignments for selection tests  
 - Ranked candidate sites/families associated with graft compatibility  
-- A handoff package for AlphaFold structure comparison on a GPU server  
+- A selective AlphaFold handoff, written last, for structure comparison on a GPU server  
 
 ---
 
@@ -44,8 +44,8 @@ Produce:
 | **Annotation** | eggNOG-mapper, InterProScan, SignalP, DeepTMHMM on selected OG proteins |
 | **% identity** | From OrthoFinder MSAs; reference = matched GOI (`auto`) or fixed species |
 | **Report tables** | Polished family table + wide %ID-by-species |
-| **AlphaFold** | CPU handoff package; separate GPU ColabFold workflow; CPU structure comparison |
 | **Graft phenotype** | Matrix → lineage/pair traits; IQ-TREE ASR; pair divergence + partial Mantel; HyPhy/PCOC/CSUBST hooks; candidate ranking |
+| **AlphaFold** | Last CPU step: handoff limited to prioritized families; separate GPU ColabFold workflow; CPU structure comparison |
 
 ### Run / debug notes so far (HPC)
 
@@ -87,9 +87,13 @@ Produce:
 │                    │                                   │                               │
 │                    ├─► Codon MSAs (CDS ⊕ protein MSA)                                  │
 │                    ├─► Annotate (eggNOG / IPS / SignalP / DeepTMHMM)                   │
-│                    ├─► % identity + tables                                             │
-│                    ├─► optional graft phenotype (ASR / HyPhy / ranking)                │
-│                    └─► AlphaFold handoff (ranked by phenotype priority when available) │
+│                    └─► % identity + tables                                             │
+│                                      │                                                 │
+│                                      ▼                                                 │
+│                    optional graft phenotype (ASR / HyPhy / ranking)                    │
+│                                      │                                                 │
+│                                      ▼                                                 │
+│                    AlphaFold handoff  ← last CPU step (fold_rank from ranking)         │
 └────────────────────────────────────────────────────────────────────────────────────────┘
                     │                                      │
                     ▼                                      ▼
@@ -221,7 +225,9 @@ Toggle with `--run_eggnog false`, etc. Point DB/tool installs with `--eggnog_dat
 - Main table: `results/07_tables/gene_families_of_interest.tsv`  
 - Wide table: `gene_families_pctid_by_species.tsv`
 
-### 10. Graft phenotype association (optional; before AlphaFold)
+Stages 10 and 11 always run in this order on the CPU: phenotype ranking first, AlphaFold handoff last. Folding itself stays on the GPU.
+
+### 10. Graft phenotype association (optional; before the AlphaFold handoff)
 
 Enable with `--run_graft_phenotype true` or run `workflows/graft_phenotype.nf` after OrthoFinder.
 
@@ -251,10 +257,10 @@ Analyses:
 
 Details: [`docs/graft_phenotype.md`](docs/graft_phenotype.md).
 
-### 11. AlphaFold (optional, multi-machine; after phenotype ranking)
+### 11. AlphaFold handoff (optional; last CPU step)
 
-1. **CPU** (`main.nf`, after graft phenotype when enabled): writes `results/08_alphafold_inputs/alphafold_inputs/`  
-   (`sequences/`, `manifest.tsv` sorted by `fold_rank`, `og_priority.tsv`, `pairs.tsv`)  
+1. **CPU, last** (`main.nf`, after graft phenotype when that flag is on): writes `results/08_alphafold_inputs/alphafold_inputs/`  
+   (`sequences/`, `manifest.tsv` sorted by `fold_rank`, `og_priority.tsv`, `pairs.tsv`). The `08_` folder name is unchanged; it is published after `10_graft_phenotype/`.  
 2. **GPU** (`workflows/alphafold.nf -profile gpu`): ColabFold (fold high `fold_rank` first)  
 3. **CPU** (`workflows/compare_structures.nf`): CA RMSD, substitution list + pLDDT → `09_structure_comparison/`  
 
@@ -345,12 +351,12 @@ nextflow run workflows/compare_structures.nf -profile hpc,conda \
 | `--busco_lineage` | `embryophyta_odb10` | Default BUSCO lineage |
 | `--reference_species_id` | `auto` | %ID reference (matched GOI or `Sly`/`Ath`/…) |
 | `--build_codon_alignments` | `true` | Build codon MSAs from CDS + protein MSAs |
-| `--run_graft_phenotype` | `false` | ASR/selection/ranking **before** AF handoff |
+| `--run_graft_phenotype` | `false` | ASR/selection/ranking; runs before the AF handoff |
 | `--graft_matrix` | example TSV | Scion×rootstock outcomes |
 | `--run_hyphy` | `false` | Selection tests (needs codon MSAs) |
 | `--run_asr` | `true` | IQ-TREE ancestral reconstruction |
 | `--run_convergence` | `true` | PCOC/CSUBST if installed |
-| `--prepare_alphafold` | `true` | Write AF handoff (after phenotype when enabled) |
+| `--prepare_alphafold` | `true` | Write the AF handoff as the last CPU step |
 | `--af_min_priority_score` | `0` | Min phenotype score to stage an OG |
 | `--af_max_ogs` | `0` | Cap OGs sent to GPU (`0` = no cap) |
 | `--orthofinder_threads` | `16` | OrthoFinder CPUs |
@@ -373,9 +379,9 @@ Annotation / DB paths: `--eggnog_data_dir`, `--interproscan_dir`, `--signalp_bin
 | `04_annotation/` | eggNOG / InterProScan / SignalP / DeepTMHMM |
 | `06_percent_identity/` | Pairwise + summary %ID |
 | `07_tables/` | Polished family tables |
-| `08_alphafold_inputs/` | GPU handoff package |
-| `09_structure_comparison/` | RMSD, substitutions, superimposed PDBs |
-| `10_graft_phenotype/` | Traits, ASR, divergence tests, ranking |
+| `10_graft_phenotype/` | Traits, ASR, divergence tests, ranking (before the handoff) |
+| `08_alphafold_inputs/` | GPU handoff package (written last; folder number kept) |
+| `09_structure_comparison/` | RMSD, substitutions, superimposed PDBs (after GPU folding) |
 
 ---
 
@@ -434,6 +440,7 @@ GraftingGeneFamilies/
 - **BUSCO gate** before OrthoFinder so bad annotations don’t pollute families  
 - **Annotate selected OGs only** to save InterProScan/eggNOG time  
 - **Codon MSAs from protein MSAs** so HyPhy uses the same homology hypothesis as OrthoFinder  
+- **AlphaFold handoff last** so phenotype ranking can drop low-priority families before anything is staged for the GPU  
 - **AlphaFold split CPU/GPU** so OrthoFinder and folding don’t fight for resources  
 - **Phenotype tests control for phylogeny** (shift branches, partial Mantel, HyPhy foregrounds) rather than raw residue counting  
 
@@ -445,7 +452,7 @@ GraftingGeneFamilies/
 2. Point all DB/tool params at real paths on `curie`  
 3. Complete a `-resume` run through tables + codon alignments  
 4. Turn on `--run_graft_phenotype true` once the matrix is real  
-5. Sync AF handoff to the GPU server and fold prioritized pairs  
+5. After the CPU pipeline finishes, sync the AlphaFold handoff (its last output) to the GPU server and fold prioritized pairs  
 6. Iterate on candidates that are (a) on phenotype-shift branches, (b) significant beyond species distance, and (c) structurally plausible in AF comparisons  
 
 Questions or design changes: adjust `conf/species.yaml` and `nextflow.config` first — most behavior is parameterized there.
