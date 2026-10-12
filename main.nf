@@ -39,12 +39,12 @@ def helpMessage() {
 
     Key parameters:
       --species_yaml          Species list (default: conf/species.yaml)
-      --genes_of_interest     One gene ID per line (e.g. Solyc01g000570)
+      --genes_of_interest     gene name, then genus and species (WOX4<TAB>Solanum lycopersicum)
       --outdir                Output directory
       --busco_min_complete    Min Complete BUSCO % to keep a species (default: 90)
       --busco_lineage         Default lineage (default: embryophyta_odb10)
       --busco_download_path   Shared BUSCO download/cache directory on the server
-      --reference_species_id  %ID reference: auto (matched GOI) or Sly/Ath/Nbe/Cpe
+      --reference_species_id  Fallback %ID species if the literature gene is missing from the alignment
       --run_eggnog / --run_interproscan / --run_signalp / --run_deeptmhmm
       --eggnog_data_dir       Path to eggNOG DB on the server
       --interproscan_dir      Path to InterProScan installation
@@ -188,10 +188,15 @@ workflow {
     // Select orthogroups containing genes of interest
     ch_goi = Channel.fromPath(params.genes_of_interest, checkIfExists: true)
 
+    ch_gffs = DOWNLOAD_PROTEOME.out.gff
+        .map { _meta, gff -> gff }
+        .collect()
+
     SELECT_ORTHOGROUPS(
         RUN_ORTHOFINDER.out.orthogroups,
         ch_goi,
-        ch_id_maps
+        ch_id_maps,
+        ch_gffs
     )
 
     // Protein-MSA-guided codon alignments (for HyPhy / selection)

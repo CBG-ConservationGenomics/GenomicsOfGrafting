@@ -6,6 +6,7 @@ process SELECT_ORTHOGROUPS {
     path orthogroups_tsv
     path genes_of_interest
     path id_maps
+    path gffs
 
     output:
     path "selected_orthogroups.tsv", emit: tsv
@@ -26,6 +27,7 @@ process SELECT_ORTHOGROUPS {
         --orthogroups ${orthogroups_tsv} \\
         --genes-of-interest ${genes_of_interest} \\
         --id-map all_id_maps.tsv \\
+        --gff ${gffs} \\
         --out-tsv selected_orthogroups.tsv \\
         --out-og-list selected_orthogroups.txt
 

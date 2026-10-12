@@ -69,9 +69,13 @@ def pick_reference(
     ref_species: str,
     matched_members: list[str],
     query_species_ids: list[str],
+    reference_member: str = "",
 ) -> str | None:
-    """Choose %ID reference: matched GOI member (auto) or a fixed species."""
+    """Prefer the literature gene, then a matched GOI, then a fixed species."""
     id_set = set(ids)
+
+    if reference_member and reference_member in id_set:
+        return reference_member
 
     # 1) Always prefer an actual matched GOI member present in the alignment
     for mid in matched_members:
@@ -126,6 +130,7 @@ def main() -> None:
         meta = og_meta.get(og, {})
         matched = [m for m in (meta.get("matched_members") or "").split(";") if m]
         query_species = [s for s in (meta.get("query_species_ids") or "").split(";") if s]
+        reference_member = meta.get("reference_member") or ""
 
         if aln_path is None:
             summary_rows.append(
@@ -133,7 +138,7 @@ def main() -> None:
                     "Orthogroup": og,
                     "genes_of_interest": meta.get("genes_of_interest", ""),
                     "query_species_ids": meta.get("query_species_ids", ""),
-                    "reference_id": "",
+                    "reference_id": reference_member,
                     "n_sequences": 0,
                     "mean_pct_id_to_ref": "",
                     "min_pct_id_to_ref": "",
@@ -147,7 +152,9 @@ def main() -> None:
         alignment: MultipleSeqAlignment = AlignIO.read(str(aln_path), "fasta")
         ids = [r.id for r in alignment]
         seqs = {r.id: str(r.seq) for r in alignment}
-        ref = pick_reference(ids, args.reference_species_id, matched, query_species)
+        ref = pick_reference(
+            ids, args.reference_species_id, matched, query_species, reference_member
+        )
         if ref is None:
             continue
 

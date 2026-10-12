@@ -181,20 +181,20 @@ To use local files on the server:
 
 ### 6. Genes of interest → orthogroups
 
-Input file (`data/genes_of_interest.txt` or your list), one entry per line:
+Input file (`data/genes_of_interest.txt` or your list). Each line is the functionally characterized gene and the species it was described in:
 
 ```text
-Solyc01g000570
-Ath:AT1G01010
-Nbe:Niben101Scf01786g00001
-Cpe:XP_023545678.1
+WOX4	Solanum lycopersicum
+AT1G46480	Arabidopsis thaliana
+XP_023545678.1	Cucurbita pepo
 ```
 
-| Format | Example |
+| Column | Meaning |
 |--------|---------|
-| Bare ID | `Solyc01g000570` (species inferred when possible) |
-| `Species:gene` | `Ath:AT1G01010` — preferred for ambiguous IDs |
-| Tab-separated | `AT1G01010\tAth` |
+| 1 | Gene symbol (`WOX4`) or locus ID (`Solyc04g078650`, `AT1G46480`) |
+| 2 | Genus and species (`Solanum lycopersicum`). A short id such as `Sly` is also accepted |
+
+Symbols are matched to proteins with the GFF `Name`, `Alias`, and `gene_synonym` tags. Locus IDs match the proteome identifiers directly. The matched protein is stored as `reference_member` and is the reference for % identity, the family table, and AlphaFold pairs. If several literature genes fall in one orthogroup, the first one in this file is the reference.
 
 Output: `results/05_selected_orthogroups/`
 
@@ -224,7 +224,7 @@ Toggle with `--run_eggnog false`, etc. Point DB/tool installs with `--eggnog_dat
 
 ### 9. % identity and tables
 
-- Pairwise and summary %ID vs matched GOI (or `--reference_species_id Sly`)  
+- Pairwise and summary %ID versus the characterized gene’s protein (`reference_member`)  
 - Main table: `results/07_tables/gene_families_of_interest.tsv`  
 - Wide table: `gene_families_pctid_by_species.tsv`
 
@@ -287,6 +287,8 @@ Written at the end of `main.nf` to `results/11_curated/`. Open `index.html` in a
 conda env create -f conf/environment.yml   # or rely on -profile conda
 export NXF_OPTS='-Xms1g -Xmx8g'
 
+# data/grafting_candidates.txt needs the two-column format:
+# gene name, then genus and species (see section 6).
 nextflow run main.nf \
   -profile hpc,conda \
   --genes_of_interest data/grafting_candidates.txt \
@@ -352,11 +354,11 @@ nextflow run workflows/compare_structures.nf -profile hpc,conda \
 
 | Parameter | Default | Meaning |
 |-----------|---------|---------|
-| `--genes_of_interest` | `data/genes_of_interest.txt` | GOI list |
+| `--genes_of_interest` | `data/genes_of_interest.txt` | `gene<TAB>Genus species` for each characterized gene |
 | `--species_yaml` | `conf/species.yaml` | Species / download config |
 | `--busco_min_complete` | `90` | Min Complete % to keep a species |
 | `--busco_lineage` | `embryophyta_odb10` | Default BUSCO lineage |
-| `--reference_species_id` | `auto` | %ID reference (matched GOI or `Sly`/`Ath`/…) |
+| `--reference_species_id` | `auto` | Fallback species if the characterized protein is absent from the alignment |
 | `--build_codon_alignments` | `true` | Build codon MSAs from CDS + protein MSAs |
 | `--run_graft_phenotype` | `false` | ASR/selection/ranking; runs before the AF handoff |
 | `--graft_matrix` | example TSV | Scion×rootstock outcomes |

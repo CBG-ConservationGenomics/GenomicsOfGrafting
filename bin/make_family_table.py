@@ -176,7 +176,12 @@ def main() -> None:
     for row in selected:
         og = row["Orthogroup"]
         members = [m.strip() for m in (row.get("members") or "").split(",") if m.strip()]
-        ann = annotate_for_members(members, eggnog, ipr, signalp, tmhmm)
+        matched = [m.strip() for m in (row.get("matched_members") or "").split(";") if m.strip()]
+        ordered: list[str] = []
+        for mid in [row.get("reference_member") or "", *matched, *members]:
+            if mid and mid not in ordered:
+                ordered.append(mid)
+        ann = annotate_for_members(ordered, eggnog, ipr, signalp, tmhmm)
         idn = id_summary.get(og, {})
 
         polished.append(
@@ -184,8 +189,10 @@ def main() -> None:
                 "Orthogroup": og,
                 "genes_of_interest": row.get("genes_of_interest", ""),
                 "query_species_ids": row.get("query_species_ids", ""),
+                "reference_gene": row.get("reference_gene", ""),
+                "reference_species": row.get("reference_species", ""),
                 "matched_members": row.get("matched_members", ""),
-                "reference_id": idn.get("reference_id", ""),
+                "reference_id": idn.get("reference_id") or row.get("reference_member", ""),
                 "n_members": row.get("n_members", ""),
                 "n_species_with_members": row.get("n_species_with_members", ""),
                 "mean_pct_id_to_ref": idn.get("mean_pct_id_to_ref", ""),
@@ -212,6 +219,8 @@ def main() -> None:
         "Orthogroup",
         "genes_of_interest",
         "query_species_ids",
+        "reference_gene",
+        "reference_species",
         "matched_members",
         "reference_id",
         "n_members",

@@ -103,6 +103,8 @@ def build_records(
                 "queries": row.get("query_species_ids", ""),
                 "matched": row.get("matched_members", ""),
                 "reference": row.get("reference_id", ""),
+                "reference_gene": row.get("reference_gene", ""),
+                "reference_species": row.get("reference_species", ""),
                 "n_members": num(row.get("n_members")),
                 "n_species": num(row.get("n_species_with_members")),
                 "mean_id": num(row.get("mean_pct_id_to_ref")),
@@ -483,6 +485,8 @@ function badges(row) {
 function detail(row) {
   const items = [];
   const add = (label, html) => { if (html) items.push(`<dt>${label}</dt><dd>${html}</dd>`); };
+  const characterized = [row.reference_gene, row.reference_species].filter(Boolean).join(" · ");
+  add("Characterized gene", esc(characterized));
   add("Description", esc(row.description));
   if (row.gos.length) add("GO", `<div class="chips">${row.gos.map(g => `<span class="chip">${esc(g)}</span>`).join("")}</div>`);
   add("InterPro", esc(row.interpro));

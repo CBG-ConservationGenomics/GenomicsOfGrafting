@@ -1,13 +1,13 @@
-# Mixed-species genes of interest — one entry per line.
-# Supported formats:
-#   Solyc01g000570                 bare ID (species inferred when possible)
-#   Ath:AT1G01010                  explicit species:gene  (Sly Ath Nbe Cpe)
-#   AT1G01010	Ath                 tab-separated gene_id <tab> species_id
-#   Cpe:XP_023545678.1             use explicit species for ambiguous NCBI XP_/NP_ IDs
+# Functionally characterized genes, one per line.
+# Column 1: gene symbol or locus ID, as it appears in the annotation (GFF Name/Alias, or the locus ID).
+# Column 2: genus and species of that characterized gene.
 #
-# Replace these examples with your list:
+# The matched protein is the reference for percent identity and structure comparisons.
+#
+# WOX4	Solanum lycopersicum
+# AT1G46480	Arabidopsis thaliana
 
-Solyc01g000570
-Ath:AT1G01010
-Nbe:Niben101Scf01786g00001
-Cpe:XP_023545678.1
+WOX4	Solanum lycopersicum
+AT1G01010	Arabidopsis thaliana
+Niben101Scf01786g00001	Nicotiana benthamiana
+XP_023545678.1	Cucurbita pepo
