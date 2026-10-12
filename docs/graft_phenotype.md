@@ -32,6 +32,8 @@ Example: `data/graft_outcomes.example.tsv`
 | **Selection** | HyPhy BUSTED, aBSREL, MEME, RELAX on pipeline codon MSAs | `selection/<OG>/` |
 | **Rank candidates** | Priority score combining the above | `graft_candidate_ranking.tsv` |
 
+In `main.nf`, this ranking is produced **before** the AlphaFold handoff. High-scoring OGs get lower `fold_rank` in `08_alphafold_inputs/` (fold first). Trim the GPU queue with `--af_max_ogs` / `--af_min_priority_score`.
+
 ### Interpretation notes (as designed)
 
 - **ASR on shift branches** — strongest *positional* candidates when a substitution arises where the compatibility trait changes.

@@ -5,10 +5,11 @@
 ```text
 CPU server (main.nf)
   … → gene family tables
-  → 08_alphafold_inputs/alphafold_inputs/     handoff package
+  → graft phenotype (ASR / divergence / optional HyPhy)
+  → 08_alphafold_inputs/   handoff ranked by phenotype priority
         ↓ rsync
 GPU server (workflows/alphafold.nf)
-  → ColabFold models
+  → ColabFold models (fold high fold_rank first)
         ↓ rsync models back
 CPU server (workflows/compare_structures.nf)
   → RMSD, substitutions mapped to structure, optional TM-score
@@ -16,16 +17,26 @@ CPU server (workflows/compare_structures.nf)
 
 ## 1. CPU handoff (`main.nf`)
 
+Runs **after** `--run_graft_phenotype` when that flag is on, so
+`graft_candidate_ranking.tsv` can prioritize which OGs to stage.
+
 Writes `results/08_alphafold_inputs/alphafold_inputs/`:
 
 | File | Purpose |
 |------|---------|
 | `sequences/*.fasta` | One protein per model |
-| `manifest.tsv` | What to fold |
+| `manifest.tsv` | What to fold (sorted by `fold_rank`) |
+| `og_priority.tsv` | OG-level phenotype scores used for ranking |
 | `pairs.tsv` | Reference ↔ ortholog pairs for comparison |
 | `README.txt` | GPU instructions |
 
-Params: `--prepare_alphafold`, `--af_input_mode`, `--af_min_pct_id`, `--af_max_models_per_og`.
+Params: `--prepare_alphafold`, `--af_input_mode`, `--af_min_pct_id`,
+`--af_max_models_per_og`, `--af_min_priority_score`, `--af_max_ogs`.
+
+Priority score (from `rank_graft_candidates.py`) rewards ASR substitutions on
+phenotype-shift branches, divergence beyond relatedness, HyPhy hits, and
+convergence. Use `--af_max_ogs 20` or `--af_min_priority_score 5` to shrink the
+GPU queue.
 
 ## 2. GPU folding (`workflows/alphafold.nf`)
 

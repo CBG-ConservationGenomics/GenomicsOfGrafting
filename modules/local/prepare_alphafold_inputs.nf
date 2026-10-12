@@ -7,6 +7,7 @@ process PREPARE_ALPHAFOLD_INPUTS {
     path identity_summary
     path identity_pairwise
     path proteins_fasta
+    path priority_ranking
 
     output:
     path "alphafold_inputs", emit: handoff
@@ -16,6 +17,11 @@ process PREPARE_ALPHAFOLD_INPUTS {
     """
     set -euo pipefail
 
+    PRI=""
+    if [ -s "${priority_ranking}" ] && grep -q Orthogroup "${priority_ranking}" 2>/dev/null; then
+        PRI="--priority-ranking ${priority_ranking}"
+    fi
+
     prepare_alphafold_inputs.py \\
         --selected-ogs ${selected_ogs} \\
         --identity-summary ${identity_summary} \\
@@ -24,7 +30,10 @@ process PREPARE_ALPHAFOLD_INPUTS {
         --outdir alphafold_inputs \\
         --min-pct-id ${params.af_min_pct_id} \\
         --max-models-per-og ${params.af_max_models_per_og} \\
-        --mode ${params.af_input_mode}
+        --mode ${params.af_input_mode} \\
+        --min-priority-score ${params.af_min_priority_score} \\
+        --max-ogs ${params.af_max_ogs} \\
+        \$PRI
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -257,16 +257,10 @@ workflow {
         ch_tm
     )
 
-    if (params.prepare_alphafold) {
-        PREPARE_ALPHAFOLD_INPUTS(
-            SELECT_ORTHOGROUPS.out.tsv,
-            CALC_PERCENT_IDENTITY.out.summary,
-            CALC_PERCENT_IDENTITY.out.pairwise,
-            EXTRACT_SELECTED_PROTEINS.out.fasta
-        )
-    }
+    // Graft phenotype (ASR / selection / divergence) BEFORE AlphaFold handoff
+    // so GPU folding can be prioritized by evolutionary evidence.
+    ch_af_priority = Channel.fromPath("${projectDir}/assets/empty.tsv")
 
-    // Graft outcome matrix → traits, ASR, divergence tests, optional HyPhy/convergence
     if (params.run_graft_phenotype) {
         ch_og_alns = SELECT_ORTHOGROUPS.out.list
             .splitText()
@@ -310,6 +304,18 @@ workflow {
             RUN_ORTHOFINDER.out.alignments,
             ch_og_alns,
             ch_codon
+        )
+        ch_af_priority = GRAFT_PHENOTYPE.out.ranking
+    }
+
+    // AlphaFold handoff last among CPU evo steps — uses graft ranking when present
+    if (params.prepare_alphafold) {
+        PREPARE_ALPHAFOLD_INPUTS(
+            SELECT_ORTHOGROUPS.out.tsv,
+            CALC_PERCENT_IDENTITY.out.summary,
+            CALC_PERCENT_IDENTITY.out.pairwise,
+            EXTRACT_SELECTED_PROTEINS.out.fasta,
+            ch_af_priority
         )
     }
 }

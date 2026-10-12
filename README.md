@@ -88,17 +88,15 @@ Produce:
 │                    ├─► Codon MSAs (CDS ⊕ protein MSA)                                  │
 │                    ├─► Annotate (eggNOG / IPS / SignalP / DeepTMHMM)                   │
 │                    ├─► % identity + tables                                             │
-│                    └─► AlphaFold handoff (08_alphafold_inputs/)                        │
-│                                                                                        │
-│  optional: --run_graft_phenotype true                                                  │
-│            graft matrix + species tree + OGs + codon MSAs                              │
-│            → traits, ASR, divergence tests, HyPhy, ranking                             │
+│                    ├─► optional graft phenotype (ASR / HyPhy / ranking)                │
+│                    └─► AlphaFold handoff (ranked by phenotype priority when available) │
 └────────────────────────────────────────────────────────────────────────────────────────┘
                     │                                      │
                     ▼                                      ▼
      workflows/alphafold.nf (GPU)           workflows/compare_structures.nf (CPU)
-     ColabFold on handoff sequences         RMSD, substitutions, superimposed PDBs
+     ColabFold (high fold_rank first)       RMSD, substitutions, superimposed PDBs
 ```
+
 
 Secondary entrypoints:
 
@@ -223,20 +221,11 @@ Toggle with `--run_eggnog false`, etc. Point DB/tool installs with `--eggnog_dat
 - Main table: `results/07_tables/gene_families_of_interest.tsv`  
 - Wide table: `gene_families_pctid_by_species.tsv`
 
-### 10. AlphaFold (optional, multi-machine)
-
-1. **CPU** (`main.nf`): writes `results/08_alphafold_inputs/alphafold_inputs/`  
-   (`sequences/`, `manifest.tsv`, `pairs.tsv`)  
-2. **GPU** (`workflows/alphafold.nf -profile gpu`): ColabFold  
-3. **CPU** (`workflows/compare_structures.nf`): CA RMSD, substitution list + pLDDT, superimposed PDBs → `09_structure_comparison/`  
-
-See [`docs/alphafold_plan.md`](docs/alphafold_plan.md).
-
-**Functional domains on structures:** map SignalP / InterProScan / DeepTMHMM / N-glycosylation sequons onto AF residue numbers; flag scion–rootstock substitutions inside those features; prepare AF-Multimer jobs for scion ligand × rootstock receptor. Also: multimer interface PAE/contacts (`parse_multimer_interfaces.py`), defense-protein surface RSA (`compute_surface_rsa.py`), and curated active-site/pore residues transferred via OrthoFinder MSA (`transfer_curated_sites.py`). See [`docs/structure_feature_mapping.md`](docs/structure_feature_mapping.md) and `workflows/map_structure_features.nf`.
-
-### 11. Graft phenotype association (optional)
+### 10. Graft phenotype association (optional; before AlphaFold)
 
 Enable with `--run_graft_phenotype true` or run `workflows/graft_phenotype.nf` after OrthoFinder.
+
+Runs **before** the AlphaFold handoff so ASR / divergence / HyPhy ranking can prioritize what to fold.
 
 Input matrix (bidirectional): `data/graft_outcomes.example.tsv`
 
@@ -258,9 +247,22 @@ Analyses:
 | Pair divergence + partial Mantel | Does protein divergence predict failure **beyond** species relatedness? |
 | HyPhy (BUSTED, aBSREL, MEME, RELAX) | Selection on codon MSAs (foreground = broad-grafting tips) |
 | PCOC / CSUBST | Convergence (if installed) |
-| Ranking | `graft_candidate_ranking.tsv` |
+| Ranking | `graft_candidate_ranking.tsv` → feeds AlphaFold handoff priority |
 
 Details: [`docs/graft_phenotype.md`](docs/graft_phenotype.md).
+
+### 11. AlphaFold (optional, multi-machine; after phenotype ranking)
+
+1. **CPU** (`main.nf`, after graft phenotype when enabled): writes `results/08_alphafold_inputs/alphafold_inputs/`  
+   (`sequences/`, `manifest.tsv` sorted by `fold_rank`, `og_priority.tsv`, `pairs.tsv`)  
+2. **GPU** (`workflows/alphafold.nf -profile gpu`): ColabFold (fold high `fold_rank` first)  
+3. **CPU** (`workflows/compare_structures.nf`): CA RMSD, substitution list + pLDDT → `09_structure_comparison/`  
+
+Shrink the GPU queue with `--af_max_ogs 20` or `--af_min_priority_score 5` (requires `--run_graft_phenotype true`).
+
+See [`docs/alphafold_plan.md`](docs/alphafold_plan.md).
+
+**Functional domains on structures:** map SignalP / InterProScan / DeepTMHMM / N-glycosylation sequons onto AF residue numbers; flag scion–rootstock substitutions inside those features; prepare AF-Multimer jobs for scion ligand × rootstock receptor. Also: multimer interface PAE/contacts, defense surface RSA, curated sites via OrthoFinder MSA. See [`docs/structure_feature_mapping.md`](docs/structure_feature_mapping.md).
 
 ---
 
@@ -343,12 +345,14 @@ nextflow run workflows/compare_structures.nf -profile hpc,conda \
 | `--busco_lineage` | `embryophyta_odb10` | Default BUSCO lineage |
 | `--reference_species_id` | `auto` | %ID reference (matched GOI or `Sly`/`Ath`/…) |
 | `--build_codon_alignments` | `true` | Build codon MSAs from CDS + protein MSAs |
-| `--run_graft_phenotype` | `false` | Run phenotype association at end of `main.nf` |
+| `--run_graft_phenotype` | `false` | ASR/selection/ranking **before** AF handoff |
 | `--graft_matrix` | example TSV | Scion×rootstock outcomes |
 | `--run_hyphy` | `false` | Selection tests (needs codon MSAs) |
 | `--run_asr` | `true` | IQ-TREE ancestral reconstruction |
 | `--run_convergence` | `true` | PCOC/CSUBST if installed |
-| `--prepare_alphafold` | `true` | Write AF handoff package |
+| `--prepare_alphafold` | `true` | Write AF handoff (after phenotype when enabled) |
+| `--af_min_priority_score` | `0` | Min phenotype score to stage an OG |
+| `--af_max_ogs` | `0` | Cap OGs sent to GPU (`0` = no cap) |
 | `--orthofinder_threads` | `16` | OrthoFinder CPUs |
 
 Annotation / DB paths: `--eggnog_data_dir`, `--interproscan_dir`, `--signalp_bin`, `--busco_download_path`.
