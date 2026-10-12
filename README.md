@@ -93,7 +93,10 @@ Produce:
 │                    optional graft phenotype (ASR / HyPhy / ranking)                    │
 │                                      │                                                 │
 │                                      ▼                                                 │
-│                    AlphaFold handoff  ← last CPU step (fold_rank from ranking)         │
+│                    AlphaFold handoff (fold_rank from ranking)                          │
+│                                      │                                                 │
+│                                      ▼                                                 │
+│                    11_curated/index.html  ← browsable report of the tables             │
 └────────────────────────────────────────────────────────────────────────────────────────┘
                     │                                      │
                     ▼                                      ▼
@@ -257,9 +260,9 @@ Analyses:
 
 Details: [`docs/graft_phenotype.md`](docs/graft_phenotype.md).
 
-### 11. AlphaFold handoff (optional; last CPU step)
+### 11. AlphaFold handoff (optional; last analysis step)
 
-1. **CPU, last** (`main.nf`, after graft phenotype when that flag is on): writes `results/08_alphafold_inputs/alphafold_inputs/`  
+1. **CPU** (`main.nf`, after graft phenotype when that flag is on): writes `results/08_alphafold_inputs/alphafold_inputs/`  
    (`sequences/`, `manifest.tsv` sorted by `fold_rank`, `og_priority.tsv`, `pairs.tsv`). The `08_` folder name is unchanged; it is published after `10_graft_phenotype/`.  
 2. **GPU** (`workflows/alphafold.nf -profile gpu`): ColabFold (fold high `fold_rank` first)  
 3. **CPU** (`workflows/compare_structures.nf`): CA RMSD, substitution list + pLDDT → `09_structure_comparison/`  
@@ -269,6 +272,10 @@ Shrink the GPU queue with `--af_max_ogs 20` or `--af_min_priority_score 5` (requ
 See [`docs/alphafold_plan.md`](docs/alphafold_plan.md).
 
 **Functional domains on structures:** map SignalP / InterProScan / DeepTMHMM / N-glycosylation sequons onto AF residue numbers; flag scion–rootstock substitutions inside those features; prepare AF-Multimer jobs for scion ligand × rootstock receptor. Also: multimer interface PAE/contacts, defense surface RSA, curated sites via OrthoFinder MSA. See [`docs/structure_feature_mapping.md`](docs/structure_feature_mapping.md).
+
+### 12. Curated report
+
+Written at the end of `main.nf` to `results/11_curated/`. Open `index.html` in a browser to search, sort, and expand each orthogroup. The `tables/` folder holds copies of the family table, the wide % identity table, and, when those steps ran, the graft ranking and AlphaFold queue.
 
 ---
 
@@ -360,6 +367,8 @@ nextflow run workflows/compare_structures.nf -profile hpc,conda \
 | `--af_min_priority_score` | `0` | Min phenotype score to stage an OG |
 | `--af_max_ogs` | `0` | Cap OGs sent to GPU (`0` = no cap) |
 | `--orthofinder_threads` | `16` | OrthoFinder CPUs |
+| `--eggnog_cpus` | profile default | CPUs for `emapper.py` (`24` on `-profile hpc`) |
+| `--eggnog_extra` | empty | Extra `emapper.py` args, e.g. faster Diamond search |
 
 Annotation / DB paths: `--eggnog_data_dir`, `--interproscan_dir`, `--signalp_bin`, `--busco_download_path`.
 
@@ -382,6 +391,7 @@ Annotation / DB paths: `--eggnog_data_dir`, `--interproscan_dir`, `--signalp_bin
 | `10_graft_phenotype/` | Traits, ASR, divergence tests, ranking (before the handoff) |
 | `08_alphafold_inputs/` | GPU handoff package (written last; folder number kept) |
 | `09_structure_comparison/` | RMSD, substitutions, superimposed PDBs (after GPU folding) |
+| `11_curated/` | HTML report plus copies of the family, identity, and ranking tables |
 
 ---
 

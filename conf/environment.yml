@@ -5,6 +5,8 @@ channels:
   - defaults
 dependencies:
   - python=3.11
+  # SignalP 6's bundled PyTorch was built against NumPy 1.x and crashes on NumPy 2.
+  - numpy>=1.24,<2
   - biopython>=1.81
   - pandas>=2.0
   - pyyaml>=6.0

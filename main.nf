@@ -25,6 +25,7 @@ include { ANNOTATE_DEEPTMHMM          } from './modules/local/annotate_deeptmhmm
 include { CALC_PERCENT_IDENTITY       } from './modules/local/calc_percent_identity'
 include { MAKE_REPORT                 } from './modules/local/make_report'
 include { PREPARE_ALPHAFOLD_INPUTS    } from './modules/local/prepare_alphafold_inputs'
+include { CURATE_RESULTS              } from './modules/local/curate_results'
 include { GRAFT_PHENOTYPE             } from './subworkflows/local/graft_phenotype'
 
 def helpMessage() {
@@ -308,16 +309,33 @@ workflow {
         ch_af_priority = GRAFT_PHENOTYPE.out.ranking
     }
 
-    // AlphaFold handoff last among CPU evo steps — uses graft ranking when present
+    // AlphaFold handoff last among CPU analysis steps — uses graft ranking when present.
+    // The curated HTML report is published after that, from the same tables.
     if (params.prepare_alphafold) {
+        def ranks = ch_af_priority.multiMap { f ->
+            af: f
+            curated: f
+        }
         PREPARE_ALPHAFOLD_INPUTS(
             SELECT_ORTHOGROUPS.out.tsv,
             CALC_PERCENT_IDENTITY.out.summary,
             CALC_PERCENT_IDENTITY.out.pairwise,
             EXTRACT_SELECTED_PROTEINS.out.fasta,
-            ch_af_priority
+            ranks.af
         )
+        ch_handoff = PREPARE_ALPHAFOLD_INPUTS.out.handoff
+        ch_rank_curated = ranks.curated
+    } else {
+        ch_handoff = Channel.fromPath("${projectDir}/assets/empty.tsv")
+        ch_rank_curated = ch_af_priority
     }
+
+    CURATE_RESULTS(
+        MAKE_REPORT.out.table,
+        MAKE_REPORT.out.wide,
+        ch_rank_curated,
+        ch_handoff
+    )
 }
 
 workflow.onComplete {
@@ -327,5 +345,6 @@ workflow.onComplete {
       Outdir  : ${params.outdir}
       BUSCO   : ${params.outdir}/02b_busco/
       Tables  : ${params.outdir}/07_tables/
+      Curated : ${params.outdir}/11_curated/index.html
     """.stripIndent()
 }

@@ -14,6 +14,7 @@ process ANNOTATE_EGGNOG {
 
     script:
     def db = params.eggnog_data_dir ? "--data_dir ${params.eggnog_data_dir}" : ""
+    def extra = params.eggnog_extra?.trim() ? " ${params.eggnog_extra.trim()}" : ""
     """
     set -euo pipefail
 
@@ -22,7 +23,7 @@ process ANNOTATE_EGGNOG {
         -o eggnog \\
         --cpu ${task.cpus} \\
         --itype proteins \\
-        ${db} \\
+        ${db}${extra} \\
         --override
 
     cat <<-END_VERSIONS > versions.yml
