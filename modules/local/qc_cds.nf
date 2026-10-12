@@ -20,10 +20,10 @@ process QC_CDS {
             > ${meta.id}.cds_qc_report.tsv
         echo -e "0\\t0\\t0\\t0\\t0\\t0\\t0\\t0\\t0" >> ${meta.id}.cds_qc_report.tsv
         echo "WARNING: empty CDS for ${meta.id}; skipping" >&2
-        cat <<-END_VERSIONS > versions.yml
-        "${task.process}":
-            python: \$(python3 --version | sed 's/Python //')
-        END_VERSIONS
+        # No indented heredoc here: bash only accepts a tab-indented terminator,
+        # and Nextflow leaves these spaces in place, which makes the script fail to parse.
+        printf '"%s":\\n' "${task.process}" > versions.yml
+        python3 -c 'import sys; print("    python: " + sys.version.split()[0])' >> versions.yml
         exit 0
     fi
 

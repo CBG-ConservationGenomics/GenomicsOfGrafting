@@ -28,10 +28,8 @@ process IQTREE_ASR {
             > ${og_id}.asr_substitutions.tsv
         echo "(${og_id}) skipped ASR: need >=3 species" >&2
         touch ${og_id}.treefile
-        cat <<-END_VERSIONS > versions.yml
-        "${task.process}":
-            iqtree: skipped
-        END_VERSIONS
+        printf '"%s":\\n' "${task.process}" > versions.yml
+        printf '    iqtree: skipped\\n' >> versions.yml
         exit 0
     fi
 
