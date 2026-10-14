@@ -125,7 +125,7 @@ Configured in [`conf/species.yaml`](conf/species.yaml):
 | **Sly** | *Solanum lycopersicum* | ITAG4.0 (Sol Genomics) | ITAG4.0_CDS.fasta |
 | **Nbe** | *Nicotiana benthamiana* | Niben101 proteins (gzip) | Niben101 transcripts (ORF-trimmed in QC) |
 | **Ath** | *Arabidopsis thaliana* | NCBI `GCF_000001735.4` | NCBI cds_from_genomic |
-| **Cpe** | *Cucurbita pepo* | NCBI `GCF_002766695.1` | NCBI cds_from_genomic |
+| **Cpe** | *Cucurbita pepo* | NCBI `GCF_002806865.2` | NCBI cds_from_genomic |
 
 IDs are renamed to:
 
@@ -154,6 +154,8 @@ To use local files on the server:
 ### 1–2. Download and protein QC
 
 - Sources: `ncbi` | `url` | `local`  
+- Each download writes `<species>.provenance.tsv`: the accession or URL, the file taken from the package, the organism and annotation the source reported, the protein count, and an MD5  
+- An NCBI package whose organism does not match the configured genus stops the download  
 - Gzip/bzip2 detected by magic bytes and decompressed  
 - Keep longest isoform; optionally drop alt-haplotig proteins (GFF/ID patterns)  
 - Output: `results/01_raw_proteomes/`, `results/02_clean_proteomes/`
@@ -194,7 +196,7 @@ XP_023545678.1	Cucurbita pepo
 | 1 | Gene symbol (`WOX4`) or locus ID (`Solyc04g078650`, `AT1G46480`) |
 | 2 | Genus and species (`Solanum lycopersicum`). A short id such as `Sly` is also accepted |
 
-Symbols are matched to proteins with the GFF `Name`, `Alias`, and `gene_synonym` tags. Locus IDs match the proteome identifiers directly. The matched protein is stored as `reference_member` and is the reference for % identity, the family table, and AlphaFold pairs. If several literature genes fall in one orthogroup, the first one in this file is the reference.
+Symbols and locus IDs are normalized before they are compared with the annotation. `Solyc04g078650` matches the protein `Solyc04g078650.4.1`. A species prefix is removed (`SlWOX4` is searched as `WOX4`). A symbol matches a GFF gene symbol when the annotation has one. It also matches a functional description that uses the expanded family name and the same number: ITAG stores tomato WOX4 as “wuschel related homobox 4”, with no `WOX4` token. A `-like` name is not matched to a different number (`WRKY70-like` does not become WRKY80). The protein that matched is stored as `reference_member` and is the reference for % identity, the family table, and AlphaFold pairs. How each name resolved is written to `gene_id_crosswalk.tsv`. If several literature genes fall in one orthogroup, the first one in this file is the reference. A characterized gene that OrthoFinder left unassigned is still selected, under an `UNASSIGNED_` id, so annotation can run on that protein.
 
 Output: `results/05_selected_orthogroups/`
 
@@ -380,12 +382,12 @@ Annotation / DB paths: `--eggnog_data_dir`, `--interproscan_dir`, `--signalp_bin
 
 | Path | Contents |
 |------|----------|
-| `01_raw_proteomes/` | Downloaded proteins, CDS, GFF |
+| `01_raw_proteomes/` | Downloaded proteins, CDS, GFF, and `*.provenance.tsv` |
 | `02_clean_proteomes/` | QC’d proteins + id maps |
 | `02_clean_cds/` | QC’d CDS matching proteins |
 | `02b_busco/` | BUSCO summaries + pass/fail gate logs |
 | `03_orthofinder/` | Orthogroups, MSAs, species/gene trees |
-| `05_selected_orthogroups/` | GOI orthogroups + member FASTA |
+| `05_selected_orthogroups/` | GOI orthogroups, member FASTA, and `gene_id_crosswalk.tsv` |
 | `05b_codon_alignments/` | Codon MSAs for selected OGs |
 | `04_annotation/` | eggNOG / InterProScan / SignalP / DeepTMHMM |
 | `06_percent_identity/` | Pairwise + summary %ID |

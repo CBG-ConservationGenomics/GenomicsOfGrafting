@@ -3,7 +3,7 @@ process SELECT_ORTHOGROUPS {
     publishDir "${params.outdir}/05_selected_orthogroups", mode: 'copy'
 
     input:
-    path orthogroups_tsv
+    path orthofinder_results
     path genes_of_interest
     path id_maps
     path gffs
@@ -11,6 +11,7 @@ process SELECT_ORTHOGROUPS {
     output:
     path "selected_orthogroups.tsv", emit: tsv
     path "selected_orthogroups.txt", emit: list
+    path "gene_id_crosswalk.tsv", emit: crosswalk
     path "versions.yml", emit: versions
 
     script:
@@ -24,12 +25,13 @@ process SELECT_ORTHOGROUPS {
     done
 
     select_orthogroups.py \\
-        --orthogroups ${orthogroups_tsv} \\
+        --orthogroups ${orthofinder_results} \\
         --genes-of-interest ${genes_of_interest} \\
         --id-map all_id_maps.tsv \\
         --gff ${gffs} \\
         --out-tsv selected_orthogroups.tsv \\
-        --out-og-list selected_orthogroups.txt
+        --out-og-list selected_orthogroups.txt \\
+        --out-crosswalk gene_id_crosswalk.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -64,6 +64,23 @@ def find_alignment(align_dir: Path, og: str) -> Path | None:
     return None
 
 
+def align_id_for(target: str, ids: list[str]) -> str | None:
+    """Find an alignment sequence that is the same protein as `target`."""
+    if not target:
+        return None
+    id_set = set(ids)
+    if target in id_set:
+        return target
+    flat = target.replace("|", "_")
+    if flat in id_set:
+        return flat
+    tail = target.split("|")[-1]
+    for seq_id in ids:
+        if seq_id == tail or seq_id.endswith("|" + tail) or seq_id.replace("|", "_") == flat:
+            return seq_id
+    return None
+
+
 def pick_reference(
     ids: list[str],
     ref_species: str,
@@ -74,8 +91,9 @@ def pick_reference(
     """Prefer the literature gene, then a matched GOI, then a fixed species."""
     id_set = set(ids)
 
-    if reference_member and reference_member in id_set:
-        return reference_member
+    hit = align_id_for(reference_member, ids)
+    if hit:
+        return hit
 
     # 1) Always prefer an actual matched GOI member present in the alignment
     for mid in matched_members:

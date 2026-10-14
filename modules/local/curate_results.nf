@@ -7,6 +7,7 @@ process CURATE_RESULTS {
     path wide
     path ranking
     path handoff
+    path provenance_files
 
     output:
     path "index.html", emit: html
@@ -32,6 +33,7 @@ process CURATE_RESULTS {
         --wide-identity ${wide} \\
         \$RANK_ARG \\
         \$AF_ARG \\
+        --provenance ${provenance_files} \\
         --outdir .
 
     cat <<-END_VERSIONS > versions.yml

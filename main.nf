@@ -193,7 +193,7 @@ workflow {
         .collect()
 
     SELECT_ORTHOGROUPS(
-        RUN_ORTHOFINDER.out.orthogroups,
+        RUN_ORTHOFINDER.out.results,
         ch_goi,
         ch_id_maps,
         ch_gffs
@@ -335,11 +335,16 @@ workflow {
         ch_rank_curated = ch_af_priority
     }
 
+    ch_provenance = DOWNLOAD_PROTEOME.out.provenance
+        .map { _meta, prov -> prov }
+        .collect()
+
     CURATE_RESULTS(
         MAKE_REPORT.out.table,
         MAKE_REPORT.out.wide,
         ch_rank_curated,
-        ch_handoff
+        ch_handoff,
+        ch_provenance
     )
 }
 
@@ -351,5 +356,6 @@ workflow.onComplete {
       BUSCO   : ${params.outdir}/02b_busco/
       Tables  : ${params.outdir}/07_tables/
       Curated : ${params.outdir}/11_curated/index.html
+      Sources : ${params.outdir}/01_raw_proteomes/*.provenance.tsv
     """.stripIndent()
 }

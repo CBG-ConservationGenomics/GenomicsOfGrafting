@@ -1,8 +1,13 @@
 # Functionally characterized genes, one per line.
-# Column 1: gene symbol or locus ID, as it appears in the annotation (GFF Name/Alias, or the locus ID).
+# Column 1: gene symbol or locus ID. A species prefix (SlWOX4) is removed.
+#            A locus in parentheses is used as written: SlWOX4 (Solyc04g078650)
 # Column 2: genus and species of that characterized gene.
 #
-# The matched protein is the reference for percent identity and structure comparisons.
+# Locus IDs match with or without an isoform suffix (Solyc04g078650 = Solyc04g078650.4.1).
+# A symbol matches the annotation symbol, or a description with the same family and
+# number. ITAG has no WOX4 token; the note is "wuschel related homobox 4".
+# Names ending in -like are not matched to a different number.
+# The resolution of every name is written to gene_id_crosswalk.tsv.
 #
 # WOX4	Solanum lycopersicum
 # AT1G46480	Arabidopsis thaliana

@@ -10,6 +10,7 @@ process DOWNLOAD_PROTEOME {
     tuple val(meta), path("${meta.id}.proteins.faa"), emit: fasta
     tuple val(meta), path("${meta.id}.cds.fna"), emit: cds
     tuple val(meta), path("${meta.id}.gff3"), emit: gff
+    tuple val(meta), path("${meta.id}.provenance.tsv"), emit: provenance
     path "versions.yml", emit: versions
 
     script:
@@ -66,6 +67,15 @@ process DOWNLOAD_PROTEOME {
         fi
     }
 
+    proteins_origin=""
+    cds_origin=""
+    gff_origin=""
+    proteins_requested=""
+    cds_requested=""
+    gff_requested=""
+    assembly_report=""
+    fetch_tool=""
+
     if [ "${meta.source}" = "ncbi" ]; then
         datasets download genome accession ${accession} \\
             --include protein,gff3,cds \\
@@ -74,24 +84,37 @@ process DOWNLOAD_PROTEOME {
         fa=\$(find ${meta.id}_ncbi -name 'protein.faa' | head -n1)
         cds=\$(find ${meta.id}_ncbi \\( -name 'cds_from_genomic.fna' -o -name '*cds*.fna' -o -name '*cds*.fa' \\) | head -n1)
         gff=\$(find ${meta.id}_ncbi \\( -name 'genomic.gff' -o -name '*.gff3' -o -name '*.gff' \\) | head -n1)
+        assembly_report=\$(find ${meta.id}_ncbi -name 'assembly_data_report.jsonl' | head -n1)
         cp "\$fa" ${meta.id}.proteins.faa
+        proteins_origin="\$fa"
+        proteins_requested="${accession}"
+        cds_requested="${accession}"
+        gff_requested="${accession}"
+        fetch_tool=\$(datasets version 2>/dev/null | head -n1 || echo 'datasets')
         if [ -n "\$cds" ]; then
             cp "\$cds" ${meta.id}.cds.fna
+            cds_origin="\$cds"
         else
             echo "WARNING: no CDS in NCBI package for ${meta.id}; creating empty placeholder" >&2
             touch ${meta.id}.cds.fna
         fi
         if [ -n "\$gff" ]; then
             cp "\$gff" ${meta.id}.gff3
+            gff_origin="\$gff"
         else
             touch ${meta.id}.gff3
         fi
     elif [ "${meta.source}" = "url" ]; then
         curl -L --fail --retry 3 -o ${meta.id}.proteins.download "${fasta_url}"
         stage_file ${meta.id}.proteins.download ${meta.id}.proteins.faa
+        proteins_origin="${fasta_url}"
+        proteins_requested="${fasta_url}"
+        fetch_tool=\$(curl --version | head -n1)
         if [ -n "${cds_url}" ] && [ "${cds_url}" != "null" ]; then
             curl -L --fail --retry 3 -o ${meta.id}.cds.download "${cds_url}"
             stage_file ${meta.id}.cds.download ${meta.id}.cds.fna
+            cds_origin="${cds_url}"
+            cds_requested="${cds_url}"
         else
             echo "WARNING: no cds_url for ${meta.id}" >&2
             touch ${meta.id}.cds.fna
@@ -99,19 +122,28 @@ process DOWNLOAD_PROTEOME {
         if [ -n "${gff_url}" ] && [ "${gff_url}" != "null" ]; then
             curl -L --fail --retry 3 -o ${meta.id}.gff.download "${gff_url}" \\
                 && stage_file ${meta.id}.gff.download ${meta.id}.gff3 \\
+                && gff_origin="${gff_url}" \\
+                && gff_requested="${gff_url}" \\
                 || touch ${meta.id}.gff3
         else
             touch ${meta.id}.gff3
         fi
     elif [ "${meta.source}" = "local" ]; then
         stage_file "${fasta_path}" ${meta.id}.proteins.faa
+        proteins_origin="${fasta_path}"
+        proteins_requested="${fasta_path}"
+        fetch_tool="local"
         if [ -n "${cds_path}" ] && [ -f "${cds_path}" ]; then
             stage_file "${cds_path}" ${meta.id}.cds.fna
+            cds_origin="${cds_path}"
+            cds_requested="${cds_path}"
         else
             touch ${meta.id}.cds.fna
         fi
         if [ -n "${gff_path}" ] && [ -f "${gff_path}" ]; then
             stage_file "${gff_path}" ${meta.id}.gff3
+            gff_origin="${gff_path}"
+            gff_requested="${gff_path}"
         else
             touch ${meta.id}.gff3
         fi
@@ -125,6 +157,24 @@ process DOWNLOAD_PROTEOME {
     if [ -s ${meta.id}.cds.fna ]; then
         validate_fasta ${meta.id}.cds.fna cds
     fi
+
+    record_download_provenance.py \\
+        --species-id '${meta.id}' \\
+        --genus '${meta.genus}' \\
+        --species '${meta.species}' \\
+        --source '${meta.source}' \\
+        --proteins-source "\$proteins_requested" \\
+        --cds-source "\$cds_requested" \\
+        --gff-source "\$gff_requested" \\
+        --proteins ${meta.id}.proteins.faa \\
+        --cds ${meta.id}.cds.fna \\
+        --gff ${meta.id}.gff3 \\
+        --proteins-file "\$proteins_origin" \\
+        --cds-file "\$cds_origin" \\
+        --gff-file "\$gff_origin" \\
+        --assembly-report "\$assembly_report" \\
+        --tool "\$fetch_tool" \\
+        --out ${meta.id}.provenance.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

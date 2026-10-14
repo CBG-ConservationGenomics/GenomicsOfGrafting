@@ -19,10 +19,10 @@ def parse_args() -> argparse.Namespace:
 
 
 def id_keys(seq_id: str) -> set[str]:
-    """Exact ID plus a form with '|' turned into '_'. OrthoFinder sometimes rewrites pipes."""
-    keys = {seq_id}
+    """Exact ID, '|' rewritten as '_', and the accession after the last pipe."""
+    keys = {seq_id, seq_id.replace("|", "_")}
     if "|" in seq_id:
-        keys.add(seq_id.replace("|", "_"))
+        keys.add(seq_id.split("|")[-1])
     return keys
 
 

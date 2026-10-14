@@ -25,8 +25,24 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--wide-identity", required=True, help="gene_families_pctid_by_species.tsv")
     p.add_argument("--ranking", default=None, help="graft_candidate_ranking.tsv")
     p.add_argument("--alphafold-dir", default=None, help="Directory containing og_priority.tsv")
+    p.add_argument("--provenance", nargs="*", default=[], help="Per-species download provenance TSVs")
     p.add_argument("--outdir", required=True)
     return p.parse_args()
+
+
+def read_plain_tsv(path: str) -> list[dict]:
+    with open(path) as fh:
+        return list(csv.DictReader(fh, delimiter="\t"))
+
+
+def load_provenance(paths: list[str]) -> list[dict]:
+    rows: list[dict] = []
+    for path in paths:
+        file = Path(path)
+        if file.is_file() and file.stat().st_size:
+            rows.extend(read_plain_tsv(str(file)))
+    rows.sort(key=lambda row: (row.get("species_id") or "", row.get("proteins_source") or ""))
+    return rows
 
 
 def read_tsv(path: str | None) -> list[dict]:
@@ -242,6 +258,16 @@ HTML = r"""<!DOCTYPE html>
     border-radius: 12px;
     overflow: hidden;
   }
+  h2 {
+    margin: 0;
+    padding: 0.9rem 1rem 0.15rem;
+    font-family: "Iowan Old Style", Palatino, Georgia, serif;
+    font-weight: 500;
+    font-size: 1.25rem;
+  }
+  .source-note { margin: 0; padding: 0 1rem 0.7rem; color: var(--muted); font-size: 0.85rem; }
+  tr.warn td { color: var(--rust); }
+  td.url { word-break: break-all; }
   .toolbar {
     display: flex;
     flex-wrap: wrap;
@@ -348,6 +374,21 @@ HTML = r"""<!DOCTYPE html>
 </header>
 <main class="wrap">
   <section class="stats" id="stats"></section>
+  <section class="panel" id="sources-panel">
+    <h2>Proteome sources</h2>
+    <p class="source-note">Each remote file is recorded with the organism and annotation the source reported, the sequence count, and a checksum. A warning means that report does not match the species configured for the run.</p>
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>Configured</th><th>Source</th><th>Remote organism</th>
+            <th>Accession or URL</th><th>Annotation</th><th>Proteins</th><th>Expected</th><th>Warning</th>
+          </tr>
+        </thead>
+        <tbody id="sources"></tbody>
+      </table>
+    </div>
+  </section>
   <section class="panel">
     <div class="toolbar">
       <input id="q" type="search" placeholder="Search gene, orthogroup, description, domain" aria-label="Search families">
@@ -575,6 +616,29 @@ if (DATA.has_ranking) bits.push("Priority adds ASR substitutions on phenotype-sh
 if (DATA.has_folding) bits.push("Fold rank is the AlphaFold queue order (1 is first).");
 bits.push("TSV copies are in the tables folder beside this file.");
 document.getElementById("legend").textContent = bits.join(" ");
+function renderSources() {
+  const rows = DATA.provenance || [];
+  const panel = document.getElementById("sources-panel");
+  if (!rows.length) {
+    panel.hidden = true;
+    return;
+  }
+  document.getElementById("sources").innerHTML = rows.map(row => {
+    const ann = [row.annotation_name, row.annotation_date].filter(Boolean).join(" · ");
+    return `<tr class="${row.warning ? "warn" : ""}">
+      <td>${esc(row.species_id)}</td>
+      <td>${esc(row.configured_taxon)}</td>
+      <td>${esc(row.source)}</td>
+      <td>${esc(row.remote_organism) || "—"}</td>
+      <td class="url">${esc(row.proteins_source)}</td>
+      <td>${esc(ann) || "—"}</td>
+      <td>${esc(row.n_proteins)}</td>
+      <td>${esc(row.expected_protein_coding) || "—"}</td>
+      <td>${esc(row.warning) || ""}</td>
+    </tr>`;
+  }).join("");
+}
+renderSources();
 draw();
 </script>
 </body>
@@ -598,11 +662,13 @@ def main() -> None:
 
     species = species_from_wide(wide)
     records = build_records(families, wide, ranking, folding, species)
+    provenance = load_provenance(args.provenance)
     payload = {
         "generated": date.today().isoformat(),
         "species": species,
         "has_ranking": bool(ranking),
         "has_folding": bool(folding),
+        "provenance": provenance,
         "families": records,
     }
     html = HTML.replace("__PAYLOAD__", json.dumps(payload, ensure_ascii=False).replace("<", "\\u003c"))
@@ -621,6 +687,13 @@ def main() -> None:
     copy_table(args.ranking, "graft_candidate_ranking.tsv", ranking)
     if folding and af_dir:
         copy_table(str(af_dir / "og_priority.tsv"), "alphafold_og_priority.tsv", folding)
+    if provenance:
+        dest = table_dir / "download_provenance.tsv"
+        with dest.open("w", newline="") as fh:
+            writer = csv.DictWriter(fh, fieldnames=list(provenance[0].keys()), delimiter="\t")
+            writer.writeheader()
+            writer.writerows(provenance)
+        copied.append("download_provenance.tsv")
 
     write_readme(outdir / "README.txt", copied)
     print(f"[curate_results] {len(records)} families → {outdir / 'index.html'}")

@@ -20,10 +20,20 @@ from __future__ import annotations
 import argparse
 import csv
 import re
+import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import unquote
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from gene_names import (  # noqa: E402
+    attach_proteins,
+    index_gffs,
+    infer_species_id,
+    load_queries,
+    match_in_species,
+)
 
 
 LOCUS_RES = [
@@ -48,7 +58,15 @@ NAME_ATTRS = (
     "locus_tag",
     "protein_id",
     "ID",
+    "Note",
+    "note",
+    "description",
+    "product",
+    "gene_name",
 )
+
+# Whole-word symbols inside free-text notes (ITAG often stores WOX4 in Note).
+SYMBOL_RE = re.compile(r"^[A-Za-z][A-Za-z0-9._-]{2,30}$")
 
 # Literature prefixes sometimes glued onto a symbol (SlWOX4) but absent from the GFF.
 SPECIES_PREFIXES = {
@@ -69,12 +87,21 @@ class GoiQuery:
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--orthogroups", required=True, help="OrthoFinder Orthogroups.tsv")
+    p.add_argument(
+        "--orthogroups",
+        required=True,
+        help="OrthoFinder Orthogroups.tsv, or a Results_* directory that also contains unassigned genes",
+    )
     p.add_argument("--genes-of-interest", required=True)
     p.add_argument("--id-map", required=True, help="Concatenated QC id map TSV")
     p.add_argument("--gff", nargs="*", default=[], help="Per-species GFF3 files (optional)")
     p.add_argument("--out-tsv", required=True)
     p.add_argument("--out-og-list", required=True)
+    p.add_argument(
+        "--out-crosswalk",
+        default="",
+        help="TSV of literature name → proteome id (default: beside --out-tsv)",
+    )
     return p.parse_args()
 
 
@@ -198,6 +225,9 @@ def extract_names(attrs: dict[str, str]) -> set[str]:
             names.add(piece)
             if ":" in piece:
                 names.add(piece.split(":")[-1])
+            for token in re.split(r"[\s,;|/()\[\]:]+", piece):
+                if SYMBOL_RE.match(token) and (any(c.isdigit() for c in token) or token.isupper()):
+                    names.add(token)
     return {n for n in names if len(n) >= 2}
 
 
@@ -255,6 +285,69 @@ def load_alias_index(paths: list[str]) -> dict[str, set[str]]:
                 by_token[tok].update(normalized_names)
                 by_token[tok].add(tok)
     return by_token
+
+
+def id_aliases(token: str) -> set[str]:
+    """Forms OrthoFinder may write for one proteome accession."""
+    token = token.strip()
+    if not token:
+        return set()
+    aliases = {token, token.replace("|", "_")}
+    if "|" in token:
+        aliases.add(token.split("|")[-1])
+    return aliases
+
+
+def load_sequence_ids(root: Path) -> dict[str, str]:
+    """Map OrthoFinder internal IDs (0_42) back to the original FASTA accession."""
+    mapping: dict[str, str] = {}
+    if not root.is_dir():
+        return mapping
+    for path in root.glob("**/SequenceIDs.txt"):
+        for line in path.read_text(errors="replace").splitlines():
+            if ":" not in line:
+                continue
+            internal, original = line.split(":", 1)
+            original = original.strip().split()[0].rstrip(",")
+            if internal.strip() and original:
+                mapping[internal.strip()] = original
+    return mapping
+
+
+def discover_orthogroup_tables(path: Path) -> list[Path]:
+    """Orthogroups.tsv plus unassigned genes, from a file or a Results directory."""
+    if path.is_file():
+        tables = [path]
+        extra = path.with_name("Orthogroups_UnassignedGenes.tsv")
+        if extra.is_file():
+            tables.append(extra)
+        return tables
+    tables: list[Path] = []
+    for name in ("Orthogroups.tsv", "Orthogroups_UnassignedGenes.tsv"):
+        tables.extend(p for p in sorted(path.glob(f"**/{name}")) if p.is_file())
+    if not any(p.name == "Orthogroups.tsv" for p in tables):
+        raise SystemExit(f"[select_orthogroups] ERROR: Orthogroups.tsv not found under {path}")
+    return tables
+
+
+def translate_member(token: str, seq_ids: dict[str, str]) -> str:
+    token = token.strip()
+    return seq_ids.get(token, token)
+
+
+def member_lookup(members: list[str]) -> dict[str, str]:
+    lookup: dict[str, str] = {}
+    for member in members:
+        for alias in id_aliases(member):
+            lookup.setdefault(alias, member)
+    return lookup
+
+
+def member_hit(id_row: dict, lookup: dict[str, str]) -> bool:
+    for token in (id_row["new_id"], id_row["original_id"], id_row.get("gene_key") or ""):
+        if any(alias in lookup for alias in id_aliases(token)):
+            return True
+    return False
 
 
 def names_for_row(row: dict, alias_index: dict[str, set[str]]) -> set[str]:
@@ -318,72 +411,172 @@ def resolve_query(
     return top[0][2]
 
 
+def binomial_for(species_id: str, rows: list[dict]) -> str:
+    for row in rows:
+        if (row.get("species_id") or "").lower() == species_id.lower() and row.get("genus_species"):
+            return display_binomial(row["genus_species"])
+    return species_id
+
+
+def resolve_literature(queries, id_rows, gff_paths):
+    """Match each literature name to one protein. Returns resolutions and the crosswalk rows."""
+    index = index_gffs(gff_paths)
+    views = attach_proteins(id_rows, index)
+    species_ids = sorted({row["species_id"] for row in id_rows if row.get("species_id")})
+    resolved = []
+    missing = []
+    crosswalk = []
+
+    for query in queries:
+        detail = ""
+        method = ""
+        view = None
+        species_id = ""
+        binomial = ""
+        if query.taxon:
+            species_id, binomial = resolve_taxon(query, id_rows)
+            method, view, detail = match_in_species(query, species_id, views)
+        else:
+            inferred = infer_species_id(query)
+            if inferred:
+                species_id = inferred
+                binomial = binomial_for(species_id, id_rows)
+                method, view, detail = match_in_species(query, species_id, views)
+            else:
+                hits = []
+                for sid in species_ids:
+                    hit_method, hit_view, hit_detail = match_in_species(query, sid, views)
+                    if hit_view is not None:
+                        hits.append((sid, hit_method, hit_view, hit_detail))
+                if len(hits) == 1:
+                    species_id, method, view, detail = hits[0]
+                    binomial = binomial_for(species_id, id_rows)
+                elif len(hits) > 1:
+                    method = "ambiguous"
+                    detail = "; ".join(
+                        f"{sid} {hit_view.row.get('original_id')} via {hit_method}"
+                        for sid, hit_method, hit_view, _hit_detail in hits[:8]
+                    )
+        row = view.row if view is not None else None
+        if row is None:
+            missing.append(query)
+            print(
+                f"[select_orthogroups] {query.gene_name}: unmatched"
+                + (f" ({method}: {detail})" if detail else " (no locus, symbol, or description)")
+            )
+        else:
+            resolved.append((query, species_id, binomial, row))
+            print(
+                f"[select_orthogroups] {query.gene_name} -> {row.get('original_id')} "
+                f"via {method}" + (f" [{detail}]" if method == "description" else "")
+            )
+        crosswalk.append(
+            {
+                "query_gene": query.gene_name,
+                "query_taxon": query.taxon or binomial,
+                "species_id": species_id,
+                "match_method": method or "unmatched",
+                "original_id": (row or {}).get("original_id", ""),
+                "gene_key": (row or {}).get("gene_key", ""),
+                "new_id": (row or {}).get("new_id", ""),
+                "annotation_text": detail if method in {"description", "ambiguous"} else "",
+            }
+        )
+    return resolved, missing, crosswalk
+
+
 def main() -> None:
     args = parse_args()
-    queries = load_goi(args.genes_of_interest)
+    queries = load_queries(args.genes_of_interest)
     if not queries:
         raise SystemExit("No genes of interest found in input file")
 
     id_rows = load_id_map(args.id_map)
-    alias_index = load_alias_index(args.gff)
-    new_id_to_query: dict[str, tuple[GoiQuery, str, str]] = {}
-    resolved: list[tuple[GoiQuery, str, str, str]] = []
-    missing: list[GoiQuery] = []
-
-    for query in queries:
-        species_id, binomial = resolve_taxon(query, id_rows)
-        row = resolve_query(query, species_id, id_rows, alias_index)
-        if row is None:
-            missing.append(query)
-            continue
-        resolved.append((query, species_id, binomial, row["new_id"]))
-        new_id_to_query.setdefault(row["new_id"], (query, species_id, binomial))
+    resolved, missing, crosswalk = resolve_literature(queries, id_rows, args.gff)
 
     rows_out = []
     selected_ogs = []
     found_ids: set[str] = set()
+    og_root = Path(args.orthogroups)
+    seq_ids = load_sequence_ids(og_root)
+    tables = discover_orthogroup_tables(og_root)
+    if any(p.name.startswith("Orthogroups_Unassigned") for p in tables):
+        print("[select_orthogroups] also searching Orthogroups_UnassignedGenes.tsv")
 
-    with open(args.orthogroups) as fh:
-        reader = csv.DictReader(fh, delimiter="\t")
-        species_cols = [c for c in (reader.fieldnames or []) if c != "Orthogroup"]
-        for row in reader:
-            og = row["Orthogroup"]
-            members: list[str] = []
-            for col in species_cols:
-                cell = row.get(col) or ""
-                if cell.strip():
-                    members.extend(m.strip() for m in cell.split(",") if m.strip())
-            member_set = set(members)
+    seen_ogs: set[str] = set()
+    for table in tables:
+        unassigned = table.name.startswith("Orthogroups_Unassigned")
+        with table.open() as fh:
+            reader = csv.DictReader(fh, delimiter="\t")
+            species_cols = [c for c in (reader.fieldnames or []) if c != "Orthogroup"]
+            for row in reader:
+                og = (row.get("Orthogroup") or "").strip()
+                if not og:
+                    continue
+                if unassigned and not og.startswith("UNASSIGNED_"):
+                    og = f"UNASSIGNED_{og}"
+                if og in seen_ogs:
+                    continue
+                members: list[str] = []
+                for col in species_cols:
+                    cell = row.get(col) or ""
+                    if cell.strip():
+                        members.extend(translate_member(m, seq_ids) for m in cell.split(",") if m.strip())
+                lookup = member_lookup(members)
 
-            hits = [(q, sid, binomial, new_id) for q, sid, binomial, new_id in resolved if new_id in member_set]
-            if not hits:
-                continue
+                hits = []
+                for query, sid, binomial, id_row in resolved:
+                    if member_hit(id_row, lookup):
+                        hits.append((query, sid, binomial, id_row["new_id"]))
+                if not hits:
+                    continue
 
-            selected_ogs.append(og)
-            # File order is preserved in `resolved`; the first hit is the reference.
-            ref_query, _ref_sid, ref_binomial, ref_member = hits[0]
-            found_ids.add(ref_member)
-            for _q, _sid, _binomial, new_id in hits:
-                found_ids.add(new_id)
+                seen_ogs.add(og)
+                selected_ogs.append(og)
+                # File order is preserved in `resolved`; the first hit is the reference.
+                ref_query, _ref_sid, ref_binomial, ref_member = hits[0]
+                found_ids.add(ref_member)
+                for _q, _sid, _binomial, new_id in hits:
+                    found_ids.add(new_id)
 
-            matched_ids: list[str] = []
-            for _q, _s, _b, new_id in hits:
-                if new_id not in matched_ids:
-                    matched_ids.append(new_id)
-            rows_out.append(
-                {
-                    "Orthogroup": og,
-                    "genes_of_interest": ";".join(q.gene_name for q, _s, _b, _n in hits),
-                    "query_species_ids": ";".join(sid for _q, sid, _b, _n in hits),
-                    "reference_gene": ref_query.gene_name,
-                    "reference_species": ref_binomial,
-                    "reference_member": ref_member,
-                    "matched_members": ";".join(matched_ids),
-                    "n_members": len(members),
-                    "n_species_with_members": sum(1 for col in species_cols if (row.get(col) or "").strip()),
-                    "members": ",".join(members),
-                }
-            )
+                matched_ids: list[str] = []
+                for _q, _s, _b, new_id in hits:
+                    if new_id not in matched_ids:
+                        matched_ids.append(new_id)
+                alias_to_new: dict[str, str] = {}
+                for new_id in matched_ids:
+                    for alias in id_aliases(new_id):
+                        alias_to_new[alias] = new_id
+                canon_members: list[str] = []
+                seen_members: set[str] = set()
+                for member in members:
+                    canon = member
+                    for alias in id_aliases(member):
+                        if alias in alias_to_new:
+                            canon = alias_to_new[alias]
+                            break
+                    if canon not in seen_members:
+                        canon_members.append(canon)
+                        seen_members.add(canon)
+                for new_id in matched_ids:
+                    if new_id not in seen_members:
+                        canon_members.append(new_id)
+                        seen_members.add(new_id)
+                members = canon_members
+                rows_out.append(
+                    {
+                        "Orthogroup": og,
+                        "genes_of_interest": ";".join(q.gene_name for q, _s, _b, _n in hits),
+                        "query_species_ids": ";".join(sid for _q, sid, _b, _n in hits),
+                        "reference_gene": ref_query.gene_name,
+                        "reference_species": ref_binomial,
+                        "reference_member": ref_member,
+                        "matched_members": ";".join(matched_ids),
+                        "n_members": len(members),
+                        "n_species_with_members": sum(1 for col in species_cols if (row.get(col) or "").strip()),
+                        "members": ",".join(members),
+                    }
+                )
 
     Path(args.out_tsv).parent.mkdir(parents=True, exist_ok=True)
     fieldnames = [
@@ -407,8 +600,28 @@ def main() -> None:
         for og in selected_ogs:
             fh.write(og + "\n")
 
-    found_queries = {q.raw for q, _s, _b, new_id in resolved if new_id in found_ids}
-    not_in_og = [q for q, _s, _b, new_id in resolved if new_id not in found_ids]
+    crosswalk_path = Path(args.out_crosswalk) if args.out_crosswalk else Path(args.out_tsv).with_name("gene_id_crosswalk.tsv")
+    crosswalk_path.parent.mkdir(parents=True, exist_ok=True)
+    with crosswalk_path.open("w", newline="") as fh:
+        writer = csv.DictWriter(
+            fh,
+            fieldnames=[
+                "query_gene",
+                "query_taxon",
+                "species_id",
+                "match_method",
+                "original_id",
+                "gene_key",
+                "new_id",
+                "annotation_text",
+            ],
+            delimiter="\t",
+        )
+        writer.writeheader()
+        writer.writerows(crosswalk)
+    print(f"[select_orthogroups] name crosswalk -> {crosswalk_path}")
+
+    not_in_og = [q for q, _s, _b, id_row in resolved if id_row["new_id"] not in found_ids]
     print(
         f"[select_orthogroups] selected {len(selected_ogs)} orthogroups; "
         f"{len(queries) - len(missing) - len(not_in_og)}/{len(queries)} literature genes found"
@@ -420,8 +633,11 @@ def main() -> None:
             + ", ".join(f"{q.gene_name} ({q.taxon})" for q in missing[:20])
         )
         print(
-            "[select_orthogroups] Symbols need a GFF Name/Alias; "
-            "locus IDs such as Solyc04g078650 or AT1G46480 match directly."
+            "[select_orthogroups] Symbols match a GFF gene symbol, or a description "
+            "that names the same family and number (WOX4 matches "
+            "'wuschel related homeobox 4'). Locus IDs such as Solyc04g078650 "
+            "or AT1G46480 match with or without an isoform suffix. "
+            "See gene_id_crosswalk.tsv for the name used."
         )
     if not_in_og:
         print(

@@ -43,6 +43,6 @@ species:
     genus: Cucurbita
     species: pepo
     source: ncbi
-    accession: GCF_002766695.1
+    accession: GCF_002806865.2
     busco_lineage: embryophyta_odb10
-    notes: "Zucchini / squash RefSeq proteome"
+    notes: "Zucchini RefSeq ASM280686v2, about 29,000 protein-coding genes. GCF_002766695.1 is Escherichia coli."
