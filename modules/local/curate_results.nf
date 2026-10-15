@@ -10,9 +10,14 @@ process CURATE_RESULTS {
     path provenance_files
     path matrix_pairs
     path matrix_labels
+    path busco_summary
+    path codon_report
+    path codon_dir
 
     output:
     path "index.html", emit: html
+    path "genomes.html", emit: genomes
+    path "codon_alignments.html", emit: codons
     path "tables", emit: tables
     path "README.txt", emit: readme
     path "versions.yml", emit: versions
@@ -40,6 +45,13 @@ process CURATE_RESULTS {
         --identity-matrix-pairs ${matrix_pairs} \\
         --identity-matrix-labels ${matrix_labels} \\
         --runtime-seconds ${runtimeSeconds} \\
+        --outdir .
+
+    write_summary_pages.py \\
+        --provenance ${provenance_files} \\
+        --busco ${busco_summary} \\
+        --codon-report ${codon_report} \\
+        --codon-dir ${codon_dir} \\
         --outdir .
 
     cat <<-END_VERSIONS > versions.yml

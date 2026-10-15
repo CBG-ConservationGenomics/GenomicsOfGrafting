@@ -257,6 +257,8 @@ def write_readme(path: Path, copied: list[str]) -> None:
         "",
         "Open index.html in a browser. The page is self-contained:",
         "search, sort, and expand a row for annotation and phenotype detail.",
+        "genomes.html has protein counts and BUSCO. codon_alignments.html",
+        "shows the CDS alignments projected onto the protein MSAs.",
         "",
         "tables/",
     ]
@@ -503,6 +505,9 @@ HTML = r"""<!DOCTYPE html>
     padding: 0.2rem 0 1.5rem;
   }
   .empty { padding: 1.5rem; color: var(--muted); }
+  .nav { display: flex; flex-wrap: wrap; gap: 1.1rem; margin: 1.15rem 0 0; }
+  .nav a { color: #f6f1e6; text-decoration: none; border-bottom: 1px solid transparent; }
+  .nav a[aria-current="page"] { border-bottom-color: #f6f1e6; }
   @media (max-width: 800px) {
     .stats { grid-template-columns: 1fr 1fr; }
     h1 { font-size: 1.8rem; }
@@ -515,6 +520,11 @@ HTML = r"""<!DOCTYPE html>
     <p class="kicker">GraftingGeneFamilies</p>
     <h1>Curated gene families</h1>
     <p class="lede">Orthogroups that contain the genes of interest, with percent identity to the reference, functional annotation, and graft-phenotype priority when that step was run.</p>
+    <nav class="nav" aria-label="Summary pages">
+      <a href="index.html" aria-current="page">Families</a>
+      <a href="genomes.html">Genomes</a>
+      <a href="codon_alignments.html">Codon alignments</a>
+    </nav>
   </div>
 </header>
 <main class="wrap">

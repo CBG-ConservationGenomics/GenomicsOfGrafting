@@ -279,7 +279,7 @@ See [`docs/alphafold_plan.md`](docs/alphafold_plan.md).
 
 ### 12. Curated report
 
-Written at the end of `main.nf` to `results/11_curated/`. Open `index.html` in a browser to search, sort, and expand each orthogroup. The counts at the top are literature genes placed in an orthogroup, species included in the job, species whose proteins were downloaded from NCBI or a URL, and the time from job start until the report was written. The `tables/` folder holds copies of the family table, the wide % identity table, and, when those steps ran, the graft ranking and AlphaFold queue.
+Written at the end of `main.nf` to `results/11_curated/`. Open `index.html` in a browser to search, sort, and expand each orthogroup. The counts at the top are literature genes placed in an orthogroup, species included in the job, species whose proteins were downloaded from NCBI or a URL, and the time from job start until the report was written. `genomes.html` shows proteins and CDS per genome, a BUSCO composition bar, and a BUSCO heatmap. `codon_alignments.html` shows each CDS alignment projected onto the protein MSA. The `tables/` folder holds copies of the family table, the wide % identity table, and, when those steps ran, the graft ranking, BUSCO summary, codon report, and AlphaFold queue.
 
 ---
 
@@ -397,7 +397,7 @@ Annotation / DB paths: `--eggnog_data_dir`, `--interproscan_dir`, `--signalp_bin
 | `10_graft_phenotype/` | Traits, ASR, divergence tests, ranking (before the handoff) |
 | `08_alphafold_inputs/` | GPU handoff package (written last; folder number kept) |
 | `09_structure_comparison/` | RMSD, substitutions, superimposed PDBs (after GPU folding) |
-| `11_curated/` | HTML report plus copies of the family, identity, and ranking tables |
+| `11_curated/` | Family report (`index.html`), genome and BUSCO page (`genomes.html`), codon alignments (`codon_alignments.html`), and copies of the tables |
 
 ---
 

@@ -145,6 +145,7 @@ workflow {
         COLLECT_BUSCO_SUMMARY(
             RUN_BUSCO.out.metrics.map { _meta, m -> m }.collect()
         )
+        ch_busco_summary = COLLECT_BUSCO_SUMMARY.out.summary
 
         FILTER_BUSCO.out.pass_fasta
             .toList()
@@ -171,6 +172,7 @@ workflow {
             .set { ch_proteomes }
     } else {
         log.warn "BUSCO gate disabled (--run_busco false); all QC'd proteomes proceed"
+        ch_busco_summary = Channel.fromPath("${projectDir}/assets/empty.tsv")
         QC_PROTEOME.out.fasta
             .map { _meta, fa -> fa }
             .collect()
@@ -208,8 +210,10 @@ workflow {
             QC_CDS.out.cds.map { _meta, cds -> cds }.collect()
         )
         ch_codon_dir = BUILD_CODON_ALIGNMENTS.out.dir
+        ch_codon_report = BUILD_CODON_ALIGNMENTS.out.report
     } else {
-        ch_codon_dir = Channel.empty()
+        ch_codon_dir = Channel.fromPath("${projectDir}/assets/empty.tsv")
+        ch_codon_report = Channel.fromPath("${projectDir}/assets/empty.tsv")
     }
 
     // Extract only selected OG proteins for annotation
@@ -347,7 +351,10 @@ workflow {
         ch_handoff,
         ch_provenance,
         CALC_PERCENT_IDENTITY.out.matrix_pairs,
-        CALC_PERCENT_IDENTITY.out.matrix_labels
+        CALC_PERCENT_IDENTITY.out.matrix_labels,
+        ch_busco_summary,
+        ch_codon_report,
+        ch_codon_dir
     )
 }
 
@@ -359,6 +366,8 @@ workflow.onComplete {
       BUSCO   : ${params.outdir}/02b_busco/
       Tables  : ${params.outdir}/07_tables/
       Curated : ${params.outdir}/11_curated/index.html
+      Genomes : ${params.outdir}/11_curated/genomes.html
+      Codons  : ${params.outdir}/11_curated/codon_alignments.html
       Sources : ${params.outdir}/01_raw_proteomes/*.provenance.tsv
     """.stripIndent()
 }
