@@ -5,6 +5,7 @@ process BUILD_CODON_ALIGNMENTS {
     input:
     path og_list
     path alignments_dir
+    path orthofinder_results
     path cds_fastas
 
     output:
@@ -20,6 +21,7 @@ process BUILD_CODON_ALIGNMENTS {
     build_codon_alignments.py \\
         --og-list ${og_list} \\
         --alignments-dir ${alignments_dir} \\
+        --orthofinder-results ${orthofinder_results} \\
         --cds-fastas ${cds_fastas} \\
         --outdir codon_alignments \\
         --out-report codon_alignment_report.tsv \\

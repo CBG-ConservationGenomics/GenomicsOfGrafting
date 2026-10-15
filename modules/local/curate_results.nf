@@ -18,6 +18,7 @@ process CURATE_RESULTS {
     path "versions.yml", emit: versions
 
     script:
+    def runtimeSeconds = java.time.Duration.between(workflow.start.toInstant(), java.time.Instant.now()).toSeconds()
     """
     set -euo pipefail
 
@@ -38,6 +39,7 @@ process CURATE_RESULTS {
         --provenance ${provenance_files} \\
         --identity-matrix-pairs ${matrix_pairs} \\
         --identity-matrix-labels ${matrix_labels} \\
+        --runtime-seconds ${runtimeSeconds} \\
         --outdir .
 
     cat <<-END_VERSIONS > versions.yml

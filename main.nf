@@ -204,6 +204,7 @@ workflow {
         BUILD_CODON_ALIGNMENTS(
             SELECT_ORTHOGROUPS.out.list,
             RUN_ORTHOFINDER.out.alignments,
+            RUN_ORTHOFINDER.out.results,
             QC_CDS.out.cds.map { _meta, cds -> cds }.collect()
         )
         ch_codon_dir = BUILD_CODON_ALIGNMENTS.out.dir

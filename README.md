@@ -210,7 +210,8 @@ CDS:          ATGAAA ACT   TTCGTT
 codon MSA:    ATGAAA ACT --- TTCGTT
 ```
 
-Output: `results/05b_codon_alignments/OG*.codon.fna`  
+Output: `results/05b_codon_alignments/OG*.codon.fna` and `codon_alignment_report.tsv`.  
+Alignment headers are matched to cleaned CDS even when OrthoFinder has rewritten `|` as `_`, kept only the accession, or stored an internal id (`0_42`) in `SequenceIDs.txt`. An `UNASSIGNED_` orthogroup has no protein MSA, so its report status is `unassigned_no_alignment`.  
 Used by HyPhy when `--run_hyphy true`.
 
 ### 8. Functional annotation
@@ -278,7 +279,7 @@ See [`docs/alphafold_plan.md`](docs/alphafold_plan.md).
 
 ### 12. Curated report
 
-Written at the end of `main.nf` to `results/11_curated/`. Open `index.html` in a browser to search, sort, and expand each orthogroup. The `tables/` folder holds copies of the family table, the wide % identity table, and, when those steps ran, the graft ranking and AlphaFold queue.
+Written at the end of `main.nf` to `results/11_curated/`. Open `index.html` in a browser to search, sort, and expand each orthogroup. The counts at the top are literature genes placed in an orthogroup, species included in the job, species whose proteins were downloaded from NCBI or a URL, and the time from job start until the report was written. The `tables/` folder holds copies of the family table, the wide % identity table, and, when those steps ran, the graft ranking and AlphaFold queue.
 
 ---
 

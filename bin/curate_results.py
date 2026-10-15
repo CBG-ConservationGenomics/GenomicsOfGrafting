@@ -28,6 +28,12 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--provenance", nargs="*", default=[], help="Per-species download provenance TSVs")
     p.add_argument("--identity-matrix-pairs", default=None)
     p.add_argument("--identity-matrix-labels", default=None)
+    p.add_argument(
+        "--runtime-seconds",
+        type=float,
+        default=None,
+        help="Seconds from job start until this report is written",
+    )
     p.add_argument("--outdir", required=True)
     return p.parse_args()
 
@@ -114,6 +120,50 @@ def split_list(value: str | None, sep: str) -> list[str]:
     if not value:
         return []
     return [part.strip() for part in str(value).split(sep) if part.strip()]
+
+
+def mined_gene_count(records: list[dict]) -> int:
+    """Literature genes that were placed in an orthogroup."""
+    seen: set[tuple[str, str]] = set()
+    for rec in records:
+        genes = split_list(rec.get("genes"), ";")
+        species = split_list(rec.get("queries"), ";")
+        for i, gene in enumerate(genes):
+            sid = species[i] if i < len(species) else ""
+            seen.add((gene, sid))
+    return len(seen)
+
+
+def species_run_counts(provenance: list[dict], identity_species: list[dict]) -> tuple[int, int | None]:
+    """Species included in the job, and how many of those were remote downloads."""
+    if not provenance:
+        return len(identity_species), None
+    seen: set[str] = set()
+    downloaded = 0
+    for row in provenance:
+        sid = (row.get("species_id") or "").strip()
+        if not sid or sid in seen:
+            continue
+        seen.add(sid)
+        if (row.get("source") or "").strip().lower() in {"ncbi", "url"}:
+            downloaded += 1
+    return len(seen), downloaded
+
+
+def format_runtime(seconds: float | None) -> str:
+    if seconds is None:
+        return "—"
+    total = max(0, int(round(float(seconds))))
+    days, rem = divmod(total, 86400)
+    hours, rem = divmod(rem, 3600)
+    minutes, _secs = divmod(rem, 60)
+    if days:
+        return f"{days}d {hours}h" if hours else f"{days}d"
+    if hours:
+        return f"{hours}h {minutes}m" if minutes else f"{hours}h"
+    if minutes:
+        return f"{minutes}m"
+    return f"{total}s"
 
 
 def species_from_wide(rows: list[dict]) -> list[dict]:
@@ -289,7 +339,7 @@ HTML = r"""<!DOCTYPE html>
     font-size: 1.7rem;
     font-weight: 500;
   }
-  .stat span { color: var(--muted); font-size: 0.82rem; }
+  .stat span { color: var(--muted); font-size: 0.82rem; line-height: 1.3; }
   .panel {
     margin-top: 1.2rem;
     background: var(--card);
@@ -724,23 +774,18 @@ function draw() {
   }
   document.getElementById("count").textContent = `${rows.length} of ${DATA.families.length}`;
 }
-function meanOf(key) {
-  const vals = DATA.families.map(r => r[key]).filter(v => typeof v === "number");
-  if (!vals.length) return null;
-  return vals.reduce((a, b) => a + b, 0) / vals.length;
-}
-const nSignal = DATA.families.filter(r => isSignal(r.signalp)).length;
-const nPriority = DATA.families.filter(r => r.priority_score > 0).length;
+const summary = DATA.summary || {};
 const cards = [
-  ["Families", DATA.families.length],
-  ["Species", DATA.species.length],
-  ["Mean % identity", meanOf("mean_id") === null ? "—" : fmt(meanOf("mean_id"), 0)],
-  [DATA.has_ranking ? "Priority > 0" : "Signal peptides", DATA.has_ranking ? nPriority : nSignal]
+  ["Genes mined", summary.genes_mined, "Literature genes placed in an orthogroup"],
+  ["Species in run", summary.species_in_run, "Species whose proteomes were included in this job"],
+  ["Proteomes downloaded", summary.proteomes_downloaded == null ? "—" : summary.proteomes_downloaded, "Remote NCBI or URL protein downloads. A local file is not counted."],
+  ["Run time", summary.runtime || "—", "Time from job start until this report was written"]
 ];
-document.getElementById("stats").innerHTML = cards.map(([label, value]) =>
-  `<article class="stat"><b>${esc(value)}</b><span>${esc(label)}</span></article>`
+document.getElementById("stats").innerHTML = cards.map(([label, value, tip]) =>
+  `<article class="stat" title="${esc(tip)}"><b>${esc(value)}</b><span>${esc(label)}</span></article>`
 ).join("");
 const bits = [`Report date ${esc(DATA.generated)}.`];
+bits.push("Genes mined are the literature genes placed in an orthogroup. Species in the run are the proteomes included in this job. Proteomes downloaded counts remote NCBI or URL fetches, not a local file. Run time is from job start until this report.");
 bits.push("Percent identity is the mean identity of orthologs to the reference sequence in that family. Darker green is higher identity.");
 if (DATA.has_ranking) bits.push("Priority adds ASR substitutions on phenotype-shift branches, divergence beyond species relatedness, HyPhy hits, and convergence.");
 if (DATA.has_folding) bits.push("Fold rank is the AlphaFold queue order (1 is first).");
@@ -793,6 +838,7 @@ def main() -> None:
     species = species_from_wide(wide)
     records = build_records(families, wide, ranking, folding, species)
     provenance = load_provenance(args.provenance)
+    n_run, n_downloaded = species_run_counts(provenance, species)
     matrices = load_matrices(args.identity_matrix_pairs, args.identity_matrix_labels)
     for rec in records:
         rec["matrix"] = matrices.get(rec["orthogroup"])
@@ -802,6 +848,12 @@ def main() -> None:
         "has_ranking": bool(ranking),
         "has_folding": bool(folding),
         "provenance": provenance,
+        "summary": {
+            "genes_mined": mined_gene_count(records),
+            "species_in_run": n_run,
+            "proteomes_downloaded": n_downloaded,
+            "runtime": format_runtime(args.runtime_seconds),
+        },
         "families": records,
     }
     html = HTML.replace("__PAYLOAD__", json.dumps(payload, ensure_ascii=False).replace("<", "\\u003c"))
