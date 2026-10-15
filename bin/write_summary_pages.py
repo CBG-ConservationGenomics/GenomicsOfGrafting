@@ -17,6 +17,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--busco", default="")
     p.add_argument("--codon-report", default="")
     p.add_argument("--codon-dir", default="")
+    p.add_argument("--families", default="", help="gene_families_of_interest.tsv, for the protein page")
+    p.add_argument("--protein-alignments", default="", help="OrthoFinder MultipleSequenceAlignments directory")
     p.add_argument("--outdir", required=True)
     return p.parse_args()
 
@@ -210,12 +212,13 @@ SHELL = """<!DOCTYPE html>
   .pos {{ color: var(--muted); }}
   .lab {{ display: inline-block; width: 16rem; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }}
   .codon {{ margin-right: 0.28em; }}
-  .bA {{ background: #d7ebdf; color: #1b4332; }}
-  .bC {{ background: #d5e4f2; color: #1a3f66; }}
-  .bG {{ background: #f4e4bc; color: #6d4e09; }}
-  .bT {{ background: #f3ddd4; color: #8a3e2b; }}
-  .bN {{ background: #ece7df; color: #5e584e; }}
+  .bA, .aaH {{ background: #d7ebdf; color: #1b4332; }}
+  .bC, .aaPos {{ background: #d5e4f2; color: #1a3f66; }}
+  .bG, .aaP {{ background: #f4e4bc; color: #6d4e09; }}
+  .bT, .aaNeg {{ background: #f3ddd4; color: #8a3e2b; }}
+  .bN, .aaG {{ background: #ece7df; color: #5e584e; }}
   .bg {{ color: #b7ad9f; }}
+  .tick {{ margin-right: 0.45em; }}
   .footer-note {{ color: var(--muted); font-size: 0.82rem; padding: 0.8rem 0 1.6rem; }}
   @media (max-width: 800px) {{
     .stats {{ grid-template-columns: 1fr 1fr; }}
@@ -246,6 +249,7 @@ def nav(active: str) -> str:
     items = [
         ("families", "index.html", "Families"),
         ("genomes", "genomes.html", "Genomes"),
+        ("proteins", "protein_alignments.html", "Protein alignments"),
         ("codons", "codon_alignments.html", "Codon alignments"),
     ]
     parts = []
@@ -454,21 +458,28 @@ def render_genomes(rows: list[dict]) -> str:
     )
 
 
-def read_fasta(path: Path) -> list[tuple[str, str]]:
+def read_fasta(path: Path, nucleotide: bool = True) -> list[tuple[str, str]]:
     records: list[tuple[str, str]] = []
     name = ""
     chunks: list[str] = []
     for line in path.read_text(errors="replace").splitlines():
         if line.startswith(">"):
             if name:
-                records.append((name, "".join(chunks).upper().replace("U", "T")))
+                records.append((name, clean_seq("".join(chunks), nucleotide)))
             name = line[1:].split()[0]
             chunks = []
         else:
             chunks.append(line.strip())
     if name:
-        records.append((name, "".join(chunks).upper().replace("U", "T")))
+        records.append((name, clean_seq("".join(chunks), nucleotide)))
     return records
+
+
+def clean_seq(seq: str, nucleotide: bool) -> str:
+    seq = seq.upper()
+    if nucleotide:
+        seq = seq.replace("U", "T")
+    return seq
 
 
 def short_label(seq_id: str) -> str:
@@ -616,6 +627,171 @@ def render_codons(report: list[dict], codon_dir: Path | None) -> str:
     )
 
 
+AA_CLASS = {
+    "A": "aaH",
+    "V": "aaH",
+    "I": "aaH",
+    "L": "aaH",
+    "M": "aaH",
+    "F": "aaH",
+    "W": "aaH",
+    "P": "aaH",
+    "S": "aaP",
+    "T": "aaP",
+    "N": "aaP",
+    "Q": "aaP",
+    "Y": "aaP",
+    "C": "aaP",
+    "K": "aaPos",
+    "R": "aaPos",
+    "H": "aaPos",
+    "D": "aaNeg",
+    "E": "aaNeg",
+    "G": "aaG",
+}
+
+
+def residue_group(chunk: str) -> str:
+    letters = []
+    for aa in chunk:
+        if aa == "-":
+            letters.append('<span class="bg">-</span>')
+        else:
+            letters.append(f'<span class="{AA_CLASS.get(aa, "bN")}">{esc(aa)}</span>')
+    return '<span class="tick">' + "".join(letters) + "</span>"
+
+
+def protein_blocks(records: list[tuple[str, str]], width: int = 60) -> str:
+    if not records:
+        return ""
+    length = max(len(seq) for _name, seq in records)
+    padded = [(name, seq.ljust(length, "-")) for name, seq in records]
+    blocks = []
+    for start in range(0, length, width):
+        rows = [f'<div class="pos"><span class="lab"></span>{start + 1}</div>']
+        for name, seq in padded:
+            chunk = seq[start : start + width]
+            groups = [residue_group(chunk[i : i + 10]) for i in range(0, len(chunk), 10)]
+            rows.append(
+                f'<div class="seq" title="{esc(name)}"><span class="lab">{esc(short_label(name))}</span>{"".join(groups)}</div>'
+            )
+        blocks.append('<div class="block">' + "".join(rows) + "</div>")
+    return "".join(blocks)
+
+
+def find_protein_alignment(align_dir: Path | None, og: str) -> Path | None:
+    if align_dir is None or not align_dir.is_dir():
+        return None
+    preferred = [
+        align_dir / f"{og}.fa",
+        align_dir / f"{og}.faa",
+        align_dir / f"{og}.fasta",
+        align_dir / f"{og}.aln",
+        align_dir / "MultipleSequenceAlignments" / f"{og}.fa",
+    ]
+    for candidate in preferred:
+        if candidate.is_file() and candidate.stat().st_size and ".codon" not in candidate.name:
+            return candidate
+    hits = [hit for hit in align_dir.rglob(f"{og}.*") if ".codon" not in hit.name]
+    msa_hits = [hit for hit in hits if "MultipleSequenceAlignments" in hit.parts]
+    for hit in msa_hits or hits:
+        if hit.suffix.lower() in {".fa", ".faa", ".fasta", ".aln"} and hit.stat().st_size:
+            return hit
+    return None
+
+
+def selected_orthogroups(families_path: str, codon_report: list[dict]) -> list[str]:
+    ogs: list[str] = []
+    for row in read_tsv(families_path):
+        og = (row.get("Orthogroup") or "").strip()
+        if og and og not in ogs:
+            ogs.append(og)
+    for row in codon_report:
+        og = (row.get("Orthogroup") or "").strip()
+        if og and og not in ogs:
+            ogs.append(og)
+    return ogs
+
+
+def render_proteins(ogs: list[str], align_dir: Path | None) -> str:
+    shown = 0
+    n_seq = 0
+    missing = 0
+    table_rows = []
+    blocks = []
+    for og in ogs:
+        path = find_protein_alignment(align_dir, og)
+        if not path:
+            missing += 1
+            note = "Unassigned genes have no OrthoFinder alignment." if og.startswith("UNASSIGNED_") else "No protein alignment was found."
+            table_rows.append(
+                f"<tr><td><a href=\"#aa-{esc(og)}\">{esc(og)}</a></td><td>—</td><td>—</td><td>{esc(note)}</td></tr>"
+            )
+            blocks.append(
+                f'''<section class="panel" id="aa-{esc(og)}">
+                  <h2>{esc(og)}</h2>
+                  <p class="note">{esc(note)}</p>
+                </section>'''
+            )
+            continue
+        records = read_fasta(path, nucleotide=False)
+        length = max((len(seq) for _name, seq in records), default=0)
+        shown += 1
+        n_seq += len(records)
+        table_rows.append(
+            "<tr><td><a href=\"#aa-"
+            + esc(og)
+            + "\">"
+            + esc(og)
+            + "</a></td><td>"
+            + comma(len(records))
+            + "</td><td>"
+            + comma(length)
+            + "</td><td>Shown</td></tr>"
+        )
+        blocks.append(
+            f'''<section class="panel" id="aa-{esc(og)}">
+              <h2>{esc(og)}</h2>
+              <p class="note">{len(records)} sequences, {comma(length)} columns. Residues are grouped in tens. Hydrophobic residues are green, polar residues gold, positive blue, negative rust, and glycine gray.</p>
+              <div class="aln">{protein_blocks(records)}</div>
+            </section>'''
+        )
+    card_html = cards(
+        [
+            (comma(shown), "Alignments shown"),
+            (comma(len(ogs)), "Orthogroups"),
+            (comma(n_seq), "Sequences"),
+            (comma(missing), "Missing alignment"),
+        ]
+    )
+    table = f'''<section class="panel">
+      <h2>Protein alignments</h2>
+      <p class="note">These are the OrthoFinder amino-acid alignments for the selected orthogroups. The codon page is the same alignment with each residue expanded to nucleotides.</p>
+      <div class="legend-pills">
+        <span><i class="aaH"></i>Hydrophobic</span>
+        <span><i class="aaP"></i>Polar</span>
+        <span><i class="aaPos"></i>Positive</span>
+        <span><i class="aaNeg"></i>Negative</span>
+        <span><i class="aaG"></i>Glycine</span>
+        <span><i class="bg" style="background:#f4ecdc"></i>gap</span>
+      </div>
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Orthogroup</th><th>Sequences</th><th>Columns</th><th>Status</th></tr></thead>
+          <tbody>{"".join(table_rows) if table_rows else '<tr><td colspan="4">No selected orthogroups were available for this page.</td></tr>'}</tbody>
+        </table>
+      </div>
+    </section>'''
+    return page(
+        "Protein alignments",
+        "Protein alignments",
+        "Amino-acid alignments of the selected orthogroups.",
+        "proteins",
+        card_html + table + "".join(blocks),
+        "An unassigned orthogroup has no protein alignment.",
+    )
+
+
 def copy_table(src: str, dest: Path) -> None:
     rows = read_tsv(src)
     if not rows:
@@ -634,12 +810,17 @@ def main() -> None:
     codon_dir = Path(args.codon_dir) if args.codon_dir else None
     if codon_dir is not None and not codon_dir.is_dir():
         codon_dir = None
+    protein_dir = Path(args.protein_alignments) if args.protein_alignments else None
+    if protein_dir is not None and not protein_dir.is_dir():
+        protein_dir = None
+    ogs = selected_orthogroups(args.families, report)
     rows = genome_rows(provenance, busco)
     (outdir / "genomes.html").write_text(render_genomes(rows))
+    (outdir / "protein_alignments.html").write_text(render_proteins(ogs, protein_dir))
     (outdir / "codon_alignments.html").write_text(render_codons(report, codon_dir))
     copy_table(args.busco, outdir / "tables" / "busco_summary.tsv")
     copy_table(args.codon_report, outdir / "tables" / "codon_alignment_report.tsv")
-    print(f"[write_summary_pages] {len(rows)} genomes, {len(report)} codon rows → {outdir}")
+    print(f"[write_summary_pages] {len(rows)} genomes, {len(ogs)} protein alignments, {len(report)} codon rows → {outdir}")
 
 
 if __name__ == "__main__":

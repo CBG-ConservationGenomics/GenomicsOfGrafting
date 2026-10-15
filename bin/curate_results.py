@@ -169,10 +169,13 @@ def format_runtime(seconds: float | None) -> str:
 def species_from_wide(rows: list[dict]) -> list[dict]:
     if not rows:
         return []
+    prefix = "best_pct_id_"
+    if not any(key.startswith(prefix) for key in rows[0]):
+        prefix = "mean_pct_id_"
     species = []
     for key in rows[0]:
-        if key.startswith("mean_pct_id_"):
-            sid = key[len("mean_pct_id_") :]
+        if key.startswith(prefix):
+            sid = key[len(prefix) :]
             species.append({"id": sid, "label": SPECIES_LABELS.get(sid, sid)})
     return species
 
@@ -196,7 +199,10 @@ def build_records(
         fold = fold_by.get(og, {})
         identity = {}
         for sp in species:
-            identity[sp["id"]] = num(wide_row.get(f"mean_pct_id_{sp['id']}"))
+            best = num(wide_row.get(f"best_pct_id_{sp['id']}"))
+            if best is None:
+                best = num(wide_row.get(f"mean_pct_id_{sp['id']}"))
+            identity[sp["id"]] = best
         priority = num(rank.get("priority_score"))
         if priority is None:
             priority = num(fold.get("priority_score"))
@@ -239,10 +245,10 @@ def build_records(
 
     def sort_key(rec: dict) -> tuple:
         priority = rec["priority_score"]
-        mean_id = rec["mean_id"]
+        best_id = rec["max_id"]
         return (
             -(priority if priority is not None else -1),
-            -(mean_id if mean_id is not None else -1),
+            -(best_id if best_id is not None else -1),
             rec["orthogroup"],
         )
 
@@ -257,8 +263,9 @@ def write_readme(path: Path, copied: list[str]) -> None:
         "",
         "Open index.html in a browser. The page is self-contained:",
         "search, sort, and expand a row for annotation and phenotype detail.",
-        "genomes.html has protein counts and BUSCO. codon_alignments.html",
-        "shows the CDS alignments projected onto the protein MSAs.",
+        "genomes.html has protein counts and BUSCO. protein_alignments.html",
+        "shows the OrthoFinder amino-acid alignments. codon_alignments.html",
+        "shows the CDS alignments projected onto those protein MSAs.",
         "",
         "tables/",
     ]
@@ -523,6 +530,7 @@ HTML = r"""<!DOCTYPE html>
     <nav class="nav" aria-label="Summary pages">
       <a href="index.html" aria-current="page">Families</a>
       <a href="genomes.html">Genomes</a>
+      <a href="protein_alignments.html">Protein alignments</a>
       <a href="codon_alignments.html">Codon alignments</a>
     </nav>
   </div>
@@ -567,7 +575,7 @@ const state = {
   q: "",
   signals: false,
   ranked: false,
-  sort: DATA.has_ranking ? "priority_score" : "mean_id",
+  sort: DATA.has_ranking ? "priority_score" : "max_id",
   dir: "desc",
   open: null
 };
@@ -642,8 +650,12 @@ function columns() {
     { key: "genes", label: "Genes of interest" },
     { key: "name", label: "Name" }
   ];
-  DATA.species.forEach(sp => cols.push({ key: "id:" + sp.id, label: sp.id, title: sp.label }));
-  cols.push({ key: "mean_id", label: "Mean %ID" });
+  DATA.species.forEach(sp => cols.push({
+    key: "id:" + sp.id,
+    label: sp.id,
+    title: "Closest protein to the reference in " + sp.label
+  }));
+  cols.push({ key: "max_id", label: "Best %ID", title: "Closest protein to the reference in this family" });
   cols.push({ key: "features", label: "Features", nosort: true });
   if (DATA.has_ranking) cols.push({ key: "priority_score", label: "Priority" });
   if (DATA.has_folding) cols.push({ key: "fold_rank", label: "Fold rank" });
@@ -738,10 +750,9 @@ function detail(row) {
     add("Convergence tests", row.n_convergence === null ? "" : fmt(row.n_convergence, 0));
   }
   if (row.fold_rank !== null) add("AlphaFold queue", `fold rank ${fmt(row.fold_rank, 0)}`);
-  const mean = row.mean_id === null ? "—" : fmt(row.mean_id, 1);
   const min = row.min_id === null ? "—" : fmt(row.min_id, 1);
   const max = row.max_id === null ? "—" : fmt(row.max_id, 1);
-  add("% identity to reference", `${mean} mean across other proteins (min ${min}, max ${max}). The matrix below keeps each homolog separate.`);
+  add("% identity to reference", `Closest protein is ${max}%. The most distant protein is ${min}%. Each species column is that closest protein, and the matrix below keeps every homolog.`);
   return `<tr class="detail"><td></td><td colspan="${columns().length}"><dl class="detail-grid">${items.join("")}</dl>${matrixHtml(row)}</td></tr>`;
 }
 function draw() {
@@ -770,7 +781,7 @@ function draw() {
         <td>${esc(row.genes)}</td>
         <td class="name">${esc(row.name) || '<span class="muted">—</span>'}</td>
         ${ids}
-        <td class="idcell" style="${idStyle(row.mean_id)}">${row.mean_id === null ? "·" : fmt(row.mean_id, 0)}</td>
+        <td class="idcell" style="${idStyle(row.max_id)}" title="Closest protein to the reference">${row.max_id === null ? "·" : fmt(row.max_id, 0)}</td>
         <td><div class="badges">${badges(row)}</div></td>
         ${extra}
       </tr>${open ? detail(row) : ""}`;
@@ -796,7 +807,7 @@ document.getElementById("stats").innerHTML = cards.map(([label, value, tip]) =>
 ).join("");
 const bits = [`Report date ${esc(DATA.generated)}.`];
 bits.push("Genes mined are the literature genes placed in an orthogroup. Species in the run are the proteomes included in this job. Proteomes downloaded counts remote NCBI or URL fetches, not a local file. Run time is from job start until this report.");
-bits.push("Percent identity is the mean identity of orthologs to the reference sequence in that family. Darker green is higher identity.");
+bits.push("Each species column is the closest protein from that species to the reference, and Best %ID is the single closest protein in the family. Darker green is higher identity.");
 if (DATA.has_ranking) bits.push("Priority adds ASR substitutions on phenotype-shift branches, divergence beyond species relatedness, HyPhy hits, and convergence.");
 if (DATA.has_folding) bits.push("Fold rank is the AlphaFold queue order (1 is first).");
 bits.push("TSV copies are in the tables folder beside this file.");

@@ -161,7 +161,7 @@ def main() -> None:
     signalp = index_signalp(read_tsv(args.signalp))
     tmhmm = index_deeptmhmm(read_tsv(args.deeptmhmm))
 
-    # wide identity: OG x species mean %ID to reference
+    # wide identity: closest protein to the reference in each species, plus the species mean
     by_og_sp: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
     for r in pairwise:
         try:
@@ -211,6 +211,7 @@ def main() -> None:
         }
         for sp in species_ids:
             vals = by_og_sp[og].get(sp, [])
+            wide[f"best_pct_id_{sp}"] = f"{max(vals):.2f}" if vals else ""
             wide[f"mean_pct_id_{sp}"] = f"{(sum(vals) / len(vals)):.2f}" if vals else ""
         wide_rows.append(wide)
 
@@ -243,8 +244,8 @@ def main() -> None:
         w.writerows(polished)
 
     wide_fields = ["Orthogroup", "genes_of_interest", "query_species_ids", "reference_id"] + [
-        f"mean_pct_id_{sp}" for sp in species_ids
-    ]
+        f"best_pct_id_{sp}" for sp in species_ids
+    ] + [f"mean_pct_id_{sp}" for sp in species_ids]
     with open(args.out_wide_identity, "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=wide_fields, delimiter="\t")
         w.writeheader()

@@ -13,10 +13,12 @@ process CURATE_RESULTS {
     path busco_summary
     path codon_report
     path codon_dir
+    path protein_alignments
 
     output:
     path "index.html", emit: html
     path "genomes.html", emit: genomes
+    path "protein_alignments.html", emit: proteins
     path "codon_alignments.html", emit: codons
     path "tables", emit: tables
     path "README.txt", emit: readme
@@ -52,7 +54,10 @@ process CURATE_RESULTS {
         --busco ${busco_summary} \\
         --codon-report ${codon_report} \\
         --codon-dir ${codon_dir} \\
+        --families ${families} \\
+        --protein-alignments ${protein_alignments} \\
         --outdir .
+    # Family table cells are the closest protein to the reference, not the species average.
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

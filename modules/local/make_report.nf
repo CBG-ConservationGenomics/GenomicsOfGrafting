@@ -37,6 +37,7 @@ process MAKE_REPORT {
         \$EGGNOG_ARG \$IPS_ARG \$SIGNALP_ARG \$TM_ARG \\
         --out-table gene_families_of_interest.tsv \\
         --out-wide-identity gene_families_pctid_by_species.tsv
+    # best_pct_id_* is the closest protein to the reference in that species.
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

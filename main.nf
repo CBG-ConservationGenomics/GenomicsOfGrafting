@@ -354,7 +354,8 @@ workflow {
         CALC_PERCENT_IDENTITY.out.matrix_labels,
         ch_busco_summary,
         ch_codon_report,
-        ch_codon_dir
+        ch_codon_dir,
+        RUN_ORTHOFINDER.out.alignments
     )
 }
 
@@ -368,6 +369,7 @@ workflow.onComplete {
       Curated : ${params.outdir}/11_curated/index.html
       Genomes : ${params.outdir}/11_curated/genomes.html
       Codons  : ${params.outdir}/11_curated/codon_alignments.html
+      Proteins: ${params.outdir}/11_curated/protein_alignments.html
       Sources : ${params.outdir}/01_raw_proteomes/*.provenance.tsv
     """.stripIndent()
 }

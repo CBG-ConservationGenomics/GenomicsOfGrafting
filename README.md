@@ -230,7 +230,7 @@ Toggle with `--run_eggnog false`, etc. Point DB/tool installs with `--eggnog_dat
 - Pairwise identity of every protein in the alignment, not only the species mean. Square matrices are in `results/06_percent_identity/identity_matrices/`. The characterized protein is the first row and column.  
 - Summary %ID versus that protein is still in `summary_percent_identity.tsv`  
 - Main table: `results/07_tables/gene_families_of_interest.tsv`  
-- Wide table: `gene_families_pctid_by_species.tsv` (mean identity per species; several homologs from one species are averaged there)
+- Wide table: `gene_families_pctid_by_species.tsv`. `best_pct_id_*` is the closest protein from that species to the reference. `mean_pct_id_*` is still the average of every homolog from that species.
 
 Stages 10 and 11 always run in this order on the CPU: phenotype ranking first, AlphaFold handoff last. Folding itself stays on the GPU.
 
@@ -279,7 +279,7 @@ See [`docs/alphafold_plan.md`](docs/alphafold_plan.md).
 
 ### 12. Curated report
 
-Written at the end of `main.nf` to `results/11_curated/`. Open `index.html` in a browser to search, sort, and expand each orthogroup. The counts at the top are literature genes placed in an orthogroup, species included in the job, species whose proteins were downloaded from NCBI or a URL, and the time from job start until the report was written. `genomes.html` shows proteins and CDS per genome, a BUSCO composition bar, and a BUSCO heatmap. `codon_alignments.html` shows each CDS alignment projected onto the protein MSA. The `tables/` folder holds copies of the family table, the wide % identity table, and, when those steps ran, the graft ranking, BUSCO summary, codon report, and AlphaFold queue.
+Written at the end of `main.nf` to `results/11_curated/`. Open `index.html` in a browser to search, sort, and expand each orthogroup. The counts at the top are literature genes placed in an orthogroup, species included in the job, species whose proteins were downloaded from NCBI or a URL, and the time from job start until the report was written. `genomes.html` shows proteins and CDS per genome, a BUSCO composition bar, and a BUSCO heatmap. `protein_alignments.html` shows the OrthoFinder amino-acid alignment for each selected orthogroup. `codon_alignments.html` shows each CDS alignment projected onto that protein MSA. The `tables/` folder holds copies of the family table, the wide % identity table, and, when those steps ran, the graft ranking, BUSCO summary, codon report, and AlphaFold queue.
 
 ---
 
@@ -397,7 +397,7 @@ Annotation / DB paths: `--eggnog_data_dir`, `--interproscan_dir`, `--signalp_bin
 | `10_graft_phenotype/` | Traits, ASR, divergence tests, ranking (before the handoff) |
 | `08_alphafold_inputs/` | GPU handoff package (written last; folder number kept) |
 | `09_structure_comparison/` | RMSD, substitutions, superimposed PDBs (after GPU folding) |
-| `11_curated/` | Family report (`index.html`), genome and BUSCO page (`genomes.html`), codon alignments (`codon_alignments.html`), and copies of the tables |
+| `11_curated/` | Family report (`index.html`), genome and BUSCO page (`genomes.html`), protein alignments (`protein_alignments.html`), codon alignments (`codon_alignments.html`), and copies of the tables |
 
 ---
 
