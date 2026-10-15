@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import re
 from pathlib import Path
 
 from Bio import AlignIO
@@ -27,7 +28,127 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument("--out-pairwise", required=True)
     p.add_argument("--out-summary", required=True)
+    p.add_argument("--out-matrix-pairs", required=True, help="All-by-all identity, one pair per row")
+    p.add_argument("--out-matrix-labels", required=True, help="Short label for each protein in a matrix")
+    p.add_argument("--out-matrix-dir", required=True, help="Directory of square identity matrices")
     return p.parse_args()
+
+
+def short_label(seq_id: str) -> str:
+    """Species plus locus, without the isoform suffix when the locus pattern is known."""
+    parts = seq_id.split("|")
+    species = parts[0] if len(parts) >= 2 else ""
+    tail = parts[-1]
+    match = re.match(
+        r"^(Solyc\d+g\d+|AT[1-5MC]G\d+|Niben\d+Scf\w+g\d+|Niben\w+g\d+|LOC\d+|(?:XP|NP|WP|YP)_\d+)",
+        tail,
+        re.IGNORECASE,
+    )
+    locus = match.group(1) if match else re.sub(r"\.\d+$", "", tail)
+    return f"{species}:{locus}" if species else locus
+
+
+def unique_labels(seq_ids: list[str]) -> list[str]:
+    """Keep paralogs distinct when they share a locus label."""
+    bases = [short_label(seq_id) for seq_id in seq_ids]
+    counts: dict[str, int] = {}
+    for base in bases:
+        counts[base] = counts.get(base, 0) + 1
+    labels = []
+    for seq_id, base in zip(seq_ids, bases):
+        if counts[base] == 1:
+            labels.append(base)
+            continue
+        tail = seq_id.split("|")[-1]
+        species = seq_id.split("|")[0] if "|" in seq_id else ""
+        labels.append(f"{species}:{tail}" if species else tail)
+    return labels
+
+
+def order_sequences(seq_ids: list[str], reference: str) -> list[str]:
+    """Characterized protein first, then its same-species homologs, then the other species."""
+    ref_species = reference.split("|")[0] if "|" in reference else ""
+
+    def sort_key(seq_id: str) -> tuple:
+        species = seq_id.split("|")[0] if "|" in seq_id else seq_id
+        return (
+            0 if seq_id == reference else 1,
+            0 if species == ref_species else 1,
+            species,
+            seq_id,
+        )
+
+    return sorted(seq_ids, key=sort_key)
+
+
+def matrix_rows(
+    og: str,
+    seq_ids: list[str],
+    seqs: dict[str, str],
+    reference: str,
+) -> tuple[list[dict], list[dict], list[str]]:
+    """All-by-all identity, a label table, and the ordered sequence ids."""
+    ordered = order_sequences(seq_ids, reference)
+    labels = unique_labels(ordered)
+    pairs = []
+    label_rows = []
+    for seq_id, label in zip(ordered, labels):
+        species = seq_id.split("|")[0] if "|" in seq_id else ""
+        label_rows.append(
+            {
+                "Orthogroup": og,
+                "label": label,
+                "sequence_id": seq_id,
+                "species_id": species,
+                "is_reference": "yes" if seq_id == reference else "",
+            }
+        )
+    for i, left in enumerate(ordered):
+        for right in ordered[i + 1 :]:
+            pid = percent_identity(seqs[left], seqs[right])
+            if pid is None:
+                continue
+            left_i = ordered.index(left)
+            right_i = ordered.index(right)
+            pairs.append(
+                {
+                    "Orthogroup": og,
+                    "seq_a": left,
+                    "seq_b": right,
+                    "label_a": labels[left_i],
+                    "label_b": labels[right_i],
+                    "species_a": left.split("|")[0] if "|" in left else "",
+                    "species_b": right.split("|")[0] if "|" in right else "",
+                    "pct_identity": f"{pid:.2f}",
+                    "reference_id": reference,
+                }
+            )
+    return pairs, label_rows, ordered
+
+
+def write_square_matrix(
+    path: Path,
+    og: str,
+    ordered: list[str],
+    labels: list[str],
+    seqs: dict[str, str],
+    reference: str,
+) -> None:
+    lookup = {seq_id: label for seq_id, label in zip(ordered, labels)}
+    with path.open("w", newline="") as fh:
+        fh.write(f"# Orthogroup\t{og}\n")
+        fh.write(f"# reference\t{lookup.get(reference, reference)}\t{reference}\n")
+        writer = csv.writer(fh, delimiter="\t")
+        writer.writerow(["sequence", *labels])
+        for left in ordered:
+            row = [lookup[left]]
+            for right in ordered:
+                if left == right:
+                    row.append("")
+                    continue
+                pid = percent_identity(seqs[left], seqs[right])
+                row.append("" if pid is None else f"{pid:.1f}")
+            writer.writerow(row)
 
 
 def percent_identity(seq_a: str, seq_b: str) -> float | None:
@@ -142,6 +263,16 @@ def main() -> None:
 
     pairwise_rows = []
     summary_rows = []
+    matrix_pairs: list[dict] = []
+    matrix_labels: list[dict] = []
+    matrix_dir = Path(args.out_matrix_dir)
+    matrix_dir.mkdir(parents=True, exist_ok=True)
+    (matrix_dir / "README.txt").write_text(
+        "One square percent-identity matrix per orthogroup.\n"
+        "Each row and column is one protein. Paralogs from the same species are separate columns.\n"
+        "The characterized protein is listed first. The diagonal is blank.\n"
+        "Labels are species:locus. See identity_matrix_labels.tsv for the full sequence id.\n"
+    )
 
     for og in ogs:
         aln_path = find_alignment(align_dir, og)
@@ -212,6 +343,18 @@ def main() -> None:
             }
         )
 
+        pairs, label_rows, ordered = matrix_rows(og, ids, seqs, ref)
+        matrix_pairs.extend(pairs)
+        matrix_labels.extend(label_rows)
+        write_square_matrix(
+            matrix_dir / f"{og}.identity_matrix.tsv",
+            og,
+            ordered,
+            [row["label"] for row in label_rows],
+            seqs,
+            ref,
+        )
+
     Path(args.out_pairwise).parent.mkdir(parents=True, exist_ok=True)
     with open(args.out_pairwise, "w", newline="") as fh:
         fields = [
@@ -245,7 +388,34 @@ def main() -> None:
         w.writeheader()
         w.writerows(summary_rows)
 
-    print(f"[calc_percent_identity] pairwise={len(pairwise_rows)} summary={len(summary_rows)}")
+    pair_fields = [
+        "Orthogroup",
+        "seq_a",
+        "seq_b",
+        "label_a",
+        "label_b",
+        "species_a",
+        "species_b",
+        "pct_identity",
+        "reference_id",
+    ]
+    with open(args.out_matrix_pairs, "w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=pair_fields, delimiter="\t")
+        w.writeheader()
+        w.writerows(matrix_pairs)
+    with open(args.out_matrix_labels, "w", newline="") as fh:
+        w = csv.DictWriter(
+            fh,
+            fieldnames=["Orthogroup", "label", "sequence_id", "species_id", "is_reference"],
+            delimiter="\t",
+        )
+        w.writeheader()
+        w.writerows(matrix_labels)
+
+    print(
+        f"[calc_percent_identity] pairwise={len(pairwise_rows)} summary={len(summary_rows)} "
+        f"matrix_pairs={len(matrix_pairs)}"
+    )
 
 
 if __name__ == "__main__":

@@ -226,9 +226,10 @@ Toggle with `--run_eggnog false`, etc. Point DB/tool installs with `--eggnog_dat
 
 ### 9. % identity and tables
 
-- Pairwise and summary %ID versus the characterized gene’s protein (`reference_member`)  
+- Pairwise identity of every protein in the alignment, not only the species mean. Square matrices are in `results/06_percent_identity/identity_matrices/`. The characterized protein is the first row and column.  
+- Summary %ID versus that protein is still in `summary_percent_identity.tsv`  
 - Main table: `results/07_tables/gene_families_of_interest.tsv`  
-- Wide table: `gene_families_pctid_by_species.tsv`
+- Wide table: `gene_families_pctid_by_species.tsv` (mean identity per species; several homologs from one species are averaged there)
 
 Stages 10 and 11 always run in this order on the CPU: phenotype ranking first, AlphaFold handoff last. Folding itself stays on the GPU.
 
@@ -390,7 +391,7 @@ Annotation / DB paths: `--eggnog_data_dir`, `--interproscan_dir`, `--signalp_bin
 | `05_selected_orthogroups/` | GOI orthogroups, member FASTA, and `gene_id_crosswalk.tsv` |
 | `05b_codon_alignments/` | Codon MSAs for selected OGs |
 | `04_annotation/` | eggNOG / InterProScan / SignalP / DeepTMHMM |
-| `06_percent_identity/` | Pairwise + summary %ID |
+| `06_percent_identity/` | Identity to the reference, plus an all-by-all matrix for each family |
 | `07_tables/` | Polished family tables |
 | `10_graft_phenotype/` | Traits, ASR, divergence tests, ranking (before the handoff) |
 | `08_alphafold_inputs/` | GPU handoff package (written last; folder number kept) |

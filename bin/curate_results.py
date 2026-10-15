@@ -26,8 +26,46 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--ranking", default=None, help="graft_candidate_ranking.tsv")
     p.add_argument("--alphafold-dir", default=None, help="Directory containing og_priority.tsv")
     p.add_argument("--provenance", nargs="*", default=[], help="Per-species download provenance TSVs")
+    p.add_argument("--identity-matrix-pairs", default=None)
+    p.add_argument("--identity-matrix-labels", default=None)
     p.add_argument("--outdir", required=True)
     return p.parse_args()
+
+
+def load_matrices(pairs_path: str | None, labels_path: str | None) -> dict[str, dict]:
+    """Square identity matrix for each orthogroup, keyed by sequence id."""
+    if not pairs_path or not labels_path:
+        return {}
+    pairs_file = Path(pairs_path)
+    labels_file = Path(labels_path)
+    if not pairs_file.is_file() or not labels_file.is_file():
+        return {}
+    labels_by_og: dict[str, list[dict]] = {}
+    with labels_file.open() as fh:
+        for row in csv.DictReader(fh, delimiter="\t"):
+            labels_by_og.setdefault(row["Orthogroup"], []).append(row)
+    values: dict[tuple[str, str, str], float] = {}
+    with pairs_file.open() as fh:
+        for row in csv.DictReader(fh, delimiter="\t"):
+            pid = num(row.get("pct_identity"))
+            if pid is None:
+                continue
+            og = row["Orthogroup"]
+            values[(og, row["seq_a"], row["seq_b"])] = pid
+            values[(og, row["seq_b"], row["seq_a"])] = pid
+    matrices: dict[str, dict] = {}
+    for og, rows in labels_by_og.items():
+        ids = [row["sequence_id"] for row in rows]
+        grid = []
+        for left in ids:
+            grid.append([None if left == right else values.get((og, left, right)) for right in ids])
+        matrices[og] = {
+            "labels": [row["label"] for row in rows],
+            "full": ids,
+            "reference": [row.get("is_reference") == "yes" for row in rows],
+            "values": grid,
+        }
+    return matrices
 
 
 def read_plain_tsv(path: str) -> list[dict]:
@@ -145,6 +183,7 @@ def build_records(
                 "n_selection": num(rank.get("n_selection_hits")),
                 "n_convergence": num(rank.get("n_convergence_ok")),
                 "fold_rank": num(fold.get("fold_rank")),
+                "matrix": None,
             }
         )
 
@@ -268,6 +307,62 @@ HTML = r"""<!DOCTYPE html>
   .source-note { margin: 0; padding: 0 1rem 0.7rem; color: var(--muted); font-size: 0.85rem; }
   tr.warn td { color: var(--rust); }
   td.url { word-break: break-all; }
+  .heat-wrap { margin-top: 0.9rem; overflow-x: auto; }
+  .heat-note { margin: 0 0 0.55rem; color: var(--muted); font-size: 0.85rem; max-width: 46rem; }
+  table.heat { width: auto; border-collapse: separate; border-spacing: 3px; }
+  table.heat th, table.heat td {
+    position: static;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 500;
+    vertical-align: middle;
+  }
+  table.heat th.col { height: 7.2rem; vertical-align: bottom; min-width: 2.7rem; }
+  table.heat th.col span {
+    display: inline-block;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    white-space: nowrap;
+    font-size: 0.72rem;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  table.heat th.rowlab {
+    text-align: right;
+    padding-right: 0.45rem;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    color: var(--ink);
+  }
+  table.heat th.ref, table.heat th.ref span { font-weight: 700; }
+  table.heat td.cell {
+    width: 2.85rem;
+    min-width: 2.85rem;
+    height: 1.7rem;
+    text-align: center;
+    font-size: 0.68rem;
+    font-variant-numeric: tabular-nums;
+    border-radius: 2px;
+  }
+  table.heat td.diag { background: #f4efe6; }
+  .heat-scale {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.45rem;
+    align-items: center;
+    margin-top: 0.45rem;
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+  .heat-scale i {
+    width: 1.7rem;
+    height: 0.7rem;
+    display: inline-block;
+    border-radius: 2px;
+  }
   .toolbar {
     display: flex;
     flex-wrap: wrap;
@@ -512,6 +607,41 @@ function drawHead() {
     });
   });
 }
+function heatColor(n) {
+  const t = Math.max(0, Math.min(1, (Number(n) - 55) / 40));
+  const r = Math.round(246 + (110 - 246) * t);
+  const g = Math.round(228 + (42 - 228) * t);
+  const b = Math.round(210 + (18 - 210) * t);
+  return { background: `rgb(${r},${g},${b})`, color: t > 0.58 ? "#f8f1e8" : "#1c1915" };
+}
+function matrixHtml(row) {
+  const m = row.matrix;
+  if (!m || !m.labels || !m.labels.length) return "";
+  const head = m.labels.map((label, i) => {
+    const mark = m.reference[i] ? " *" : "";
+    return `<th class="col${m.reference[i] ? " ref" : ""}" title="${esc(m.full[i])}"><span>${esc(label)}${mark}</span></th>`;
+  }).join("");
+  const body = m.labels.map((label, i) => {
+    const mark = m.reference[i] ? " *" : "";
+    const cells = m.values[i].map((val, j) => {
+      if (i === j) return `<td class="cell diag"></td>`;
+      if (val === null || val === undefined) return `<td class="cell"></td>`;
+      const style = heatColor(val);
+      const title = `${m.labels[i]} vs ${m.labels[j]}: ${fmt(val, 1)}%`;
+      return `<td class="cell" style="background:${style.background};color:${style.color}" title="${esc(title)}">${fmt(val, 1)}</td>`;
+    }).join("");
+    return `<tr><th class="rowlab${m.reference[i] ? " ref" : ""}" title="${esc(m.full[i])}">${esc(label)}${mark}</th>${cells}</tr>`;
+  }).join("");
+  const scale = [60, 70, 80, 90, 100].map(n => {
+    const style = heatColor(n);
+    return `<i style="background:${style.background}"></i><span>${n}%</span>`;
+  }).join("");
+  return `<div class="heat-wrap">
+    <p class="heat-note">Pairwise identity for every protein in this alignment. The characterized protein is marked * and listed first. Homologs from the same species each have their own row.</p>
+    <table class="heat"><thead><tr><th></th>${head}</tr></thead><tbody>${body}</tbody></table>
+    <div class="heat-scale">${scale}</div>
+  </div>`;
+}
 function esc(s) {
   return String(s ?? "").replace(/[&<>"']/g, ch => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
@@ -551,8 +681,8 @@ function detail(row) {
   const mean = row.mean_id === null ? "—" : fmt(row.mean_id, 1);
   const min = row.min_id === null ? "—" : fmt(row.min_id, 1);
   const max = row.max_id === null ? "—" : fmt(row.max_id, 1);
-  add("% identity to reference", `${mean} mean (min ${min}, max ${max})`);
-  return `<tr class="detail"><td></td><td colspan="${columns().length}"><dl class="detail-grid">${items.join("")}</dl></td></tr>`;
+  add("% identity to reference", `${mean} mean across other proteins (min ${min}, max ${max}). The matrix below keeps each homolog separate.`);
+  return `<tr class="detail"><td></td><td colspan="${columns().length}"><dl class="detail-grid">${items.join("")}</dl>${matrixHtml(row)}</td></tr>`;
 }
 function draw() {
   drawHead();
@@ -663,6 +793,9 @@ def main() -> None:
     species = species_from_wide(wide)
     records = build_records(families, wide, ranking, folding, species)
     provenance = load_provenance(args.provenance)
+    matrices = load_matrices(args.identity_matrix_pairs, args.identity_matrix_labels)
+    for rec in records:
+        rec["matrix"] = matrices.get(rec["orthogroup"])
     payload = {
         "generated": date.today().isoformat(),
         "species": species,
@@ -694,6 +827,8 @@ def main() -> None:
             writer.writeheader()
             writer.writerows(provenance)
         copied.append("download_provenance.tsv")
+    copy_table(args.identity_matrix_pairs, "identity_matrix_pairs.tsv", read_plain_tsv(args.identity_matrix_pairs) if args.identity_matrix_pairs else [])
+    copy_table(args.identity_matrix_labels, "identity_matrix_labels.tsv", read_plain_tsv(args.identity_matrix_labels) if args.identity_matrix_labels else [])
 
     write_readme(outdir / "README.txt", copied)
     print(f"[curate_results] {len(records)} families → {outdir / 'index.html'}")

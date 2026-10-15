@@ -344,7 +344,9 @@ workflow {
         MAKE_REPORT.out.wide,
         ch_rank_curated,
         ch_handoff,
-        ch_provenance
+        ch_provenance,
+        CALC_PERCENT_IDENTITY.out.matrix_pairs,
+        CALC_PERCENT_IDENTITY.out.matrix_labels
     )
 }
 

@@ -8,6 +8,8 @@ process CURATE_RESULTS {
     path ranking
     path handoff
     path provenance_files
+    path matrix_pairs
+    path matrix_labels
 
     output:
     path "index.html", emit: html
@@ -34,6 +36,8 @@ process CURATE_RESULTS {
         \$RANK_ARG \\
         \$AF_ARG \\
         --provenance ${provenance_files} \\
+        --identity-matrix-pairs ${matrix_pairs} \\
+        --identity-matrix-labels ${matrix_labels} \\
         --outdir .
 
     cat <<-END_VERSIONS > versions.yml

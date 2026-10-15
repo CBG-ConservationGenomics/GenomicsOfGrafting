@@ -10,6 +10,9 @@ process CALC_PERCENT_IDENTITY {
     output:
     path "pairwise_percent_identity.tsv", emit: pairwise
     path "summary_percent_identity.tsv", emit: summary
+    path "identity_matrix_pairs.tsv", emit: matrix_pairs
+    path "identity_matrix_labels.tsv", emit: matrix_labels
+    path "identity_matrices", emit: matrices
     path "versions.yml", emit: versions
 
     script:
@@ -22,7 +25,10 @@ process CALC_PERCENT_IDENTITY {
         --selected-ogs-tsv ${selected_tsv} \\
         --reference-species-id ${params.reference_species_id} \\
         --out-pairwise pairwise_percent_identity.tsv \\
-        --out-summary summary_percent_identity.tsv
+        --out-summary summary_percent_identity.tsv \\
+        --out-matrix-pairs identity_matrix_pairs.tsv \\
+        --out-matrix-labels identity_matrix_labels.tsv \\
+        --out-matrix-dir identity_matrices
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
