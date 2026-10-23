@@ -5,13 +5,13 @@ The gene list is a name and a species. Those names are resolved onto proteins
 in the downloaded annotations. This check is optional evidence that the
 resolved annotation sequence is the gene that was characterized.
 
-The reference FASTA holds one coding sequence per candidate. Headers name the
-same gene as column 1 of the gene list, and the species when the symbol is
-shared:
+The reference FASTA holds one coding sequence per candidate. A tab separates
+the gene name from the species. A locus id and annotation name may follow
+the species, separated by spaces:
 
+  >WOX13<TAB>Arabidopsis thaliana AT4G35550.1 TAIR10
   >WOX4 Solanum lycopersicum
   >WOX4|Solanum_lycopersicum
-  >Solyc04g078650.4.1
 
 The reference CDS is translated and aligned to the cleaned annotation protein.
 The nucleotides are aligned to the cleaned annotation CDS. Both identities
@@ -31,7 +31,7 @@ from Bio.Align import PairwiseAligner
 from Bio.Seq import Seq
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from gene_names import id_forms, norm  # noqa: E402
+from gene_names import gene_key, id_forms, locus_species, norm  # noqa: E402
 
 
 STOP_CODONS = {"TAA", "TAG", "TGA"}
@@ -174,35 +174,84 @@ def load_reference(path: str) -> list[tuple[str, str, str, str]]:
     records = []
     with file.open() as fh:
         for rec in SeqIO.parse(fh, "fasta"):
-            gene, taxon = parse_header(rec.description or rec.id)
+            header = (rec.description or rec.id).strip()
+            gene, taxon, _locus = parse_header_fields(header)
             if not gene:
                 raise SystemExit(f"[check_candidate_cds] ERROR: reference CDS has an empty header in {path}")
-            header = (rec.description or rec.id).strip()
             records.append((gene, taxon, header, str(rec.seq)))
     if not records:
         raise SystemExit(f"[check_candidate_cds] ERROR: no sequences in {path}")
     return records
 
 
-def parse_header(text: str) -> tuple[str, str]:
-    """Split a header into the gene token and an optional species."""
+def looks_like_locus(token: str) -> bool:
+    """True for AT4G35550.1 or Solyc04g078650.4.1, not for an annotation name like TAIR10."""
+    token = token.strip().strip(",")
+    if not token:
+        return False
+    if locus_species(token):
+        return True
+    return gene_key(token) != token
+
+
+def species_and_locus(rest: str) -> tuple[str, str]:
+    """Genus and species, then an optional locus id. A trailing annotation name is ignored."""
+    words = rest.replace("_", " ").split()
+    if not words:
+        return "", ""
+    if len(words) == 1:
+        return words[0], ""
+    # "Ath AT4G35550.1 TAIR10" — the second token is the locus, not a species epithet.
+    if looks_like_locus(words[1]):
+        taxon = words[0]
+        tail = words[1:]
+    else:
+        taxon = f"{words[0]} {words[1]}"
+        tail = words[2:]
+    locus = next((token.strip(",") for token in tail if looks_like_locus(token)), "")
+    return taxon, locus
+
+
+def parse_header_fields(text: str) -> tuple[str, str, str]:
+    """Return (gene, species, locus).
+
+    The gene and the rest of the header are separated by a tab:
+
+      WOX13<TAB>Arabidopsis thaliana AT4G35550.1 TAIR10
+
+    The species is the genus and species. AT4G35550.1 is a locus id and
+    TAIR10 is the annotation name; neither is part of the species. A header
+    without a tab still accepts a space or a pipe between the gene and species.
+    """
     text = text.strip()
     if not text:
-        return "", ""
+        return "", "", ""
     lowered = text.lower()
     for prefix in DB_PREFIXES:
         token = prefix + "|"
         if lowered.startswith(token):
             text = text.split("|", 1)[1].strip()
             break
-    parts = [part.strip() for part in text.split("|")]
-    if len(parts) == 3 and parts[0] and parts[2]:
-        return parts[2], parts[1].replace("_", " ")
-    if len(parts) == 2 and parts[0] and parts[1]:
-        return parts[0], parts[1].replace("_", " ")
-    words = text.split(None, 1)
-    gene = words[0]
-    taxon = words[1].replace("_", " ") if len(words) > 1 else ""
+    if "\t" not in text and "|" in text:
+        parts = [part.strip() for part in text.split("|")]
+        if len(parts) == 3 and parts[0] and parts[2]:
+            return parts[2], parts[1].replace("_", " "), ""
+        if len(parts) == 2 and parts[0] and parts[1]:
+            return parts[0], parts[1].replace("_", " "), ""
+    if "\t" in text:
+        gene, rest = text.split("\t", 1)
+    else:
+        words = text.split(None, 1)
+        gene = words[0]
+        rest = words[1] if len(words) > 1 else ""
+    gene = gene.strip()
+    taxon, locus = species_and_locus(rest.strip())
+    return gene, taxon, locus
+
+
+def parse_header(text: str) -> tuple[str, str]:
+    """Split a header into the gene token and the species."""
+    gene, taxon, _locus = parse_header_fields(text)
     return gene, taxon
 
 
@@ -415,13 +464,28 @@ def run_check(
 
     prepared = []
     for gene, taxon, header, seq in references:
+        parsed_gene, parsed_taxon, locus = parse_header_fields(header) if header else ("", "", "")
+        if parsed_gene:
+            gene, taxon = parsed_gene, parsed_taxon
         if not taxon:
             gene, taxon = peel_embedded_taxon(gene, crosswalk)
-        hits = [
+        symbol_hits = [
             index
             for index, row in enumerate(crosswalk)
             if gene_matches(row, gene) and taxon_matches(row, taxon)
         ]
+        locus_hits = []
+        if locus and norm(locus) != norm(gene):
+            locus_hits = [
+                index
+                for index, row in enumerate(crosswalk)
+                if gene_matches(row, locus) and taxon_matches(row, taxon)
+            ]
+        if symbol_hits and locus_hits:
+            both = [index for index in symbol_hits if index in set(locus_hits)]
+            hits = both or symbol_hits + [index for index in locus_hits if index not in symbol_hits]
+        else:
+            hits = symbol_hits or locus_hits
         prepared.append((gene, taxon, header, seq, hits))
 
     used: dict[int, str] = {}

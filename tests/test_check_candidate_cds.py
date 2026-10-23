@@ -381,6 +381,69 @@ class CheckCandidateCdsTest(unittest.TestCase):
             check.parse_header("Sly|Solanum_lycopersicum|Solyc04g078650.4.1"),
             ("Solyc04g078650.4.1", "Solanum lycopersicum"),
         )
+        tabbed = "WOX13\tArabidopsis thaliana AT4G35550.1 TAIR10"
+        self.assertEqual(check.parse_header(tabbed), ("WOX13", "Arabidopsis thaliana"))
+        self.assertEqual(
+            check.parse_header_fields(tabbed),
+            ("WOX13", "Arabidopsis thaliana", "AT4G35550.1"),
+        )
+        self.assertEqual(
+            check.parse_header_fields("WOX4\tSolanum lycopersicum Solyc04g078650.4.1 ITAG4.0"),
+            ("WOX4", "Solanum lycopersicum", "Solyc04g078650.4.1"),
+        )
+
+    def test_tabbed_header_matches_symbol_or_locus(self):
+        header = "WOX13\tArabidopsis thaliana AT4G35550.1 TAIR10"
+        by_symbol = row(
+            query_gene="WOX13",
+            query_taxon="Arabidopsis thaliana",
+            species_id="Ath",
+            original_id="AT4G35550.1",
+            gene_key="AT4G35550",
+            new_id="Ath|Arabidopsis_thaliana|AT4G35550.1",
+        )
+        rows, failures = check.run_check(
+            [by_symbol],
+            {by_symbol.new_id: "MKTF"},
+            {by_symbol.new_id: "ATGAAAACCTTC"},
+            [("ignored", "ignored", header, "ATGAAAACCTTCTAA")],
+            98,
+            98,
+            True,
+        )
+        self.assertEqual(rows[0]["status"], "match")
+        self.assertEqual(failures, [])
+
+        by_locus = row(
+            query_gene="AT4G35550",
+            query_taxon="Arabidopsis thaliana",
+            species_id="Ath",
+            match_method="locus",
+            original_id="AT4G35550.1",
+            gene_key="AT4G35550",
+            new_id="Ath|Arabidopsis_thaliana|AT4G35550.1",
+        )
+        rows, failures = check.run_check(
+            [by_locus],
+            {by_locus.new_id: "MKTF"},
+            {by_locus.new_id: "ATGAAAACCTTC"},
+            [("ignored", "ignored", header, "ATGAAAACCTTCTAA")],
+            98,
+            98,
+            True,
+        )
+        self.assertEqual(rows[0]["status"], "match")
+        self.assertEqual(failures, [])
+
+    def test_fasta_reader_keeps_a_tabbed_header(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "reference.fna"
+            path.write_text(">WOX13\tArabidopsis thaliana AT4G35550.1 TAIR10\nATGGCTTCTTCTTCTTCTTCTTAA\n")
+            gene, taxon, header, _seq = check.load_reference(str(path))[0]
+        self.assertEqual(gene, "WOX13")
+        self.assertEqual(taxon, "Arabidopsis thaliana")
+        self.assertIn("AT4G35550.1", header)
+        self.assertNotIn("TAIR10", taxon)
 
 
 if __name__ == "__main__":

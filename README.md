@@ -205,15 +205,11 @@ Symbols and locus IDs are normalized before they are compared with the annotatio
 Gene names can resolve to the wrong locus. To check that, pass a FASTA of the CDS that was characterized, one sequence per candidate, from the species it was described in:
 
 ```text
->WOX4 Solanum lycopersicum
-ATGG...
->WOX4|Solanum_lycopersicum
-ATGG...
->Solyc04g078650.4.1
+>WOX13	Arabidopsis thaliana AT4G35550.1 TAIR10
 ATGG...
 ```
 
-The first token is the gene symbol or locus ID from column 1. The rest is the genus and species (spaces or underscores). A species is required when the same symbol is listed for more than one species. `data/candidate_cds.example.fna` shows the header layout; its nucleotides are placeholders, not real genes.
+The gene name and the rest of the header are separated by a tab. After the tab, spaces separate the genus and species, the locus id, and the annotation name. The species is `Arabidopsis thaliana`. `AT4G35550.1` and `TAIR10` are not part of the species. The record matches a candidate listed as `WOX13` or as `AT4G35550`. A species is required when the same symbol is listed for more than one species. `data/candidate_cds.example.fna` shows this layout; its nucleotides are placeholders, not real genes.
 
 The pipeline translates that CDS and aligns it to the cleaned annotation protein chosen for the gene. It also aligns the nucleotides to the cleaned annotation CDS. A terminal stop codon is ignored. Both identities default to a 98% minimum (`--candidate_cds_min_protein_identity`, `--candidate_cds_min_cds_identity`). Lower the CDS threshold when the published cDNA and the genome annotation differ by synonymous substitutions.
 
