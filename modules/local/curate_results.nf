@@ -14,6 +14,7 @@ process CURATE_RESULTS {
     path codon_report
     path codon_dir
     path protein_alignments
+    path candidate_check
 
     output:
     path "index.html", emit: html
@@ -38,11 +39,17 @@ process CURATE_RESULTS {
         AF_ARG="--alphafold-dir ${handoff}"
     fi
 
+    CHECK_ARG=""
+    if [ -s "${candidate_check}" ] && grep -q query_gene "${candidate_check}" 2>/dev/null; then
+        CHECK_ARG="--candidate-check ${candidate_check}"
+    fi
+
     curate_results.py \\
         --families ${families} \\
         --wide-identity ${wide} \\
         \$RANK_ARG \\
         \$AF_ARG \\
+        \$CHECK_ARG \\
         --provenance ${provenance_files} \\
         --identity-matrix-pairs ${matrix_pairs} \\
         --identity-matrix-labels ${matrix_labels} \\

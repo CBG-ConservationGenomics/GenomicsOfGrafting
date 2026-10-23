@@ -28,6 +28,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--provenance", nargs="*", default=[], help="Per-species download provenance TSVs")
     p.add_argument("--identity-matrix-pairs", default=None)
     p.add_argument("--identity-matrix-labels", default=None)
+    p.add_argument("--candidate-check", default=None, help="candidate_cds_check.tsv")
     p.add_argument(
         "--runtime-seconds",
         type=float,
@@ -72,6 +73,19 @@ def load_matrices(pairs_path: str | None, labels_path: str | None) -> dict[str, 
             "values": grid,
         }
     return matrices
+
+
+def load_candidate_check(path: str | None) -> list[dict]:
+    if not path:
+        return []
+    file = Path(path)
+    if not file.is_file() or file.stat().st_size == 0:
+        return []
+    with file.open() as fh:
+        header = fh.readline()
+    if "query_gene" not in header or "status" not in header:
+        return []
+    return read_plain_tsv(str(file))
 
 
 def read_plain_tsv(path: str) -> list[dict]:
@@ -810,6 +824,7 @@ bits.push("Genes mined are the literature genes placed in an orthogroup. Species
 bits.push("Each species column is the closest protein from that species to the reference, and Best %ID is the single closest protein in the family. Darker green is higher identity.");
 if (DATA.has_ranking) bits.push("Priority adds ASR substitutions on phenotype-shift branches, divergence beyond species relatedness, HyPhy hits, and convergence.");
 if (DATA.has_folding) bits.push("Fold rank is the AlphaFold queue order (1 is first).");
+if (DATA.candidate_check) bits.push(`Characterized CDS check: ${DATA.candidate_check.n_match} of ${DATA.candidate_check.n} reference sequences match the annotation CDS and protein. See tables/candidate_cds_check.tsv.`);
 bits.push("TSV copies are in the tables folder beside this file.");
 document.getElementById("legend").textContent = bits.join(" ");
 function renderSources() {
@@ -859,6 +874,7 @@ def main() -> None:
     species = species_from_wide(wide)
     records = build_records(families, wide, ranking, folding, species)
     provenance = load_provenance(args.provenance)
+    candidate_check = load_candidate_check(args.candidate_check)
     n_run, n_downloaded = species_run_counts(provenance, species)
     matrices = load_matrices(args.identity_matrix_pairs, args.identity_matrix_labels)
     for rec in records:
@@ -877,6 +893,11 @@ def main() -> None:
         },
         "families": records,
     }
+    if candidate_check:
+        payload["candidate_check"] = {
+            "n": len(candidate_check),
+            "n_match": sum(1 for row in candidate_check if row.get("status") == "match"),
+        }
     html = HTML.replace("__PAYLOAD__", json.dumps(payload, ensure_ascii=False).replace("<", "\\u003c"))
     (outdir / "index.html").write_text(html)
 
@@ -900,6 +921,7 @@ def main() -> None:
             writer.writeheader()
             writer.writerows(provenance)
         copied.append("download_provenance.tsv")
+    copy_table(args.candidate_check, "candidate_cds_check.tsv", candidate_check)
     copy_table(args.identity_matrix_pairs, "identity_matrix_pairs.tsv", read_plain_tsv(args.identity_matrix_pairs) if args.identity_matrix_pairs else [])
     copy_table(args.identity_matrix_labels, "identity_matrix_labels.tsv", read_plain_tsv(args.identity_matrix_labels) if args.identity_matrix_labels else [])
 
