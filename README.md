@@ -40,6 +40,7 @@ Produce:
 | **BUSCO gate** | Protein mode (`embryophyta_odb10`); exclude species below Complete % threshold (default 90%) |
 | **OrthoFinder** | MSA mode; emits OGs, alignments, species tree, gene trees |
 | **GOI selection** | Mixed-species ID list (`Solyc…`, `Ath:AT…`, `Nbe:…`, `Cpe:XP_…`) |
+| **Candidate CDS check** | Optional characterized CDS FASTA; confirms the annotation CDS and protein for each resolved gene |
 | **Codon MSAs** | Protein-alignment-guided projection of CDS (pal2nal-style) → `05b_codon_alignments/` |
 | **Annotation** | eggNOG-mapper, InterProScan, SignalP, DeepTMHMM on selected OG proteins |
 | **% identity** | From OrthoFinder MSAs; reference = matched GOI (`auto`) or fixed species |
@@ -85,6 +86,7 @@ Produce:
 │                    ▼                 ▼                 ▼                               │
 │              Select GOI OGs    Species tree      Protein MSAs                          │
 │                    │                                   │                               │
+│                    ├─► optional characterized CDS check                                │
 │                    ├─► Codon MSAs (CDS ⊕ protein MSA)                                  │
 │                    ├─► Annotate (eggNOG / IPS / SignalP / DeepTMHMM)                   │
 │                    └─► % identity + tables                                             │
@@ -198,6 +200,38 @@ XP_023545678.1	Cucurbita pepo
 
 Symbols and locus IDs are normalized before they are compared with the annotation. `Solyc04g078650` matches the protein `Solyc04g078650.4.1`. A species prefix is removed (`SlWOX4` is searched as `WOX4`). A symbol matches a GFF gene symbol when the annotation has one. It also matches a functional description that uses the expanded family name and the same number: ITAG stores tomato WOX4 as “wuschel related homobox 4”, with no `WOX4` token. A `-like` name is not matched to a different number (`WRKY70-like` does not become WRKY80). The protein that matched is stored as `reference_member` and is the reference for % identity, the family table, and AlphaFold pairs. How each name resolved is written to `gene_id_crosswalk.tsv`. If several literature genes fall in one orthogroup, the first one in this file is the reference. A characterized gene that OrthoFinder left unassigned is still selected, under an `UNASSIGNED_` id, so annotation can run on that protein.
 
+#### Optional characterized CDS check
+
+Gene names can resolve to the wrong locus. To check that, pass a FASTA of the CDS that was characterized, one sequence per candidate, from the species it was described in:
+
+```text
+>WOX4 Solanum lycopersicum
+ATGG...
+>WOX4|Solanum_lycopersicum
+ATGG...
+>Solyc04g078650.4.1
+ATGG...
+```
+
+The first token is the gene symbol or locus ID from column 1. The rest is the genus and species (spaces or underscores). A species is required when the same symbol is listed for more than one species. `data/candidate_cds.example.fna` shows the header layout; its nucleotides are placeholders, not real genes.
+
+The pipeline translates that CDS and aligns it to the cleaned annotation protein chosen for the gene. It also aligns the nucleotides to the cleaned annotation CDS. A terminal stop codon is ignored. Both identities default to a 98% minimum (`--candidate_cds_min_protein_identity`, `--candidate_cds_min_cds_identity`). Lower the CDS threshold when the published cDNA and the genome annotation differ by synonymous substitutions.
+
+The report is `results/05_selected_orthogroups/candidate_cds_check.tsv`.
+
+| status | Meaning |
+|--------|---------|
+| `match` | Annotation CDS and protein both meet the thresholds |
+| `cds_mismatch` | Protein matches; CDS identity is below the threshold |
+| `mismatch` | Protein identity is below the threshold |
+| `missing_annotation_cds` / `missing_annotation_protein` | The resolved id is absent from the cleaned sequences |
+| `no_reference` | This candidate has no sequence in the FASTA |
+| `unmatched_header` / `ambiguous_header` / `duplicate_header` | The FASTA record could not be tied to one candidate |
+| `bad_cds` | The characterized sequence is not a translatable CDS |
+| `unresolved` | The gene name was not found in the annotation |
+
+With `--candidate_cds_strict true` (the default), any of those except a bare `unresolved` name stops the run before functional annotation. `no_reference` also stops the run when `--candidate_cds_require_all true` (the default). Set `--candidate_cds_strict false` to write the report and continue.
+
 Output: `results/05_selected_orthogroups/`
 
 ### 7. Codon alignments
@@ -304,6 +338,15 @@ nextflow run main.nf \
   --orthofinder_threads 32
 ```
 
+Confirm the resolved genes against your characterized CDS file (see section 6). `data/candidate_cds.example.fna` only shows the header format:
+
+```bash
+nextflow run main.nf -profile hpc,conda \
+  --genes_of_interest data/genes_of_interest.txt \
+  --candidate_cds data/candidate_cds.fna \
+  --outdir results
+```
+
 Resume after a fix:
 
 ```bash
@@ -359,6 +402,11 @@ nextflow run workflows/compare_structures.nf -profile hpc,conda \
 | Parameter | Default | Meaning |
 |-----------|---------|---------|
 | `--genes_of_interest` | `data/genes_of_interest.txt` | `gene<TAB>Genus species` for each characterized gene |
+| `--candidate_cds` | unset | Characterized CDS FASTA used to confirm each resolved annotation sequence |
+| `--candidate_cds_min_protein_identity` | `98` | Minimum identity between the CDS translation and the annotation protein |
+| `--candidate_cds_min_cds_identity` | `98` | Minimum identity between the characterized CDS and the annotation CDS |
+| `--candidate_cds_require_all` | `true` | Every resolved candidate must have a reference CDS |
+| `--candidate_cds_strict` | `true` | Stop the run when the check fails |
 | `--species_yaml` | `conf/species.yaml` | Species / download config |
 | `--busco_min_complete` | `90` | Min Complete % to keep a species |
 | `--busco_lineage` | `embryophyta_odb10` | Default BUSCO lineage |
@@ -389,7 +437,7 @@ Annotation / DB paths: `--eggnog_data_dir`, `--interproscan_dir`, `--signalp_bin
 | `02_clean_cds/` | QC’d CDS matching proteins |
 | `02b_busco/` | BUSCO summaries + pass/fail gate logs |
 | `03_orthofinder/` | Orthogroups, MSAs, species/gene trees |
-| `05_selected_orthogroups/` | GOI orthogroups, member FASTA, and `gene_id_crosswalk.tsv` |
+| `05_selected_orthogroups/` | GOI orthogroups, member FASTA, `gene_id_crosswalk.tsv`, and `candidate_cds_check.tsv` when `--candidate_cds` is set |
 | `05b_codon_alignments/` | Codon MSAs for selected OGs |
 | `04_annotation/` | eggNOG / InterProScan / SignalP / DeepTMHMM |
 | `06_percent_identity/` | Identity to the reference, plus an all-by-all matrix for each family |
@@ -421,6 +469,7 @@ GraftingGeneFamilies/
 ├── bin/                             # Python helpers (on PATH in Nextflow)
 ├── data/
 │   ├── genes_of_interest.txt
+│   ├── candidate_cds.example.fna    # Header example; nucleotides are placeholders
 │   ├── grafting_candidates.txt      # Your GOI list on the server
 │   └── graft_outcomes.example.tsv
 ├── docs/
@@ -455,6 +504,7 @@ GraftingGeneFamilies/
 - **ITAG / Niben community IDs** so GOI lists stay human-readable  
 - **BUSCO gate** before OrthoFinder so bad annotations don’t pollute families  
 - **Annotate selected OGs only** to save InterProScan/eggNOG time  
+- **Optional characterized CDS check** so a gene-name match is confirmed against the sequence from the species where that gene was described
 - **Codon MSAs from protein MSAs** so HyPhy uses the same homology hypothesis as OrthoFinder  
 - **AlphaFold handoff last** so phenotype ranking can drop low-priority families before anything is staged for the GPU  
 - **AlphaFold split CPU/GPU** so OrthoFinder and folding don’t fight for resources  

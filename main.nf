@@ -17,6 +17,7 @@ include { FILTER_BUSCO                } from './modules/local/filter_busco'
 include { COLLECT_BUSCO_SUMMARY       } from './modules/local/collect_busco_summary'
 include { RUN_ORTHOFINDER             } from './modules/local/run_orthofinder'
 include { SELECT_ORTHOGROUPS          } from './modules/local/select_orthogroups'
+include { CHECK_CANDIDATE_CDS         } from './modules/local/check_candidate_cds'
 include { EXTRACT_SELECTED_PROTEINS   } from './modules/local/extract_selected_proteins'
 include { ANNOTATE_EGGNOG             } from './modules/local/annotate_eggnog'
 include { ANNOTATE_INTERPROSCAN       } from './modules/local/annotate_interproscan'
@@ -40,6 +41,7 @@ def helpMessage() {
     Key parameters:
       --species_yaml          Species list (default: conf/species.yaml)
       --genes_of_interest     gene name, then genus and species (WOX4<TAB>Solanum lycopersicum)
+      --candidate_cds         optional characterized CDS FASTA; confirms the annotation CDS and protein
       --outdir                Output directory
       --busco_min_complete    Min Complete BUSCO % to keep a species (default: 90)
       --busco_lineage         Default lineage (default: embryophyta_odb10)
@@ -201,10 +203,60 @@ workflow {
         ch_gffs
     )
 
+    // Optional confirmation that the resolved annotation CDS and protein
+    // are the characterized gene. Downstream steps wait on this when the
+    // FASTA is set, and a strict failure stops the run before annotation.
+    if (params.candidate_cds) {
+        ch_clean_proteins = QC_PROTEOME.out.fasta
+            .map { _meta, fa -> fa }
+            .collect()
+            .ifEmpty([])
+            .map { files -> files ?: [file("${projectDir}/assets/empty.tsv")] }
+        ch_clean_cds = QC_CDS.out.cds
+            .map { _meta, cds -> cds }
+            .collect()
+            .ifEmpty([])
+            .map { files -> files ?: [file("${projectDir}/assets/empty.tsv")] }
+
+        CHECK_CANDIDATE_CDS(
+            SELECT_ORTHOGROUPS.out.crosswalk,
+            ch_clean_proteins,
+            ch_clean_cds,
+            Channel.fromPath(params.candidate_cds, checkIfExists: true)
+        )
+
+        ch_candidate_report = CHECK_CANDIDATE_CDS.out.summary
+            .combine(CHECK_CANDIDATE_CDS.out.report)
+            .map { summary, report ->
+                def lines = summary.text.readLines()
+                def verdict = lines ? lines[0].trim() : "fail"
+                def detail = lines.drop(1).join(" ")
+                if (verdict == "fail" && params.candidate_cds_strict) {
+                    error "Candidate CDS check failed. ${detail} See ${params.outdir}/05_selected_orthogroups/candidate_cds_check.tsv"
+                }
+                if (verdict == "fail") {
+                    log.warn "Candidate CDS check found mismatches. ${detail} See ${params.outdir}/05_selected_orthogroups/candidate_cds_check.tsv"
+                } else {
+                    log.info "Candidate CDS check passed. ${detail}"
+                }
+                report
+            }
+        ch_sel_tsv = SELECT_ORTHOGROUPS.out.tsv
+            .combine(ch_candidate_report)
+            .map { tsv, _report -> tsv }
+        ch_sel_list = SELECT_ORTHOGROUPS.out.list
+            .combine(ch_candidate_report)
+            .map { og_list, _report -> og_list }
+    } else {
+        ch_candidate_report = Channel.fromPath("${projectDir}/assets/empty.tsv")
+        ch_sel_tsv = SELECT_ORTHOGROUPS.out.tsv
+        ch_sel_list = SELECT_ORTHOGROUPS.out.list
+    }
+
     // Protein-MSA-guided codon alignments (for HyPhy / selection)
     if (params.build_codon_alignments) {
         BUILD_CODON_ALIGNMENTS(
-            SELECT_ORTHOGROUPS.out.list,
+            ch_sel_list,
             RUN_ORTHOFINDER.out.alignments,
             RUN_ORTHOFINDER.out.results,
             QC_CDS.out.cds.map { _meta, cds -> cds }.collect()
@@ -218,7 +270,7 @@ workflow {
 
     // Extract only selected OG proteins for annotation
     EXTRACT_SELECTED_PROTEINS(
-        SELECT_ORTHOGROUPS.out.tsv,
+        ch_sel_tsv,
         ch_proteomes
     )
 
@@ -253,13 +305,13 @@ workflow {
     }
 
     CALC_PERCENT_IDENTITY(
-        SELECT_ORTHOGROUPS.out.list,
-        SELECT_ORTHOGROUPS.out.tsv,
+        ch_sel_list,
+        ch_sel_tsv,
         RUN_ORTHOFINDER.out.alignments
     )
 
     MAKE_REPORT(
-        SELECT_ORTHOGROUPS.out.tsv,
+        ch_sel_tsv,
         CALC_PERCENT_IDENTITY.out.summary,
         CALC_PERCENT_IDENTITY.out.pairwise,
         ch_eggnog,
@@ -273,7 +325,7 @@ workflow {
     ch_af_priority = Channel.fromPath("${projectDir}/assets/empty.tsv")
 
     if (params.run_graft_phenotype) {
-        ch_og_alns = SELECT_ORTHOGROUPS.out.list
+        ch_og_alns = ch_sel_list
             .splitText()
             .map { it.trim() }
             .filter { it }
@@ -311,7 +363,7 @@ workflow {
         GRAFT_PHENOTYPE(
             Channel.fromPath(params.graft_matrix, checkIfExists: true),
             RUN_ORTHOFINDER.out.species_tree,
-            SELECT_ORTHOGROUPS.out.list,
+            ch_sel_list,
             RUN_ORTHOFINDER.out.alignments,
             ch_og_alns,
             ch_codon
@@ -327,7 +379,7 @@ workflow {
             curated: f
         }
         PREPARE_ALPHAFOLD_INPUTS(
-            SELECT_ORTHOGROUPS.out.tsv,
+            ch_sel_tsv,
             CALC_PERCENT_IDENTITY.out.summary,
             CALC_PERCENT_IDENTITY.out.pairwise,
             EXTRACT_SELECTED_PROTEINS.out.fasta,
@@ -355,7 +407,8 @@ workflow {
         ch_busco_summary,
         ch_codon_report,
         ch_codon_dir,
-        RUN_ORTHOFINDER.out.alignments
+        RUN_ORTHOFINDER.out.alignments,
+        ch_candidate_report
     )
 }
 
@@ -371,5 +424,6 @@ workflow.onComplete {
       Codons  : ${params.outdir}/11_curated/codon_alignments.html
       Proteins: ${params.outdir}/11_curated/protein_alignments.html
       Sources : ${params.outdir}/01_raw_proteomes/*.provenance.tsv
+      CDS check: ${params.candidate_cds ? params.outdir + '/05_selected_orthogroups/candidate_cds_check.tsv' : 'not requested'}
     """.stripIndent()
 }

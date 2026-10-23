@@ -8,6 +8,11 @@
 # number. ITAG has no WOX4 token; the note is "wuschel related homobox 4".
 # Names ending in -like are not matched to a different number.
 # The resolution of every name is written to gene_id_crosswalk.tsv.
+# Optional: --candidate_cds is a FASTA of the characterized CDS for each gene.
+#   >WOX4 Solanum lycopersicum
+#   >WOX4|Solanum_lycopersicum
+# That CDS is translated and compared with the annotation protein, and the
+# nucleotides are compared with the annotation CDS. See candidate_cds.example.fna.
 #
 # WOX4	Solanum lycopersicum
 # AT1G46480	Arabidopsis thaliana
