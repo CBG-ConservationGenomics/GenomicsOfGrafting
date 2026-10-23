@@ -198,7 +198,7 @@ XP_023545678.1	Cucurbita pepo
 | 1 | Gene symbol (`WOX4`) or locus ID (`Solyc04g078650`, `AT1G46480`) |
 | 2 | Genus and species (`Solanum lycopersicum`). A short id such as `Sly` is also accepted |
 
-Symbols and locus IDs are normalized before they are compared with the annotation. `Solyc04g078650` matches the protein `Solyc04g078650.4.1`. A species prefix is removed (`SlWOX4` is searched as `WOX4`). A symbol matches a GFF gene symbol when the annotation has one. It also matches a functional description that uses the expanded family name and the same number: ITAG stores tomato WOX4 as “wuschel related homobox 4”, with no `WOX4` token. A `-like` name is not matched to a different number (`WRKY70-like` does not become WRKY80). The protein that matched is stored as `reference_member` and is the reference for % identity, the family table, and AlphaFold pairs. How each name resolved is written to `gene_id_crosswalk.tsv`. If several literature genes fall in one orthogroup, the first one in this file is the reference. A characterized gene that OrthoFinder left unassigned is still selected, under an `UNASSIGNED_` id, so annotation can run on that protein.
+Symbols and locus IDs are normalized before they are compared with the annotation. `Solyc04g078650` matches the protein `Solyc04g078650.4.1`. A dotted BAC gene name such as `F8D20.60` stays whole, so the clone name is not shared by every gene on that BAC. A species prefix is removed (`SlWOX4` is searched as `WOX4`, and `GH9B3` matches the synonym `ATGH9B3`). A symbol matches a GFF gene symbol when the annotation has one. It also matches a functional description that uses the expanded family name and the same number: ITAG stores tomato WOX4 as “wuschel related homobox 4”, with no `WOX4` token. A `-like` name is not matched to a different number (`WRKY70-like` does not become WRKY80). The protein that matched is stored as `reference_member` and is the reference for % identity, the family table, and AlphaFold pairs. How each name resolved is written to `gene_id_crosswalk.tsv`. If several literature genes fall in one orthogroup, the first one in this file is the reference. A characterized gene that OrthoFinder left unassigned is still selected, under an `UNASSIGNED_` id, so annotation can run on that protein.
 
 #### Optional characterized CDS check
 
@@ -211,7 +211,7 @@ ATGG...
 
 The gene name and the rest of the header are separated by a tab. After the tab, spaces separate the genus and species, the locus id, and the annotation name. The species is `Arabidopsis thaliana`. `AT4G35550.1` and `TAIR10` are not part of the species. The record matches a candidate listed as `WOX13` or as `AT4G35550`. A species is required when the same symbol is listed for more than one species. `data/candidate_cds.example.fna` shows this layout; its nucleotides are placeholders, not real genes.
 
-The pipeline translates that CDS and aligns it to the cleaned annotation protein chosen for the gene. It also aligns the nucleotides to the cleaned annotation CDS. A terminal stop codon is ignored. Both identities default to a 98% minimum (`--candidate_cds_min_protein_identity`, `--candidate_cds_min_cds_identity`). Lower the CDS threshold when the published cDNA and the genome annotation differ by synonymous substitutions.
+The pipeline translates that CDS and aligns it to the cleaned annotation protein chosen for the gene. It also aligns the nucleotides to the cleaned annotation CDS. NCBI `cds_from_genomic` records (`lcl|NC_..._cds_NP_195280.1_1`, with `[protein_id=NP_195280.1]`) are renamed to the same cleaned id as that protein. A terminal stop codon is ignored. Both identities default to a 98% minimum (`--candidate_cds_min_protein_identity`, `--candidate_cds_min_cds_identity`). Lower the CDS threshold when the published cDNA and the genome annotation differ by synonymous substitutions.
 
 The report is `results/05_selected_orthogroups/candidate_cds_check.tsv`.
 
@@ -219,7 +219,7 @@ The report is `results/05_selected_orthogroups/candidate_cds_check.tsv`.
 |--------|---------|
 | `match` | Annotation CDS and protein both meet the thresholds |
 | `cds_mismatch` | Protein matches; CDS identity is below the threshold |
-| `mismatch` | Protein identity is below the threshold |
+| `mismatch` | Protein identity is below the threshold. This is still a mismatch when the annotation CDS is missing |
 | `missing_annotation_cds` / `missing_annotation_protein` | The resolved id is absent from the cleaned sequences |
 | `no_reference` | This candidate has no sequence in the FASTA |
 | `unmatched_header` / `ambiguous_header` / `duplicate_header` | The FASTA record could not be tied to one candidate |
