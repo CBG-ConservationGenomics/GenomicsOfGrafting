@@ -415,6 +415,19 @@ def compare_pair(
     protein_identity = percent_identity(protein, annotation_protein, aligner)
     base["annotation_aa"] = str(len(annotation_protein))
     base["protein_identity"] = identity_text(protein_identity)
+    protein_ok = protein_identity + 1e-9 >= min_protein
+
+    # A wrong protein is a mismatch even when its CDS was dropped at QC.
+    # Missing CDS alone, with a protein that already matches, stays
+    # missing_annotation_cds.
+    if not protein_ok:
+        detail = f"annotation protein identity {protein_identity:.2f}% is below {min_protein:g}%"
+        if not annotation_cds:
+            missing = f"annotation CDS: {cds_problem}" if cds_problem else f"no cleaned CDS for {row.new_id}"
+            detail = f"{detail}; {missing}"
+        base["status"] = "mismatch"
+        base["detail"] = detail
+        return base
 
     if not annotation_cds:
         base["status"] = "missing_annotation_cds"
@@ -427,21 +440,15 @@ def compare_pair(
     base["annotation_cds_bp"] = str(len(annotation_cds))
     base["cds_identity"] = identity_text(cds_identity)
 
-    protein_ok = protein_identity + 1e-9 >= min_protein
     cds_ok = cds_identity + 1e-9 >= min_cds
-    if protein_ok and cds_ok:
+    if cds_ok:
         base["status"] = "match"
         base["detail"] = "annotation CDS and protein match the characterized CDS"
-    elif protein_ok:
+    else:
         base["status"] = "cds_mismatch"
         base["detail"] = (
             f"annotation protein matches; CDS identity {cds_identity:.2f}% "
             f"is below {min_cds:g}%"
-        )
-    else:
-        base["status"] = "mismatch"
-        base["detail"] = (
-            f"annotation protein identity {protein_identity:.2f}% is below {min_protein:g}%"
         )
     return base
 

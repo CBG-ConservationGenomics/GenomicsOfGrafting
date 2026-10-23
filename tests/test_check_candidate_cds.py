@@ -272,6 +272,21 @@ class CheckCandidateCdsTest(unittest.TestCase):
         )
         self.assertEqual(rows[0]["status"], "missing_annotation_cds")
 
+    def test_wrong_protein_without_cds_is_a_mismatch(self):
+        candidate = row()
+        rows, failures = check.run_check(
+            [candidate],
+            {candidate.new_id: "MKKK"},
+            {},
+            [("WOX4", "Solanum lycopersicum", "WOX4 Solanum lycopersicum", "ATGAAAACCTTC")],
+            98,
+            98,
+            True,
+        )
+        self.assertEqual(rows[0]["status"], "mismatch")
+        self.assertIn("no cleaned CDS", rows[0]["detail"])
+        self.assertTrue(failures)
+
     def test_unresolved_name_does_not_fail_without_a_reference(self):
         missing = row(query_gene="GH9B3", match_method="unmatched", original_id="", gene_key="", new_id="")
         _rows, failures = check.run_check([missing], {}, {}, [], 98, 98, True)
