@@ -27,6 +27,7 @@ process QC_CDS {
         exit 0
     fi
 
+    # NCBI cds_from_genomic records are linked by protein_id in the header.
     qc_and_rename_cds.py \\
         --cds ${cds} \\
         --proteins ${proteins} \\

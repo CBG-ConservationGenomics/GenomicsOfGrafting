@@ -24,6 +24,7 @@ process SELECT_ORTHOGROUPS {
         tail -n +2 "\$f" >> all_id_maps.tsv
     done
 
+    # BAC gene names stay whole, and Note cross-references are not locus ids.
     select_orthogroups.py \\
         --orthogroups ${orthofinder_results} \\
         --genes-of-interest ${genes_of_interest} \\

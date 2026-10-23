@@ -118,7 +118,14 @@ def gene_key(seq_id: str) -> str:
 
 
 def id_forms(token: str) -> set[str]:
-    """Locus and protein ids, with type prefixes and isoform suffixes removed."""
+    """Locus and protein ids, with type prefixes and isoform suffixes removed.
+
+    Trailing ``.1`` / ``.4.1`` is an isoform or accession version only on a
+    recognized locus (``AT4G35550.1``, ``Solyc04g078650.4.1``, ``NP_195280.1``).
+    An Arabidopsis BAC gene name such as ``F8D20.60`` stays whole. Stripping
+    ``.60`` would leave the clone name ``F8D20``, which every gene on that
+    clone shares, and the longest of those proteins would be selected.
+    """
     forms: set[str] = set()
     raw = token.strip()
     if not raw:
@@ -132,6 +139,8 @@ def id_forms(token: str) -> set[str]:
         current = variant
         forms.add(norm(current))
         forms.add(norm(gene_key(current)))
+        if gene_key(current) == current and not locus_species(current):
+            continue
         while re.search(r"\.\d+$", current):
             current = re.sub(r"\.\d+$", "", current)
             forms.add(norm(current))
@@ -214,12 +223,6 @@ def parse_attrs(field: str) -> dict[str, str]:
     return out
 
 
-def _add_text_ids(text: str, ids: set[str]) -> None:
-    for token in re.findall(r"[A-Za-z][A-Za-z0-9_.:-]{2,}", text):
-        if locus_species(token) or gene_key(token) != token:
-            ids |= id_forms(token)
-
-
 def index_gffs(paths: list[str]) -> dict[str, Bundle]:
     """Map every locus and protein id to the symbols and descriptions on that gene."""
     features: dict[str, dict] = {}
@@ -258,7 +261,6 @@ def index_gffs(paths: list[str]) -> dict[str, Bundle]:
                     raw = attrs.get(key)
                     if raw:
                         descriptions.append(raw)
-                        _add_text_ids(raw, ids)
                 dbxref = attrs.get("Dbxref") or ""
                 for piece in dbxref.split(","):
                     if ":" in piece:
@@ -306,19 +308,15 @@ def index_gffs(paths: list[str]) -> dict[str, Bundle]:
         memo[fid] = bundle
         return bundle
 
+    # The first feature to claim a token keeps it. Copying every identifier
+    # across a shared token merges neighboring genes: a BAC clone name, or a
+    # Note that cites another TAIR locus, would then make the longest protein
+    # on that clone win.
     index: dict[str, Bundle] = {}
     for fid in features:
         bundle = bundle_for(fid)
         for key in bundle.ids:
-            current = index.get(key)
-            if current is None:
-                index[key] = bundle
-            elif current is not bundle:
-                current.ids |= bundle.ids
-                current.symbols |= bundle.symbols
-                for text in bundle.descriptions:
-                    if text not in current.descriptions:
-                        current.descriptions.append(text)
+            index.setdefault(key, bundle)
     return index
 
 
@@ -384,7 +382,13 @@ def _query_symbols(query: NameQuery, species_id: str) -> list[str]:
             if locus_species(candidate) or gene_key(candidate) != candidate:
                 continue
             symbols.append(norm(candidate))
-    return symbols
+    # The annotation may keep the prefix the literature omits: GH9B3 is ATGH9B3.
+    prefixes = SPECIES_PREFIXES.get(species_id.lower(), ())
+    expanded = list(symbols)
+    for symbol in symbols:
+        for prefix in prefixes:
+            expanded.append(prefix + symbol)
+    return expanded
 
 
 def _description_hit(query: NameQuery, species_id: str, view: ProteinView) -> str:

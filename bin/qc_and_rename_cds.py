@@ -11,10 +11,20 @@ from __future__ import annotations
 import argparse
 import csv
 import gzip
+import re
 from pathlib import Path
 
 from Bio import SeqIO
 from Bio.Seq import Seq
+
+
+# NCBI cds_from_genomic.fna:
+#   >lcl|NC_003075.7_cds_NP_195280.1_1 ... [protein_id=NP_195280.1]
+_PROTEIN_ID_ATTR = re.compile(r"\[protein_id=([^\]\s]+)\]", re.IGNORECASE)
+_NCBI_CDS_ACCESSION = re.compile(
+    r"_cds_((?:XP|NP|WP|YP)_\d+(?:\.\d+)?)(?=_|$)",
+    re.IGNORECASE,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -65,18 +75,58 @@ def find_orf_matching_protein(cds: str, protein: str) -> str | None:
     return None
 
 
-def lookup_new_id(seq_id: str, orig_to_new: dict[str, str], gene_to_new: dict[str, str]) -> str | None:
-    sid = seq_id.split()[0]
+def _lookup_token(token: str, orig_to_new: dict[str, str], gene_to_new: dict[str, str]) -> str | None:
+    sid = token.split()[0]
+    if not sid:
+        return None
     if sid in orig_to_new:
         return orig_to_new[sid]
-    if seq_id in orig_to_new:
-        return orig_to_new[seq_id]
     for orig, new in orig_to_new.items():
         if sid == orig or sid.startswith(orig + ".") or orig.startswith(sid):
             return new
     for gk, new in gene_to_new.items():
         if sid == gk or sid.startswith(gk):
             return new
+    return None
+
+
+def header_accessions(header: str) -> list[str]:
+    """Protein accessions carried by an NCBI cds_from_genomic header."""
+    found: list[str] = []
+    seen: set[str] = set()
+    for match in _PROTEIN_ID_ATTR.finditer(header):
+        token = match.group(1).strip()
+        if token and token not in seen:
+            seen.add(token)
+            found.append(token)
+    for match in _NCBI_CDS_ACCESSION.finditer(header):
+        token = match.group(1).strip()
+        if token and token not in seen:
+            seen.add(token)
+            found.append(token)
+    return found
+
+
+def lookup_new_id(
+    seq_id: str,
+    orig_to_new: dict[str, str],
+    gene_to_new: dict[str, str],
+    header: str = "",
+) -> str | None:
+    """Map a CDS record onto a cleaned protein id.
+
+    ITAG CDS ids match the protein id directly (``Solyc04g078650.4.1``).
+    NCBI cds_from_genomic ids look like ``lcl|NC_003075.7_cds_NP_195280.1_1``
+    and also carry ``[protein_id=NP_195280.1]``.
+    """
+    text = header or seq_id
+    found = _lookup_token(seq_id.split()[0], orig_to_new, gene_to_new)
+    if found:
+        return found
+    for token in header_accessions(text):
+        found = _lookup_token(token, orig_to_new, gene_to_new)
+        if found:
+            return found
     return None
 
 
@@ -90,9 +140,10 @@ def main() -> None:
             orig_to_new[row["original_id"]] = row["new_id"]
             gene_to_new[row["gene_key"]] = row["new_id"]
 
-    proteins = {
-        r.id: str(r.seq).upper().rstrip("*") for r in SeqIO.parse(args.proteins, "fasta")
-    }
+    with open(args.proteins) as handle:
+        proteins = {
+            r.id: str(r.seq).upper().rstrip("*") for r in SeqIO.parse(handle, "fasta")
+        }
 
     with open_text_auto(args.cds) as handle:
         cds_records = list(SeqIO.parse(handle, "fasta"))
@@ -102,7 +153,12 @@ def main() -> None:
     n_ok = n_trim = n_fail = n_dup = n_nomatch = 0
 
     for rec in cds_records:
-        new_id = lookup_new_id(rec.id, orig_to_new, gene_to_new)
+        new_id = lookup_new_id(
+            rec.id,
+            orig_to_new,
+            gene_to_new,
+            header=rec.description or rec.id,
+        )
         if not new_id or new_id not in proteins:
             n_nomatch += 1
             continue
