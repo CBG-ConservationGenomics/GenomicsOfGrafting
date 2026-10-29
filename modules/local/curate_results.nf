@@ -15,6 +15,7 @@ process CURATE_RESULTS {
     path codon_dir
     path protein_alignments
     path candidate_check
+    path species_tree
 
     output:
     path "index.html", emit: html
@@ -44,6 +45,11 @@ process CURATE_RESULTS {
         CHECK_ARG="--candidate-check ${candidate_check}"
     fi
 
+    TREE_ARG=""
+    if [ -s "${species_tree}" ]; then
+        TREE_ARG="--species-tree ${species_tree}"
+    fi
+
     curate_results.py \\
         --families ${families} \\
         --wide-identity ${wide} \\
@@ -53,6 +59,7 @@ process CURATE_RESULTS {
         --provenance ${provenance_files} \\
         --identity-matrix-pairs ${matrix_pairs} \\
         --identity-matrix-labels ${matrix_labels} \\
+        \$TREE_ARG \\
         --runtime-seconds ${runtimeSeconds} \\
         --outdir .
 

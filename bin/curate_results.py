@@ -6,7 +6,9 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 import shutil
+import sys
 from datetime import date
 from pathlib import Path
 
@@ -28,6 +30,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--provenance", nargs="*", default=[], help="Per-species download provenance TSVs")
     p.add_argument("--identity-matrix-pairs", default=None)
     p.add_argument("--identity-matrix-labels", default=None)
+    p.add_argument(
+        "--species-tree",
+        default=None,
+        help="OrthoFinder SpeciesTree_rooted.txt (Newick), used to order the identity heatmap",
+    )
     p.add_argument("--candidate-check", default=None, help="candidate_cds_check.tsv")
     p.add_argument(
         "--runtime-seconds",
@@ -63,16 +70,256 @@ def load_matrices(pairs_path: str | None, labels_path: str | None) -> dict[str, 
     matrices: dict[str, dict] = {}
     for og, rows in labels_by_og.items():
         ids = [row["sequence_id"] for row in rows]
+        species = []
+        for row, seq_id in zip(rows, ids):
+            sid = (row.get("species_id") or "").strip()
+            if not sid and "|" in seq_id:
+                sid = seq_id.split("|", 1)[0]
+            species.append(sid)
         grid = []
         for left in ids:
             grid.append([None if left == right else values.get((og, left, right)) for right in ids])
         matrices[og] = {
             "labels": [row["label"] for row in rows],
             "full": ids,
+            "species": species,
             "reference": [row.get("is_reference") == "yes" for row in rows],
             "values": grid,
         }
     return matrices
+
+
+_TIP_SUFFIX = re.compile(
+    r"[._](clean|faa|fasta|fa|fas|pep|proteins|aa|txt)$",
+    re.IGNORECASE,
+)
+
+
+def tip_candidates(label: str) -> list[str]:
+    """Filename-style OrthoFinder tip names that might be a species id."""
+    raw = label.strip().strip("'\"")
+    found: list[str] = []
+
+    def add(value: str) -> None:
+        value = value.strip()
+        if value and value not in found:
+            found.append(value)
+
+    add(raw)
+    if "|" in raw:
+        add(raw.split("|", 1)[0])
+    current = raw
+    for _ in range(4):
+        nxt = _TIP_SUFFIX.sub("", current)
+        if nxt == current:
+            break
+        current = nxt
+        add(current)
+    return found
+
+
+def match_tip(label: str, known: set[str]) -> str | None:
+    """Map a species-tree tip to a species id used in the identity matrix."""
+    if not label or not known:
+        return None
+    lookup = {sid.lower(): sid for sid in known}
+    for cand in tip_candidates(label):
+        if cand in known:
+            return cand
+        hit = lookup.get(cand.lower())
+        if hit:
+            return hit
+    return None
+
+
+class _Clade:
+    def __init__(self) -> None:
+        self.name = ""
+        self.length = 0.0
+        self.children: list[_Clade] = []
+
+    def terminals(self) -> list[_Clade]:
+        if not self.children:
+            return [self]
+        tips: list[_Clade] = []
+        for child in self.children:
+            tips.extend(child.terminals())
+        return tips
+
+    def ladderize(self) -> None:
+        """Put the clade with fewer tips first, matching a standard ladderized drawing."""
+        self.children.sort(key=lambda child: len(child.terminals()))
+        for child in self.children:
+            child.ladderize()
+
+
+_NEWICK_LENGTH = re.compile(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?")
+
+
+def parse_newick(text: str) -> _Clade:
+    """Read one Newick tree. Internal labels are kept and ignored by the heatmap."""
+    raw = text.strip()
+    if ";" in raw:
+        raw = raw[: raw.rfind(";") + 1]
+    if not raw:
+        raise ValueError("empty Newick")
+    pos = 0
+
+    def skip() -> None:
+        nonlocal pos
+        while pos < len(raw) and raw[pos].isspace():
+            pos += 1
+
+    def parse_name() -> str:
+        nonlocal pos
+        skip()
+        if pos >= len(raw):
+            return ""
+        if raw[pos] == "'":
+            pos += 1
+            chars: list[str] = []
+            while pos < len(raw):
+                char = raw[pos]
+                pos += 1
+                if char == "'":
+                    if pos < len(raw) and raw[pos] == "'":
+                        chars.append("'")
+                        pos += 1
+                        continue
+                    break
+                chars.append(char)
+            return "".join(chars).strip()
+        start = pos
+        while pos < len(raw) and raw[pos] not in ":,();":
+            pos += 1
+        return raw[start:pos].strip()
+
+    def parse_length() -> float:
+        nonlocal pos
+        skip()
+        match = _NEWICK_LENGTH.match(raw, pos)
+        if not match:
+            return 0.0
+        pos = match.end()
+        return float(match.group(0))
+
+    def parse_clade() -> _Clade:
+        nonlocal pos
+        skip()
+        node = _Clade()
+        if pos < len(raw) and raw[pos] == "(":
+            pos += 1
+            while True:
+                node.children.append(parse_clade())
+                skip()
+                if pos < len(raw) and raw[pos] == ",":
+                    pos += 1
+                    continue
+                if pos < len(raw) and raw[pos] == ")":
+                    pos += 1
+                    break
+                raise ValueError(f"Newick ended inside a clade at position {pos}")
+        node.name = parse_name()
+        skip()
+        if pos < len(raw) and raw[pos] == ":":
+            pos += 1
+            node.length = parse_length()
+        return node
+
+    root = parse_clade()
+    return root
+
+
+def clade_payload(clade: _Clade, known: set[str]) -> dict | None:
+    """Nested species tree, with tips renamed to species ids."""
+    if not clade.children:
+        sid = match_tip(clade.name or "", known)
+        if not sid:
+            return None
+        return {"name": sid, "length": round(float(clade.length), 8), "children": []}
+    children = []
+    for child in clade.children:
+        node = clade_payload(child, known)
+        if node:
+            children.append(node)
+    if not children:
+        return None
+    if len(children) == 1:
+        only = children[0]
+        return {
+            "name": only["name"],
+            "length": round(float(clade.length) + float(only["length"]), 8),
+            "children": only["children"],
+        }
+    return {"name": "", "length": round(float(clade.length), 8), "children": children}
+
+
+def load_species_tree(path: str | None, known: set[str]) -> dict | None:
+    """Ladderized OrthoFinder species tree, or None when it cannot be used."""
+    if not path or not known:
+        return None
+    file = Path(path)
+    if not file.is_file() or file.stat().st_size == 0:
+        return None
+    try:
+        tree = parse_newick(file.read_text())
+        tree.ladderize()
+    except Exception as exc:
+        print(f"[curate_results] could not read species tree {file}: {exc}", file=sys.stderr)
+        return None
+    order: list[str] = []
+    seen: set[str] = set()
+    unmatched: list[str] = []
+    for tip in tree.terminals():
+        sid = match_tip(tip.name or "", known)
+        if not sid:
+            if tip.name:
+                unmatched.append(tip.name)
+            continue
+        if sid not in seen:
+            seen.add(sid)
+            order.append(sid)
+    root = clade_payload(tree, known)
+    if not order or root is None:
+        print(
+            "[curate_results] species tree tips did not match matrix species ids"
+            + (f" ({', '.join(unmatched)})" if unmatched else ""),
+            file=sys.stderr,
+        )
+        return None
+    if unmatched:
+        print(
+            "[curate_results] species tree tips not in the identity matrix: " + ", ".join(unmatched),
+            file=sys.stderr,
+        )
+    return {"order": order, "root": root}
+
+
+def reorder_matrix(matrix: dict, species_order: list[str]) -> dict:
+    """Put proteins in species-tree order. Paralogs stay together, reference first."""
+    species = matrix["species"]
+    rank = {sid: i for i, sid in enumerate(species_order)}
+    unknown = len(species_order)
+
+    def sort_key(i: int) -> tuple:
+        sid = species[i]
+        return (
+            rank.get(sid, unknown),
+            "" if sid in rank else sid,
+            0 if matrix["reference"][i] else 1,
+            matrix["full"][i],
+            i,
+        )
+
+    indices = sorted(range(len(species)), key=sort_key)
+    values = matrix["values"]
+    return {
+        "labels": [matrix["labels"][i] for i in indices],
+        "full": [matrix["full"][i] for i in indices],
+        "species": [species[i] for i in indices],
+        "reference": [matrix["reference"][i] for i in indices],
+        "values": [[values[i][j] for j in indices] for i in indices],
+    }
 
 
 def load_candidate_check(path: str | None) -> list[dict]:
@@ -381,7 +628,15 @@ HTML = r"""<!DOCTYPE html>
   tr.warn td { color: var(--rust); }
   td.url { word-break: break-all; }
   .heat-wrap { margin-top: 0.9rem; overflow-x: auto; }
-  .heat-note { margin: 0 0 0.55rem; color: var(--muted); font-size: 0.85rem; max-width: 46rem; }
+  .heat-note { margin: 0 0 0.55rem; color: var(--muted); font-size: 0.85rem; max-width: 52rem; }
+  .heat-fig { display: flex; align-items: flex-start; gap: 0; }
+  svg.heat-tree { flex: 0 0 auto; display: block; }
+  svg.heat-tree line { stroke: #6d6458; stroke-width: 1.5; }
+  svg.heat-tree text {
+    fill: var(--muted);
+    font-size: 11px;
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+  }
   table.heat { width: auto; border-collapse: separate; border-spacing: 3px; }
   table.heat th, table.heat td {
     position: static;
@@ -700,9 +955,20 @@ function heatColor(n) {
   const b = Math.round(210 + (18 - 210) * t);
   return { background: `rgb(${r},${g},${b})`, color: t > 0.58 ? "#f8f1e8" : "#1c1915" };
 }
+function matrixSpecies(m) {
+  if (m.species && m.species.length === m.labels.length) return m.species;
+  return m.full.map(id => id.includes("|") ? id.split("|")[0] : "");
+}
+function matrixFollowsTree(m) {
+  if (!DATA.species_tree || !DATA.species_tree.order) return false;
+  const known = new Set(DATA.species_tree.order);
+  return matrixSpecies(m).some(sid => known.has(sid));
+}
 function matrixHtml(row) {
   const m = row.matrix;
   if (!m || !m.labels || !m.labels.length) return "";
+  const species = matrixSpecies(m);
+  const onTree = matrixFollowsTree(m);
   const head = m.labels.map((label, i) => {
     const mark = m.reference[i] ? " *" : "";
     return `<th class="col${m.reference[i] ? " ref" : ""}" title="${esc(m.full[i])}"><span>${esc(label)}${mark}</span></th>`;
@@ -716,17 +982,195 @@ function matrixHtml(row) {
       const title = `${m.labels[i]} vs ${m.labels[j]}: ${fmt(val, 1)}%`;
       return `<td class="cell" style="background:${style.background};color:${style.color}" title="${esc(title)}">${fmt(val, 1)}</td>`;
     }).join("");
-    return `<tr><th class="rowlab${m.reference[i] ? " ref" : ""}" title="${esc(m.full[i])}">${esc(label)}${mark}</th>${cells}</tr>`;
+    return `<tr data-species="${esc(species[i] || "")}"><th class="rowlab${m.reference[i] ? " ref" : ""}" title="${esc(m.full[i])}">${esc(label)}${mark}</th>${cells}</tr>`;
   }).join("");
   const scale = [60, 70, 80, 90, 100].map(n => {
     const style = heatColor(n);
     return `<i style="background:${style.background}"></i><span>${n}%</span>`;
   }).join("");
+  const note = onTree
+    ? "Rows and columns follow the OrthoFinder species tree, top to bottom and left to right. The tree on the left uses those branch lengths, so closer species sit together. The characterized protein is marked *. Homologs from the same species share one tip. A species absent from the tree is listed after the tips."
+    : "Pairwise identity for every protein in this alignment. The characterized protein is marked * and listed first. Homologs from the same species each have their own row.";
+  const table = `<table class="heat"><thead><tr><th></th>${head}</tr></thead><tbody>${body}</tbody></table>`;
+  const fig = onTree
+    ? `<div class="heat-fig"><svg class="heat-tree" width="168" height="1" role="img" aria-label="OrthoFinder species tree"></svg>${table}</div>`
+    : table;
   return `<div class="heat-wrap">
-    <p class="heat-note">Pairwise identity for every protein in this alignment. The characterized protein is marked * and listed first. Homologs from the same species each have their own row.</p>
-    <table class="heat"><thead><tr><th></th>${head}</tr></thead><tbody>${body}</tbody></table>
+    <p class="heat-note">${note}</p>
+    ${fig}
     <div class="heat-scale">${scale}</div>
   </div>`;
+}
+function pruneTree(node, present) {
+  if (!node) return null;
+  const kids = (node.children || []).map(child => pruneTree(child, present)).filter(Boolean);
+  const tip = !node.children || !node.children.length;
+  if (tip) {
+    return present.has(node.name)
+      ? { name: node.name, length: Number(node.length) || 0, children: [] }
+      : null;
+  }
+  if (!kids.length) return null;
+  if (kids.length === 1) {
+    const only = kids[0];
+    return {
+      name: only.name || "",
+      length: (Number(node.length) || 0) + (Number(only.length) || 0),
+      children: only.children
+    };
+  }
+  return { name: "", length: Number(node.length) || 0, children: kids };
+}
+function asCladogram(node, isRoot) {
+  return {
+    name: node.name || "",
+    length: isRoot ? 0 : 1,
+    children: (node.children || []).map(child => asCladogram(child, false))
+  };
+}
+function treeSpan(node) {
+  const kids = node.children || [];
+  if (!kids.length) return Number(node.length) || 0;
+  return (Number(node.length) || 0) + Math.max.apply(null, kids.map(treeSpan));
+}
+function placeTree(node, parentX, tipY) {
+  const x = parentX + (Number(node.length) || 0);
+  node.x = x;
+  const kids = node.children || [];
+  if (!kids.length) {
+    node.y = tipY[node.name];
+    return;
+  }
+  kids.forEach(child => placeTree(child, x, tipY));
+  node.y = kids.reduce((sum, child) => sum + child.y, 0) / kids.length;
+}
+function niceDistance(span) {
+  if (!(span > 0)) return null;
+  const raw = span / 4;
+  const pow = Math.pow(10, Math.floor(Math.log10(raw)));
+  const frac = raw / pow;
+  const nice = frac < 1.5 ? 1 : frac < 3.5 ? 2 : frac < 7.5 ? 5 : 10;
+  return nice * pow;
+}
+function formatDistance(step) {
+  if (step >= 0.1) return String(Math.round(step * 1000) / 1000);
+  if (step >= 0.01) return step.toFixed(2);
+  if (step >= 0.001) return step.toFixed(3);
+  return step.toExponential(0);
+}
+function svgEl(name, attrs) {
+  const el = document.createElementNS("http://www.w3.org/2000/svg", name);
+  Object.keys(attrs).forEach(key => el.setAttribute(key, attrs[key]));
+  return el;
+}
+function alignTrees() {
+  if (!DATA.species_tree || !DATA.species_tree.root) return;
+  const known = new Set(DATA.species_tree.order || []);
+  document.querySelectorAll(".heat-fig").forEach(fig => {
+    const svg = fig.querySelector("svg.heat-tree");
+    const table = fig.querySelector("table.heat");
+    if (!svg || !table) return;
+    const figTop = fig.getBoundingClientRect().top;
+    const tipRows = {};
+    table.querySelectorAll("tbody tr").forEach(tr => {
+      const sid = tr.getAttribute("data-species") || "";
+      if (!known.has(sid)) return;
+      const box = tr.getBoundingClientRect();
+      const y = (box.top - figTop) + box.height / 2;
+      if (!tipRows[sid]) tipRows[sid] = [];
+      tipRows[sid].push(y);
+    });
+    const present = new Set(Object.keys(tipRows));
+    if (!present.size) {
+      svg.remove();
+      return;
+    }
+    let pruned = pruneTree(DATA.species_tree.root, present);
+    if (!pruned) {
+      svg.remove();
+      return;
+    }
+    const phylogram = treeSpan(pruned) > 0;
+    if (!phylogram) pruned = asCladogram(pruned, true);
+    const tipY = {};
+    Object.keys(tipRows).forEach(sid => {
+      const ys = tipRows[sid];
+      tipY[sid] = ys.reduce((sum, y) => sum + y, 0) / ys.length;
+    });
+    placeTree(pruned, 0, tipY);
+    let maxX = 0;
+    (function walkMax(node) {
+      if (node.x > maxX) maxX = node.x;
+      (node.children || []).forEach(walkMax);
+    })(pruned);
+    const pad = 8;
+    const inner = 128;
+    const leader = 26;
+    const width = pad + inner + leader;
+    const scale = maxX > 0 ? inner / maxX : 1;
+    const tableBottom = table.getBoundingClientRect().bottom - figTop;
+    const xOf = node => pad + node.x * scale;
+    const right = width - 1;
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    const addLine = (x1, y1, x2, y2) => {
+      svg.appendChild(svgEl("line", {
+        x1: x1.toFixed(2), y1: y1.toFixed(2), x2: x2.toFixed(2), y2: y2.toFixed(2)
+      }));
+    };
+    (function drawNode(node) {
+      const x = xOf(node);
+      (node.children || []).forEach(child => {
+        addLine(x, child.y, xOf(child), child.y);
+        drawNode(child);
+      });
+      if (node.children && node.children.length > 1) {
+        const ys = node.children.map(child => child.y);
+        addLine(x, Math.min.apply(null, ys), x, Math.max.apply(null, ys));
+      }
+    })(pruned);
+    (function drawTips(node) {
+      if (node.children && node.children.length) {
+        node.children.forEach(drawTips);
+        return;
+      }
+      const ys = tipRows[node.name] || [node.y];
+      const x = xOf(node);
+      if (ys.length === 1) {
+        addLine(x, ys[0], right, ys[0]);
+        return;
+      }
+      const bar = right - 9;
+      const y1 = Math.min.apply(null, ys);
+      const y2 = Math.max.apply(null, ys);
+      addLine(x, tipY[node.name], bar, tipY[node.name]);
+      addLine(bar, y1, bar, y2);
+      ys.forEach(y => addLine(bar, y, right, y));
+    })(pruned);
+    const head = table.querySelector("thead");
+    const headBottom = head ? head.getBoundingClientRect().bottom - figTop : 0;
+    if (headBottom > 36) {
+      svg.appendChild(svgEl("text", { x: String(pad), y: "16" })).textContent = "species tree";
+    }
+    if (phylogram && headBottom > 36) {
+      const step = niceDistance(maxX);
+      const barW = step ? step * scale : 0;
+      if (step && barW >= 18 && barW <= inner) {
+        const y = Math.min(headBottom - 16, 36);
+        addLine(pad, y, pad + barW, y);
+        const labelX = pad + barW + 6;
+        if (labelX < width - 28) {
+          const label = svgEl("text", { x: labelX.toFixed(2), y: (y + 4).toFixed(2) });
+          label.textContent = formatDistance(step);
+          svg.appendChild(label);
+        }
+      }
+    }
+    const svgWidth = width.toFixed(2);
+    const svgHeight = Math.max(tableBottom, 1).toFixed(2);
+    svg.setAttribute("width", svgWidth);
+    svg.setAttribute("height", svgHeight);
+    svg.setAttribute("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
+  });
 }
 function esc(s) {
   return String(s ?? "").replace(/[&<>"']/g, ch => ({
@@ -766,7 +1210,10 @@ function detail(row) {
   if (row.fold_rank !== null) add("AlphaFold queue", `fold rank ${fmt(row.fold_rank, 0)}`);
   const min = row.min_id === null ? "—" : fmt(row.min_id, 1);
   const max = row.max_id === null ? "—" : fmt(row.max_id, 1);
-  add("% identity to reference", `Closest protein is ${max}%. The most distant protein is ${min}%. Each species column is that closest protein, and the matrix below keeps every homolog.`);
+  const matrixOrder = DATA.species_tree
+    ? "the matrix below keeps every homolog, in OrthoFinder species-tree order."
+    : "the matrix below keeps every homolog.";
+  add("% identity to reference", `Closest protein is ${max}%. The most distant protein is ${min}%. Each species column is that closest protein, and ${matrixOrder}`);
   return `<tr class="detail"><td></td><td colspan="${columns().length}"><dl class="detail-grid">${items.join("")}</dl>${matrixHtml(row)}</td></tr>`;
 }
 function draw() {
@@ -808,6 +1255,7 @@ function draw() {
     });
   }
   document.getElementById("count").textContent = `${rows.length} of ${DATA.families.length}`;
+  alignTrees();
 }
 const summary = DATA.summary || {};
 const cards = [
@@ -822,6 +1270,7 @@ document.getElementById("stats").innerHTML = cards.map(([label, value, tip]) =>
 const bits = [`Report date ${esc(DATA.generated)}.`];
 bits.push("Genes mined are the literature genes placed in an orthogroup. Species in the run are the proteomes included in this job. Proteomes downloaded counts remote NCBI or URL fetches, not a local file. Run time is from job start until this report.");
 bits.push("Each species column is the closest protein from that species to the reference, and Best %ID is the single closest protein in the family. Darker green is higher identity.");
+if (DATA.species_tree) bits.push("The identity matrix in each family follows the OrthoFinder species tree, drawn beside the heatmap. Branch lengths are the species-tree distances.");
 if (DATA.has_ranking) bits.push("Priority adds ASR substitutions on phenotype-shift branches, divergence beyond species relatedness, HyPhy hits, and convergence.");
 if (DATA.has_folding) bits.push("Fold rank is the AlphaFold queue order (1 is first).");
 if (DATA.candidate_check) bits.push(`Characterized CDS check: ${DATA.candidate_check.n_match} of ${DATA.candidate_check.n} reference sequences match the annotation CDS and protein. See tables/candidate_cds_check.tsv.`);
@@ -877,6 +1326,13 @@ def main() -> None:
     candidate_check = load_candidate_check(args.candidate_check)
     n_run, n_downloaded = species_run_counts(provenance, species)
     matrices = load_matrices(args.identity_matrix_pairs, args.identity_matrix_labels)
+    known_species = {sid for matrix in matrices.values() for sid in matrix.get("species", []) if sid}
+    species_tree = load_species_tree(args.species_tree, known_species)
+    if species_tree:
+        on_tree = set(species_tree["order"])
+        for og, matrix in list(matrices.items()):
+            if any(sid in on_tree for sid in matrix["species"]):
+                matrices[og] = reorder_matrix(matrix, species_tree["order"])
     for rec in records:
         rec["matrix"] = matrices.get(rec["orthogroup"])
     payload = {
@@ -893,6 +1349,8 @@ def main() -> None:
         },
         "families": records,
     }
+    if species_tree:
+        payload["species_tree"] = species_tree
     if candidate_check:
         payload["candidate_check"] = {
             "n": len(candidate_check),

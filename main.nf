@@ -408,7 +408,8 @@ workflow {
         ch_codon_report,
         ch_codon_dir,
         RUN_ORTHOFINDER.out.alignments,
-        ch_candidate_report
+        ch_candidate_report,
+        RUN_ORTHOFINDER.out.species_tree
     )
 }
 
