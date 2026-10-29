@@ -85,6 +85,8 @@ class Bundle:
     ids: set[str] = field(default_factory=set)
     symbols: set[str] = field(default_factory=set)
     descriptions: list[str] = field(default_factory=list)
+    # locus_tag / protein accession. BAC synonyms such as F8D20.60 are not primary.
+    primary: set[str] = field(default_factory=set)
 
 
 @dataclass
@@ -93,6 +95,7 @@ class ProteinView:
     ids: set[str]
     symbols: set[str]
     descriptions: list[str]
+    primary: set[str] = field(default_factory=set)
 
 
 @dataclass
@@ -261,12 +264,35 @@ def index_gffs(paths: list[str]) -> dict[str, Bundle]:
                     raw = attrs.get(key)
                     if raw:
                         descriptions.append(raw)
+                # The AGI in locus_tag is the gene. A BAC name in gene_synonym is not.
+                primary: set[str] = set()
+                for key in ("locus_tag", "protein_id", "ID", "Name"):
+                    raw = attrs.get(key) or ""
+                    for piece in re.split(r"[,|]", raw):
+                        piece = piece.strip()
+                        if not piece:
+                            continue
+                        owned = (
+                            key == "locus_tag"
+                            or bool(locus_species(piece))
+                            or gene_key(piece) != piece
+                            or piece.startswith(("cds-", "rna-", "gene-"))
+                            or ":" in piece
+                        )
+                        if owned:
+                            primary |= id_forms(piece)
                 dbxref = attrs.get("Dbxref") or ""
                 for piece in dbxref.split(","):
                     if ":" in piece:
                         ids |= id_forms(piece.split(":")[-1])
                 parents = [parent.strip() for parent in attrs.get("Parent", "").split(",") if parent.strip()]
-                features[fid] = {"parents": parents, "ids": ids, "symbols": symbols, "descriptions": descriptions}
+                features[fid] = {
+                    "parents": parents,
+                    "ids": ids,
+                    "symbols": symbols,
+                    "descriptions": descriptions,
+                    "primary": primary,
+                }
 
     children: dict[str, list[str]] = defaultdict(list)
     for fid, feat in features.items():
@@ -285,17 +311,24 @@ def index_gffs(paths: list[str]) -> dict[str, Bundle]:
         if fid in stack:
             return Bundle()
         stack.add(fid)
-        bundle = Bundle(set(feat["ids"]), set(feat["symbols"]), list(feat["descriptions"]))
+        bundle = Bundle(
+            set(feat["ids"]),
+            set(feat["symbols"]),
+            list(feat["descriptions"]),
+            set(feat["primary"]),
+        )
         for parent in feat["parents"]:
             parent_bundle = bundle_for(parent, stack)
             bundle.ids |= parent_bundle.ids
             bundle.symbols |= parent_bundle.symbols
             bundle.descriptions.extend(parent_bundle.descriptions)
+            bundle.primary |= parent_bundle.primary
         for child in children.get(fid, []):
             child_bundle = bundle_for(child, stack)
             bundle.ids |= child_bundle.ids
             bundle.symbols |= child_bundle.symbols
             bundle.descriptions.extend(child_bundle.descriptions)
+            bundle.primary |= child_bundle.primary
         stack.remove(fid)
         # Descriptions are repeated up and down the model; keep one copy.
         seen: set[str] = set()
@@ -325,6 +358,7 @@ def attach_proteins(rows: list[dict], index: dict[str, Bundle]) -> list[ProteinV
     for row in rows:
         ids = id_forms(row.get("original_id") or "")
         ids |= id_forms(row.get("gene_key") or "")
+        primary = set(ids)
         symbols: set[str] = set()
         descriptions: list[str] = []
         seen_desc: set[str] = set()
@@ -333,12 +367,13 @@ def attach_proteins(rows: list[dict], index: dict[str, Bundle]) -> list[ProteinV
             if bundle is None:
                 continue
             ids |= bundle.ids
+            primary |= bundle.primary
             symbols |= bundle.symbols
             for text in bundle.descriptions:
                 if text not in seen_desc:
                     seen_desc.add(text)
                     descriptions.append(text)
-        views.append(ProteinView(row, ids, symbols, descriptions))
+        views.append(ProteinView(row, ids, symbols, descriptions, primary))
     return views
 
 
@@ -416,8 +451,12 @@ def match_in_species(query: NameQuery, species_id: str, views: list[ProteinView]
     wanted_ids = _query_ids(query, species_id)
     locus_hits = [view for view in pool if wanted_ids & view.ids]
     if locus_hits:
-        locus_hits.sort(key=lambda view: (-_length(view), view.row.get("new_id") or ""))
-        return "locus", locus_hits[0], locus_hits[0].row.get("original_id") or ""
+        # AT1G71930 is the locus_tag of VND7. A longer neighbor that only
+        # shares the BAC clone name must not take that id.
+        owned = [view for view in locus_hits if wanted_ids & view.primary]
+        chosen = owned or locus_hits
+        chosen.sort(key=lambda view: (-_length(view), view.row.get("new_id") or ""))
+        return "locus", chosen[0], chosen[0].row.get("original_id") or ""
 
     wanted_symbols = _query_symbols(query, species_id)
     symbol_hits = [view for view in pool if any(symbol in view.symbols for symbol in wanted_symbols)]
