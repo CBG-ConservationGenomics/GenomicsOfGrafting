@@ -17,7 +17,7 @@
 # WOX4	Solanum lycopersicum
 # AT1G46480	Arabidopsis thaliana
 
-WOX4	Solanum lycopersicum
-AT1G01010	Arabidopsis thaliana
-Niben101Scf01786g00001	Nicotiana benthamiana
-XP_023545678.1	Cucurbita pepo
+AT4G35550	Arabidopsis thaliana WOX13
+AT1G71380	Arabidopsis thaliana GH9B3
+AT1G71930	Arabidopsis thaliana VND7
+AT5G48150	Arabidopsis thaliana PAT1
