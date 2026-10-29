@@ -26,6 +26,14 @@ chr1	RefSeq	gene	200	5000	.	+	.	ID=gene-AT1G71220;Name=EBS1;gene=EBS1;gene_synon
 chr1	RefSeq	CDS	200	5000	.	+	0	ID=cds-NP_001323059.1;Parent=gene-AT1G71220;Name=NP_001323059.1;gene=EBS1;locus_tag=AT1G71220;protein_id=NP_001323059.1
 chr1	RefSeq	gene	6000	7000	.	+	.	ID=gene-AT1G22880;Name=CEL5;gene=CEL5;locus_tag=AT1G22880
 chr1	RefSeq	CDS	6000	7000	.	+	0	ID=cds-NP_001031082.1;Parent=gene-AT1G22880;Name=NP_001031082.1;gene=CEL5;locus_tag=AT1G22880;protein_id=NP_001031082.1;Note=BEST Arabidopsis thaliana protein match is: cellulase 3 (TAIR:AT1G71380.1)
+chr1	RefSeq	gene	8000	9000	.	+	.	ID=gene-AT1G71930;Name=VND7;gene=VND7;gene_synonym=ANAC030,F17M19.8,F17M19_8;locus_tag=AT1G71930
+chr1	RefSeq	CDS	8000	9000	.	+	0	ID=cds-NP_001323397.1;Parent=gene-AT1G71930;Name=NP_001323397.1;gene=VND7;locus_tag=AT1G71930;protein_id=NP_001323397.1
+chr1	RefSeq	gene	9100	12000	.	+	.	ID=gene-AT1G71880;Name=SUC1;gene=SUC1;gene_synonym=ATSUC1,F17M19.3,F17M19_3;locus_tag=AT1G71880
+chr1	RefSeq	CDS	9100	12000	.	+	0	ID=cds-NP_177333.1;Parent=gene-AT1G71880;Name=NP_177333.1;gene=SUC1;locus_tag=AT1G71880;protein_id=NP_177333.1
+chr5	RefSeq	gene	1	100	.	+	.	ID=gene-AT5G48150;Name=PAT1;gene=PAT1;gene_synonym=MIF21.4,MIF21_4;locus_tag=AT5G48150
+chr5	RefSeq	CDS	1	100	.	+	0	ID=cds-NP_001332482.1;Parent=gene-AT5G48150;Name=NP_001332482.1;gene=PAT1;locus_tag=AT5G48150;protein_id=NP_001332482.1
+chr5	RefSeq	gene	200	2000	.	+	.	ID=gene-AT5G48130;Name=AT5G48130;gene_synonym=MIF21.2,MIF21_2;locus_tag=AT5G48130
+chr5	RefSeq	CDS	200	2000	.	+	0	ID=cds-NP_199624.1;Parent=gene-AT5G48130;Name=NP_199624.1;locus_tag=AT5G48130;protein_id=NP_199624.1
 chr2	ITAG	gene	1	10	.	+	.	ID=gene:Solyc04g078650;Name=Solyc04g078650
 chr2	ITAG	mRNA	1	10	.	+	.	ID=mRNA:Solyc04g078650.4.1;Parent=gene:Solyc04g078650;Name=Solyc04g078650.4.1;Note=wuschel related homobox 4
 """
@@ -47,6 +55,8 @@ class IdFormsTest(unittest.TestCase):
         self.assertEqual(gene_names.id_forms("F8D20.60"), {"f8d20.60"})
         self.assertNotIn("f8d20", gene_names.id_forms("F8D20.60"))
         self.assertNotIn("f3i17", gene_names.id_forms("F3I17.16"))
+        self.assertNotIn("f17m19", gene_names.id_forms("F17M19.8"))
+        self.assertNotIn("mif21", gene_names.id_forms("MIF21.4"))
 
     def test_recognized_locus_suffixes_still_collapse(self):
         self.assertIn("at4g35550", gene_names.id_forms("AT4G35550.1"))
@@ -72,6 +82,10 @@ class ResolveLocusTest(unittest.TestCase):
             protein("NP_177294.1", 485),
             protein("NP_001323059.1", 1652),
             protein("NP_001031082.1", 600),
+            protein("NP_001323397.1", 325),
+            protein("NP_177333.1", 514),
+            protein("NP_001332482.1", 491),
+            protein("NP_199624.1", 626),
             protein("Solyc04g078650.4.1", 320, "Sly"),
         ]
         views = gene_names.attach_proteins(rows, index)
@@ -95,6 +109,22 @@ class ResolveLocusTest(unittest.TestCase):
         method, view, _detail = self.match("GH9B3", "Ath", views)
         self.assertEqual(method, "symbol")
         self.assertEqual(view.row["original_id"], "NP_177294.1")
+
+        method, view, _detail = self.match("AT1G71930", "Ath", views)
+        self.assertEqual(method, "locus")
+        self.assertEqual(view.row["original_id"], "NP_001323397.1")
+
+        method, view, _detail = self.match("VND7", "Ath", views)
+        self.assertEqual(method, "symbol")
+        self.assertEqual(view.row["original_id"], "NP_001323397.1")
+
+        method, view, _detail = self.match("AT5G48150", "Ath", views)
+        self.assertEqual(method, "locus")
+        self.assertEqual(view.row["original_id"], "NP_001332482.1")
+
+        method, view, _detail = self.match("PAT1", "Ath", views)
+        self.assertEqual(method, "symbol")
+        self.assertEqual(view.row["original_id"], "NP_001332482.1")
 
         method, view, _detail = self.match("WOX4", "Sly", views)
         self.assertEqual(method, "description")
