@@ -45,11 +45,7 @@ workflow {
         }
         ch_codon = Channel
             .fromPath("${params.codon_alignments_dir}/*.{fa,fasta,fna}")
-            .map { f ->
-                def og = f.simpleName
-                def tree = file("${params.outdir}/10_graft_phenotype/asr/${og}/${og}.treefile")
-                tuple(og, f, tree)
-            }
+            .map { f -> tuple(f.simpleName, f) }
     } else {
         ch_codon = Channel.empty()
     }

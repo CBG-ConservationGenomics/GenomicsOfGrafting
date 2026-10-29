@@ -10,66 +10,94 @@ process HYPHY_SELECTION {
     output:
     tuple val(og_id), path("${og_id}.hyphy_summary.tsv"), emit: summary
     path "*.json", emit: json, optional: true
+    path "${og_id}.fg.nwk", emit: tree, optional: true
+    path "*.log", emit: logs, optional: true
     path "versions.yml", emit: versions
 
     when:
     params.run_hyphy
 
     script:
+    // Shell locals are escaped (\$method). Nextflow would otherwise treat
+    // them as its own variables and abort the task before HyPhy starts.
     """
     set -euo pipefail
 
-    # Codon alignment + tree required. Foreground tips labeled for aBSREL/RELAX via trees.
-    # Build a simple labeled tree copy: tips in foreground_tips get {Foreground}.
-    python3 - <<'PY'
-from Bio import Phylo
-from pathlib import Path
-fg = {ln.strip() for ln in open("${foreground_tips}") if ln.strip()}
-tree = Phylo.read("${tree}", "newick")
-for tip in tree.get_terminals():
-    name = tip.name.split("|")[0] if tip.name and "|" in tip.name else tip.name
-    if name in fg:
-        tip.name = f"{tip.name}{{Foreground}}"
-Phylo.write(tree, "${og_id}.fg.nwk", "newick")
-PY
+    printf '%s\\t%s\\t%s\\t%s\\t%s\\n' Orthogroup method pvalue key_stat status > ${og_id}.hyphy_summary.tsv
 
-    echo -e "Orthogroup\\tmethod\\tpvalue\\tkey_stat\\tstatus" > ${og_id}.hyphy_summary.tsv
+    prepare_hyphy_inputs.py prepare \\
+        --codon ${codon_alignment} \\
+        --tree ${tree} \\
+        --foreground ${foreground_tips} \\
+        --out-fasta ${og_id}.hyphy.fna \\
+        --out-tree ${og_id}.fg.nwk \\
+        --out-status ${og_id}.prep.tsv
 
-    run_one() {
-        local method=\$1
-        local outjson=\$2
-        if hyphy \$method --alignment ${codon_alignment} --tree ${og_id}.fg.nwk CPU=${task.cpus} > ${method}.log 2>&1; then
-            # Best-effort scrape; HyPhy JSON names vary by method
-            pv=\$(python3 - <<PY
-import json,glob,re
-files=glob.glob("*.json")+glob.glob("${outjson}")
-pval=""; stat=""
-for f in files:
-    try:
-        d=json.load(open(f))
-    except Exception:
-        continue
-    txt=json.dumps(d)
-    m=re.search(r'"p[^"]*[Pp](?:alue)?"\\s*:\\s*([0-9.eE+-]+)', txt)
-    if m: pval=m.group(1); break
-print(pval)
-PY
-)
-            echo -e "${og_id}\\t\${method}\\t\${pv}\\t\\tok" >> ${og_id}.hyphy_summary.tsv
-        else
-            echo -e "${og_id}\\t\${method}\\t\\t\\tfailed" >> ${og_id}.hyphy_summary.tsv
-        fi
+    STATUS=\$(cut -f1 ${og_id}.prep.tsv)
+    NOTE=\$(cut -f2 ${og_id}.prep.tsv)
+    N_FG=\$(cut -f3 ${og_id}.prep.tsv)
+    N_SEQ=\$(cut -f4 ${og_id}.prep.tsv)
+
+    write_row() {
+        printf '%s\\t%s\\t%s\\t%s\\t%s\\n' "\$1" "\$2" "\$3" "\$4" "\$5" >> ${og_id}.hyphy_summary.tsv
     }
 
-    # Episodic selection / gene-wide / site-level / relaxation
-    run_one BUSTED ${og_id}.BUSTED.json || true
-    run_one aBSREL ${og_id}.aBSREL.json || true
-    run_one MEME ${og_id}.MEME.json || true
-    run_one RELAX ${og_id}.RELAX.json || true
+    if [ "\$STATUS" != "ok" ]; then
+        write_row "${og_id}" HYPHY "" "\$NOTE" skipped
+    elif ! command -v hyphy >/dev/null 2>&1; then
+        write_row "${og_id}" HYPHY "" "hyphy not on PATH" skipped
+    else
+        BRANCH_ARGS=""
+        if [ "\$N_FG" -gt 0 ]; then
+            BRANCH_ARGS="--branches Foreground"
+        fi
 
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        hyphy: \$(hyphy --version 2>&1 | head -n1 || echo NA)
-    END_VERSIONS
+        # set -e is off for the method calls. One HyPhy failure is a table row,
+        # not a failed Nextflow task. CPU is a HyPhy global and must precede
+        # the method name. Stdin is closed so a missing option cannot prompt.
+        set +e
+        run_one() {
+            local label="\$1"
+            local method="\$2"
+            local outjson="\$3"
+            local extra="\$4"
+            hyphy CPU=${task.cpus} "\$method" \\
+                --alignment ${og_id}.hyphy.fna \\
+                --tree ${og_id}.fg.nwk \\
+                \$extra \\
+                --output "\$outjson" \\
+                < /dev/null > "\$method.log" 2>&1
+            local rc=\$?
+            if [ "\$rc" -eq 0 ] && [ -s "\$outjson" ]; then
+                local pv
+                pv=\$(prepare_hyphy_inputs.py pvalue "\$outjson" || true)
+                write_row "${og_id}" "\$label" "\$pv" "" ok
+            else
+                local note
+                note=\$(tail -n 1 "\$method.log" 2>/dev/null | sed 's/[[:space:]]\\+/ /g' | cut -c1-180 || true)
+                write_row "${og_id}" "\$label" "" "\$note" failed
+            fi
+        }
+        run_one BUSTED busted ${og_id}.BUSTED.json "\$BRANCH_ARGS"
+        run_one aBSREL absrel ${og_id}.aBSREL.json "\$BRANCH_ARGS"
+        run_one MEME meme ${og_id}.MEME.json "\$BRANCH_ARGS"
+        if [ "\$N_FG" -gt 0 ] && [ "\$N_FG" -lt "\$N_SEQ" ]; then
+            run_one RELAX relax ${og_id}.RELAX.json "--test Foreground"
+        else
+            write_row "${og_id}" RELAX "" "need both foreground and background branches" skipped
+        fi
+        set -e
+    fi
+
+    set +e
+    ver=\$(hyphy --version </dev/null 2>/dev/null | head -n 1)
+    set -e
+    if [ -z "\$ver" ]; then
+        ver="NA"
+    fi
+    {
+        printf '"%s":\\n' "${task.process}"
+        printf '    hyphy: %s\\n' "\$ver"
+    } > versions.yml
     """
 }

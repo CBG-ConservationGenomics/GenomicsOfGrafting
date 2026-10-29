@@ -13,7 +13,7 @@ workflow GRAFT_PHENOTYPE {
     ch_og_list         // path
     ch_alignments_dir  // path
     ch_og_alns         // tuple(og_id, alignment) — optional empty
-    ch_codon_alns      // tuple(og_id, codon_aln, tree) — optional empty
+    ch_codon_alns      // tuple(og_id, codon_aln) — optional empty
 
     main:
     DERIVE_GRAFT_TRAITS(ch_matrix, ch_species_tree)
@@ -35,23 +35,36 @@ workflow GRAFT_PHENOTYPE {
             DERIVE_GRAFT_TRAITS.out.shift_branches.first()
         )
         ch_asr = IQTREE_ASR.out.substitutions.map { _og, f -> f }.collect()
-        ch_trees = IQTREE_ASR.out.tree
+        // Queue channels can be read once. Split the trees when both consumers run.
+        if (params.run_convergence || params.run_hyphy) {
+            ch_tree_pairs = IQTREE_ASR.out.tree.map { t -> tuple(t.simpleName, t) }
+        }
     } else {
         ch_asr = Channel.fromPath("${projectDir}/assets/empty.tsv").collect()
-        ch_trees = Channel.empty()
+        ch_tree_pairs = Channel.empty()
+    }
+
+    if (params.run_convergence && params.run_hyphy && params.run_asr) {
+        ch_tree_pairs.multiMap { og, tree ->
+            convergence: tuple(og, tree)
+            hyphy: tuple(og, tree)
+        }.set { ch_trees }
+        ch_tree_conv = ch_trees.convergence
+        ch_tree_hyphy = ch_trees.hyphy
+    } else if (params.run_convergence) {
+        ch_tree_conv = ch_tree_pairs
+        ch_tree_hyphy = Channel.empty()
+    } else if (params.run_hyphy) {
+        ch_tree_conv = Channel.empty()
+        ch_tree_hyphy = ch_tree_pairs
     }
 
     if (params.run_convergence) {
-        ch_conv_in = ch_og_alns.join(
-            ch_trees.map { t ->
-                def og = t.simpleName
-                tuple(og, t)
-            },
-            by: 0,
-            remainder: true
-        ).map { og, aln, tree ->
-            tree ? tuple(og, aln, tree) : null
-        }.filter { it != null }
+        ch_conv_in = ch_og_alns.join(ch_tree_conv, by: 0, remainder: true)
+            .map { og, aln, tree ->
+                tree ? tuple(og, aln, tree) : null
+            }
+            .filter { it != null }
 
         RUN_CONVERGENCE(
             ch_conv_in,
@@ -63,8 +76,11 @@ workflow GRAFT_PHENOTYPE {
     }
 
     if (params.run_hyphy) {
+        if (!params.run_asr) {
+            error "--run_hyphy true requires --run_asr true so each orthogroup has a species tree"
+        }
         HYPHY_SELECTION(
-            ch_codon_alns,
+            ch_codon_alns.join(ch_tree_hyphy),
             DERIVE_GRAFT_TRAITS.out.foreground.first()
         )
         ch_sel = HYPHY_SELECTION.out.summary.map { _og, f -> f }.collect()

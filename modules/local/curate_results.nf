@@ -15,6 +15,7 @@ process CURATE_RESULTS {
     path codon_dir
     path protein_alignments
     path candidate_check
+    path interproscan
 
     output:
     path "index.html", emit: html
@@ -56,6 +57,11 @@ process CURATE_RESULTS {
         --runtime-seconds ${runtimeSeconds} \\
         --outdir .
 
+    IPS_ARG=""
+    if [ -s "${interproscan}" ]; then
+        IPS_ARG="--interproscan ${interproscan}"
+    fi
+
     write_summary_pages.py \\
         --provenance ${provenance_files} \\
         --busco ${busco_summary} \\
@@ -63,6 +69,7 @@ process CURATE_RESULTS {
         --codon-dir ${codon_dir} \\
         --families ${families} \\
         --protein-alignments ${protein_alignments} \\
+        \$IPS_ARG \\
         --outdir .
     # Family table cells are the closest protein to the reference, not the species average.
 

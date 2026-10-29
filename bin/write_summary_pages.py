@@ -8,6 +8,7 @@ import csv
 import html
 import re
 import shutil
+from dataclasses import dataclass
 from pathlib import Path
 
 
@@ -19,6 +20,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--codon-dir", default="")
     p.add_argument("--families", default="", help="gene_families_of_interest.tsv, for the protein page")
     p.add_argument("--protein-alignments", default="", help="OrthoFinder MultipleSequenceAlignments directory")
+    p.add_argument("--interproscan", default="", help="InterProScan TSV; domains are drawn on the alignments")
     p.add_argument("--outdir", required=True)
     return p.parse_args()
 
@@ -219,6 +221,17 @@ SHELL = """<!DOCTYPE html>
   .bN, .aaG {{ background: #ece7df; color: #5e584e; }}
   .bg {{ color: #b7ad9f; }}
   .tick {{ margin-right: 0.45em; }}
+  .domrow {{
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12.5px; line-height: 1; white-space: pre;
+  }}
+  .domrow .lab {{
+    font-family: "Avenir Next", "Segoe UI", sans-serif;
+    font-size: 11px; color: var(--ink); line-height: 1.2;
+  }}
+  .domrow .tick, .domrow .codon {{ line-height: 0; }}
+  .dom {{ display: inline-block; width: 1ch; height: 0.48em; vertical-align: top; }}
+  .dom.on {{ border-radius: 1px; }}
   .footer-note {{ color: var(--muted); font-size: 0.82rem; padding: 0.8rem 0 1.6rem; }}
   @media (max-width: 800px) {{
     .stats {{ grid-template-columns: 1fr 1fr; }}
@@ -506,7 +519,11 @@ def codon_html(codon: str) -> str:
     return '<span class="codon">' + "".join(letters) + "</span>"
 
 
-def alignment_blocks(records: list[tuple[str, str]], width: int = 60) -> str:
+def alignment_blocks(
+    records: list[tuple[str, str]],
+    width: int = 60,
+    domains_for=None,
+) -> str:
     if not records:
         return ""
     length = max(len(seq) for _name, seq in records)
@@ -522,6 +539,8 @@ def alignment_blocks(records: list[tuple[str, str]], width: int = 60) -> str:
             rows.append(
                 f'<div class="seq" title="{esc(name)}"><span class="lab">{esc(short_label(name))}</span>{"".join(codons)}</div>'
             )
+            if domains_for is not None:
+                rows.append(domain_rows_html(seq, start, width, 3, domains_for(name), length))
         blocks.append('<div class="block">' + "".join(rows) + "</div>")
     return "".join(blocks)
 
@@ -544,7 +563,12 @@ def find_alignment(codon_dir: Path | None, og: str) -> Path | None:
     return None
 
 
-def render_codons(report: list[dict], codon_dir: Path | None) -> str:
+def render_codons(
+    report: list[dict],
+    codon_dir: Path | None,
+    domain_index: dict[str, list[Domain]] | None = None,
+    seq_ids: dict[str, str] | None = None,
+) -> str:
     written = [row for row in report if (row.get("status") or "") == "ok"]
     missing = sum(int(num(row.get("n_missing_cds")) or 0) for row in report)
     unassigned = sum(1 for row in report if (row.get("status") or "").startswith("unassigned"))
@@ -583,11 +607,20 @@ def render_codons(report: list[dict], codon_dir: Path | None) -> str:
         if path:
             records = read_fasta(path)
             length = max((len(seq) for _n, seq in records), default=0)
+            lookup = None
+            legend = ""
+            if domain_index:
+                lookup = lambda name, index=domain_index, ids=seq_ids or {}: domains_for(name, index, ids)
+                legend = domain_legend(records, lookup)
+            note = f"{len(records)} sequences, {comma(length)} nucleotides. Codons are grouped in threes. A, C, G, and T keep their own color, and a gap is a hyphen."
+            if legend:
+                note += " Colored bars are InterPro domains, labeled at the left, transferred from the protein alignment."
             blocks.append(
                 f'''<section class="panel" id="og-{esc(og)}">
                   <h2>{esc(og)}</h2>
-                  <p class="note">{len(records)} sequences, {comma(length)} nucleotides. Codons are grouped in threes. A, C, G, and T keep their own color, and a gap is a hyphen.</p>
-                  <div class="aln">{alignment_blocks(records)}</div>
+                  <p class="note">{note}</p>
+                  {legend}
+                  <div class="aln">{alignment_blocks(records, domains_for=lookup)}</div>
                 </section>'''
             )
         elif og:
@@ -661,7 +694,11 @@ def residue_group(chunk: str) -> str:
     return '<span class="tick">' + "".join(letters) + "</span>"
 
 
-def protein_blocks(records: list[tuple[str, str]], width: int = 60) -> str:
+def protein_blocks(
+    records: list[tuple[str, str]],
+    width: int = 60,
+    domains_for=None,
+) -> str:
     if not records:
         return ""
     length = max(len(seq) for _name, seq in records)
@@ -675,8 +712,254 @@ def protein_blocks(records: list[tuple[str, str]], width: int = 60) -> str:
             rows.append(
                 f'<div class="seq" title="{esc(name)}"><span class="lab">{esc(short_label(name))}</span>{"".join(groups)}</div>'
             )
+            if domains_for is not None:
+                rows.append(domain_rows_html(seq, start, width, 10, domains_for(name), length))
         blocks.append('<div class="block">' + "".join(rows) + "</div>")
     return "".join(blocks)
+
+
+@dataclass(frozen=True)
+class Domain:
+    accession: str
+    label: str
+    start: int
+    end: int
+
+
+DOMAIN_COLORS = (
+    "#2d6a4f",
+    "#1d4e89",
+    "#9b2226",
+    "#bc6c25",
+    "#6d597a",
+    "#0077b6",
+    "#606c38",
+    "#9c6644",
+    "#3d405b",
+    "#c44536",
+)
+
+
+def domain_color(accession: str) -> str:
+    total = sum(ord(char) for char in accession)
+    return DOMAIN_COLORS[total % len(DOMAIN_COLORS)]
+
+
+def id_keys(seq_id: str) -> list[str]:
+    """Forms of one sequence id. OrthoFinder may rewrite '|' as '_'."""
+    seq_id = seq_id.strip()
+    if not seq_id:
+        return []
+    keys = [seq_id, seq_id.replace("|", "_")]
+    tail = seq_id.split("|")[-1]
+    if tail and tail not in keys:
+        keys.append(tail)
+    underscored = seq_id.replace("|", "_")
+    if underscored not in keys:
+        keys.append(underscored)
+    parts = underscored.split("_")
+    for index in range(1, len(parts)):
+        suffix = "_".join(parts[index:])
+        if len(suffix) >= 4 and suffix not in keys:
+            keys.append(suffix)
+    return keys
+
+
+def parse_interpro(path: str | Path | None) -> dict[str, list[Domain]]:
+    """Map every id form of a protein to its InterPro domains.
+
+    Coordinates are 1-based positions on the ungapped protein. Rows that share
+    an InterPro accession and overlap are one domain. A signature with no
+    InterPro accession is kept under its own accession.
+    """
+    file = Path(path) if path else None
+    if file is None or not file.is_file() or file.stat().st_size == 0:
+        return {}
+    grouped: dict[str, dict[str, list[Domain]]] = {}
+    for line in file.read_text(errors="replace").splitlines():
+        if not line.strip() or line.startswith("#"):
+            continue
+        parts = line.rstrip("\n").split("\t")
+        if len(parts) < 8 or parts[0] in {"Protein Accession", "protein_id"}:
+            continue
+        try:
+            start, end = int(parts[6]), int(parts[7])
+        except ValueError:
+            continue
+        if start < 1 or end < start:
+            continue
+        protein = parts[0].strip()
+        signature = parts[4].strip() if len(parts) > 4 else ""
+        signature_desc = parts[5].strip() if len(parts) > 5 else ""
+        interpro = parts[11].strip() if len(parts) > 11 else ""
+        interpro_desc = parts[12].strip() if len(parts) > 12 else ""
+        if interpro in {"", "-"}:
+            accession = signature or signature_desc
+            label = signature_desc or signature
+        else:
+            accession = interpro
+            label = interpro_desc or signature_desc or interpro
+        if not protein or not accession or not label:
+            continue
+        grouped.setdefault(protein, {}).setdefault(accession, []).append(
+            Domain(accession, label, start, end)
+        )
+    index: dict[str, list[Domain]] = {}
+    for protein, by_acc in grouped.items():
+        domains: list[Domain] = []
+        for accession, hits in by_acc.items():
+            hits.sort(key=lambda item: (item.start, item.end))
+            current = hits[0]
+            for nxt in hits[1:]:
+                if nxt.start <= current.end + 1:
+                    label = current.label if len(current.label) >= len(nxt.label) else nxt.label
+                    current = Domain(accession, label, current.start, max(current.end, nxt.end))
+                else:
+                    domains.append(current)
+                    current = nxt
+            domains.append(current)
+        domains.sort(key=lambda item: (item.start, item.end, item.label))
+        for key in id_keys(protein):
+            index.setdefault(key, domains)
+    return index
+
+
+def load_sequence_ids(align_dir: Path | None) -> dict[str, str]:
+    """OrthoFinder internal id (0_42) to the FASTA accession."""
+    mapping: dict[str, str] = {}
+    if align_dir is None:
+        return mapping
+    candidates = [align_dir / "SequenceIDs.txt", align_dir.parent / "SequenceIDs.txt"]
+    for path in candidates:
+        if not path.is_file():
+            continue
+        for line in path.read_text(errors="replace").splitlines():
+            if ":" not in line:
+                continue
+            internal, original = line.split(":", 1)
+            original = original.strip().split()[0].rstrip(",")
+            if internal.strip() and original:
+                mapping[internal.strip()] = original
+    return mapping
+
+
+def domains_for(seq_id: str, index: dict[str, list[Domain]], seq_ids: dict[str, str]) -> list[Domain]:
+    names = [seq_id]
+    translated = seq_ids.get(seq_id)
+    if translated:
+        names.append(translated)
+    seen: set[int] = set()
+    for name in names:
+        for key in id_keys(name):
+            found = index.get(key)
+            if found is None or id(found) in seen:
+                continue
+            seen.add(id(found))
+            return found
+    return []
+
+
+def _gap(char: str) -> bool:
+    return char in "-."
+
+
+def column_spans(seq: str, domains: list[Domain], codon: bool) -> list[tuple[int, int, Domain]]:
+    """Alignment columns covered by each domain. Columns are 0-based and inclusive."""
+    if codon:
+        residue_at = []
+        for index in range(0, len(seq) - len(seq) % 3, 3):
+            if not all(_gap(base) for base in seq[index : index + 3]):
+                residue_at.append(index)
+    else:
+        residue_at = [index for index, aa in enumerate(seq) if not _gap(aa)]
+    spans = []
+    for domain in domains:
+        if domain.start < 1 or domain.start > len(residue_at):
+            continue
+        last = min(domain.end, len(residue_at))
+        start_col = residue_at[domain.start - 1]
+        end_col = residue_at[last - 1]
+        if codon:
+            end_col += 2
+        spans.append((start_col, end_col, domain))
+    return spans
+
+
+def _pack_lanes(spans: list[tuple[int, int, Domain]]) -> list[list[tuple[int, int, Domain]]]:
+    lanes: list[list[tuple[int, int, Domain]]] = []
+    for span in sorted(spans, key=lambda item: (item[0], item[1])):
+        placed = False
+        for lane in lanes:
+            if span[0] > lane[-1][1]:
+                lane.append(span)
+                placed = True
+                break
+        if not placed:
+            lanes.append([span])
+    return lanes
+
+
+def domain_rows_html(
+    seq: str,
+    start: int,
+    width: int,
+    group: int,
+    domains: list[Domain],
+    aln_len: int,
+) -> str:
+    spans = column_spans(seq, domains, codon=(group == 3))
+    window_end = start + width
+    rows = []
+    wrapper = "codon" if group == 3 else "tick"
+    for lane in _pack_lanes(spans):
+        visible = [span for span in lane if span[1] >= start and span[0] < window_end]
+        if not visible:
+            continue
+        labels: list[str] = []
+        for _c0, _c1, domain in visible:
+            if domain.label not in labels:
+                labels.append(domain.label)
+        cells_html = []
+        for tick in range(0, width, group):
+            cells = []
+            for offset in range(group):
+                col = start + tick + offset
+                if col >= aln_len:
+                    break
+                hit = next((span for span in lane if span[0] <= col <= span[1]), None)
+                if hit is None:
+                    cells.append('<i class="dom"></i>')
+                else:
+                    domain = hit[2]
+                    title = f"{domain.label} ({domain.accession}) {domain.start}–{domain.end}"
+                    cells.append(
+                        f'<i class="dom on" style="background:{domain_color(domain.accession)}" title="{esc(title)}"></i>'
+                    )
+            cells_html.append(f'<span class="{wrapper}">' + "".join(cells) + "</span>")
+        label = " · ".join(labels)
+        rows.append(
+            f'<div class="domrow" title="{esc(label)}"><span class="lab">{esc(label)}</span>{"".join(cells_html)}</div>'
+        )
+    return "".join(rows)
+
+
+def domain_legend(records: list[tuple[str, str]], domains_for_name) -> str:
+    seen: list[Domain] = []
+    accessions: set[str] = set()
+    for name, _seq in records:
+        for domain in domains_for_name(name):
+            if domain.accession in accessions:
+                continue
+            accessions.add(domain.accession)
+            seen.append(domain)
+    if not seen:
+        return ""
+    pills = []
+    for domain in seen:
+        pills.append(
+            f'<span><i style="background:{domain_color(domain.accession)}"></i>{esc(domain.label)}</span>'
+        )
+    return '<div class="legend-pills">' + "".join(pills) + "</div>"
 
 
 def find_protein_alignment(align_dir: Path | None, og: str) -> Path | None:
@@ -713,7 +996,12 @@ def selected_orthogroups(families_path: str, codon_report: list[dict]) -> list[s
     return ogs
 
 
-def render_proteins(ogs: list[str], align_dir: Path | None) -> str:
+def render_proteins(
+    ogs: list[str],
+    align_dir: Path | None,
+    domain_index: dict[str, list[Domain]] | None = None,
+    seq_ids: dict[str, str] | None = None,
+) -> str:
     shown = 0
     n_seq = 0
     missing = 0
@@ -738,6 +1026,11 @@ def render_proteins(ogs: list[str], align_dir: Path | None) -> str:
         length = max((len(seq) for _name, seq in records), default=0)
         shown += 1
         n_seq += len(records)
+        lookup = None
+        legend = ""
+        if domain_index:
+            lookup = lambda name, index=domain_index, ids=seq_ids or {}: domains_for(name, index, ids)
+            legend = domain_legend(records, lookup)
         table_rows.append(
             "<tr><td><a href=\"#aa-"
             + esc(og)
@@ -749,11 +1042,18 @@ def render_proteins(ogs: list[str], align_dir: Path | None) -> str:
             + comma(length)
             + "</td><td>Shown</td></tr>"
         )
+        note = (
+            f"{len(records)} sequences, {comma(length)} columns. Residues are grouped in tens. "
+            "Hydrophobic residues are green, polar residues gold, positive blue, negative rust, and glycine gray."
+        )
+        if legend:
+            note += " Colored bars under a sequence are its InterPro domains. The name is at the left of the bar."
         blocks.append(
             f'''<section class="panel" id="aa-{esc(og)}">
               <h2>{esc(og)}</h2>
-              <p class="note">{len(records)} sequences, {comma(length)} columns. Residues are grouped in tens. Hydrophobic residues are green, polar residues gold, positive blue, negative rust, and glycine gray.</p>
-              <div class="aln">{protein_blocks(records)}</div>
+              <p class="note">{note}</p>
+              {legend}
+              <div class="aln">{protein_blocks(records, domains_for=lookup)}</div>
             </section>'''
         )
     card_html = cards(
@@ -815,9 +1115,11 @@ def main() -> None:
         protein_dir = None
     ogs = selected_orthogroups(args.families, report)
     rows = genome_rows(provenance, busco)
+    domain_index = parse_interpro(args.interproscan)
+    seq_ids = load_sequence_ids(protein_dir)
     (outdir / "genomes.html").write_text(render_genomes(rows))
-    (outdir / "protein_alignments.html").write_text(render_proteins(ogs, protein_dir))
-    (outdir / "codon_alignments.html").write_text(render_codons(report, codon_dir))
+    (outdir / "protein_alignments.html").write_text(render_proteins(ogs, protein_dir, domain_index, seq_ids))
+    (outdir / "codon_alignments.html").write_text(render_codons(report, codon_dir, domain_index, seq_ids))
     copy_table(args.busco, outdir / "tables" / "busco_summary.tsv")
     copy_table(args.codon_report, outdir / "tables" / "codon_alignment_report.tsv")
     print(f"[write_summary_pages] {len(rows)} genomes, {len(ogs)} protein alignments, {len(report)} codon rows → {outdir}")

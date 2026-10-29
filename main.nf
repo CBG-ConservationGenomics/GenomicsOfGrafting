@@ -285,9 +285,9 @@ workflow {
 
     if (params.run_interproscan) {
         ANNOTATE_INTERPROSCAN(ch_ann_fasta)
-        ch_ips = ANNOTATE_INTERPROSCAN.out.tsv
+        ch_ips = ANNOTATE_INTERPROSCAN.out.tsv.first()
     } else {
-        ch_ips = Channel.fromPath("${projectDir}/assets/empty.tsv")
+        ch_ips = Channel.fromPath("${projectDir}/assets/empty.tsv").first()
     }
 
     if (params.run_signalp) {
@@ -349,12 +349,12 @@ workflow {
                     .filter { it && it.exists() }
                     .map { f ->
                         def og = f.name.replaceAll(/\.codon\.fna$/, '')
-                        tuple(og, f, file("${params.outdir}/10_graft_phenotype/asr/${og}/${og}.treefile"))
+                        tuple(og, f)
                     }
             } else if (params.codon_alignments_dir) {
                 ch_codon = Channel
                     .fromPath("${params.codon_alignments_dir}/*.{fa,fasta,fna}")
-                    .map { f -> tuple(f.simpleName.replaceAll(/\.codon$/, ''), f, file('NO_TREE')) }
+                    .map { f -> tuple(f.simpleName.replaceAll(/\.codon$/, ''), f) }
             } else {
                 error "--run_hyphy true requires --build_codon_alignments true or --codon_alignments_dir"
             }
@@ -408,7 +408,8 @@ workflow {
         ch_codon_report,
         ch_codon_dir,
         RUN_ORTHOFINDER.out.alignments,
-        ch_candidate_report
+        ch_candidate_report,
+        ch_ips
     )
 }
 
