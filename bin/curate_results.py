@@ -525,8 +525,10 @@ def write_readme(path: Path, copied: list[str]) -> None:
         "Open index.html in a browser. The page is self-contained:",
         "search, sort, and expand a row for annotation and phenotype detail.",
         "genomes.html has protein counts and BUSCO. protein_alignments.html",
-        "shows the OrthoFinder amino-acid alignments. codon_alignments.html",
-        "shows the CDS alignments projected onto those protein MSAs.",
+        "shows the OrthoFinder amino-acid alignments, with InterPro domains",
+        "as labeled bars when that annotation ran. codon_alignments.html",
+        "shows the CDS alignments projected onto those protein MSAs, with the",
+        "same domain bars.",
         "",
         "tables/",
     ]

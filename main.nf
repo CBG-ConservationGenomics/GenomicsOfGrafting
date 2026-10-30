@@ -479,9 +479,9 @@ workflow {
 
     if (params.run_interproscan) {
         ANNOTATE_INTERPROSCAN(ch_ann_fasta)
-        ch_ips = ANNOTATE_INTERPROSCAN.out.tsv
+        ch_ips = ANNOTATE_INTERPROSCAN.out.tsv.first()
     } else {
-        ch_ips = Channel.fromPath("${projectDir}/assets/empty.tsv")
+        ch_ips = Channel.fromPath("${projectDir}/assets/empty.tsv").first()
     }
 
     if (params.run_signalp) {
@@ -603,7 +603,8 @@ workflow {
         ch_codon_dir,
         RUN_ORTHOFINDER.out.alignments,
         ch_candidate_report,
-        RUN_ORTHOFINDER.out.species_tree
+        RUN_ORTHOFINDER.out.species_tree,
+        ch_ips
     )
 }
 
