@@ -43,6 +43,10 @@ def helpMessage() {
       --genes_of_interest     gene name, then genus and species (WOX4<TAB>Solanum lycopersicum)
       --candidate_cds         optional characterized CDS FASTA; confirms the annotation CDS and protein
       --outdir                Output directory
+      --reuse_downloads       Skip download when 01_raw_proteomes already has that species (default: true)
+      --reuse_proteome_qc     Skip protein QC when 02_clean_proteomes already has that species (default: true)
+      --reuse_cds_qc          Skip CDS QC when 02_clean_cds already has that species (default: true)
+      --reuse_busco           Skip BUSCO when 02b_busco/<species> already has metrics (default: true)
       --busco_min_complete    Min Complete BUSCO % to keep a species (default: 90)
       --busco_lineage         Default lineage (default: embryophyta_odb10)
       --busco_download_path   Shared BUSCO download/cache directory on the server
@@ -78,6 +82,81 @@ def loadSpecies(String yamlPath) {
     return species
 }
 
+def nonempty(path) {
+    def f = file(path)
+    return (f.exists() && f.size() > 0) ? f : null
+}
+
+def firstLine(path) {
+    def reader = java.nio.file.Files.newBufferedReader(path)
+    try {
+        return reader.readLine() ?: ""
+    } finally {
+        reader.close()
+    }
+}
+
+def existingDownload(Map meta) {
+    if (!params.reuse_downloads) {
+        return null
+    }
+    def dir = "${params.outdir}/01_raw_proteomes"
+    def proteins = nonempty("${dir}/${meta.id}.proteins.faa")
+    def cds = file("${dir}/${meta.id}.cds.fna")
+    def gff = file("${dir}/${meta.id}.gff3")
+    def provenance = nonempty("${dir}/${meta.id}.provenance.tsv")
+    if (!proteins || !cds.exists() || !gff.exists() || !provenance) {
+        return null
+    }
+    return [proteins, cds, gff, provenance]
+}
+
+def existingBusco(Map meta) {
+    if (!params.reuse_busco) {
+        return null
+    }
+    def dir = "${params.outdir}/02b_busco/${meta.id}"
+    def metrics = nonempty("${dir}/${meta.id}.busco_metrics.tsv")
+    def status = nonempty("${dir}/${meta.id}.busco_status.txt")
+    if (!metrics || !status) {
+        return null
+    }
+    def verdict = status.text.trim().toLowerCase()
+    if (!(verdict in ['pass', 'fail'])) {
+        return null
+    }
+    if (!metrics.text.contains("${meta.id}")) {
+        return null
+    }
+    return [metrics, status]
+}
+
+def existingProteomeQc(Map meta) {
+    if (!params.reuse_proteome_qc) {
+        return null
+    }
+    def dir = "${params.outdir}/02_clean_proteomes"
+    def fasta = nonempty("${dir}/${meta.id}.clean.faa")
+    def idMap = nonempty("${dir}/${meta.id}.id_map.tsv")
+    if (!fasta || !idMap || !firstLine(idMap).contains("new_id")) {
+        return null
+    }
+    return [fasta, idMap]
+}
+
+def existingCdsQc(Map meta) {
+    if (!params.reuse_cds_qc) {
+        return null
+    }
+    def dir = "${params.outdir}/02_clean_cds"
+    def report = nonempty("${dir}/${meta.id}.cds_qc_report.tsv")
+    if (!report || !firstLine(report).contains("n_cds_kept")) {
+        return null
+    }
+    // An empty download keeps the report and does not write a FASTA.
+    return [nonempty("${dir}/${meta.id}.clean.cds.fna"), report]
+}
+
 workflow {
     if (params.help) {
         helpMessage()
@@ -110,42 +189,159 @@ workflow {
         }
         .set { ch_species }
 
-    // Download proteins + CDS → QC/rename
-    DOWNLOAD_PROTEOME(ch_species)
+    // Download proteins + CDS → QC/rename.
+    // A species already in 01_raw_proteomes is not downloaded again.
+    ch_species
+        .map { meta -> tuple(meta, existingDownload(meta)) }
+        .branch { meta, prior ->
+            existing: prior != null
+            fetch: prior == null
+        }
+        .set { ch_download }
 
-    DOWNLOAD_PROTEOME.out.fasta
-        .join(DOWNLOAD_PROTEOME.out.gff, by: 0)
-        .set { ch_raw }
+    ch_download.existing
+        .multiMap { meta, prior ->
+            notice: "${meta.id}: ${prior[0]}"
+            fasta: tuple(meta, prior[0])
+            cds: tuple(meta, prior[1])
+            gff: tuple(meta, prior[2])
+            provenance: tuple(meta, prior[3])
+        }
+        .set { ch_kept_download }
 
-    QC_PROTEOME(ch_raw)
+    ch_kept_download.notice.subscribe { msg ->
+        log.info "Reusing downloaded proteome for ${msg}"
+    }
+    DOWNLOAD_PROTEOME(ch_download.fetch.map { meta, prior -> meta })
 
-    // Align CDS to retained proteins (same IDs); trim ORFs when transcripts include UTRs
-    DOWNLOAD_PROTEOME.out.cds
-        .join(QC_PROTEOME.out.fasta, by: 0)
-        .join(QC_PROTEOME.out.id_map, by: 0)
-        .set { ch_cds_qc_in }
+    ch_raw_fasta = ch_kept_download.fasta.mix(DOWNLOAD_PROTEOME.out.fasta)
+    ch_raw_cds = ch_kept_download.cds.mix(DOWNLOAD_PROTEOME.out.cds)
+    ch_raw_gff = ch_kept_download.gff.mix(DOWNLOAD_PROTEOME.out.gff)
+    ch_raw_provenance = ch_kept_download.provenance.mix(DOWNLOAD_PROTEOME.out.provenance)
 
-    QC_CDS(ch_cds_qc_in)
+    ch_raw_gff
+        .multiMap { meta, gff ->
+            qc: tuple(meta, gff)
+            select: gff
+        }
+        .set { ch_gff_split }
+
+    ch_raw_fasta
+        .join(ch_gff_split.qc, by: 0)
+        .map { meta, fasta, gff -> tuple(meta, fasta, gff, existingProteomeQc(meta)) }
+        .branch { meta, fasta, gff, prior ->
+            reuse: prior != null
+            run: prior == null
+        }
+        .set { ch_prot_qc }
+
+    ch_prot_qc.reuse
+        .multiMap { meta, fasta, gff, prior ->
+            notice: "${meta.id}: ${prior[0]}"
+            fasta: tuple(meta, prior[0])
+            id_map: tuple(meta, prior[1])
+        }
+        .set { ch_prot_kept }
+    ch_prot_kept.notice.subscribe { msg ->
+        log.info "Reusing protein QC for ${msg}"
+    }
+    QC_PROTEOME(ch_prot_qc.run.map { meta, fasta, gff, prior -> tuple(meta, fasta, gff) })
+
+    ch_clean_fasta = ch_prot_kept.fasta.mix(QC_PROTEOME.out.fasta)
+    ch_clean_id_map = ch_prot_kept.id_map.mix(QC_PROTEOME.out.id_map)
+    ch_clean_fasta
+        .multiMap { meta, fa ->
+            cds: tuple(meta, fa)
+            downstream: tuple(meta, fa)
+            check: fa
+        }
+        .set { ch_fasta_split }
+    ch_clean_id_map
+        .multiMap { meta, id_map ->
+            cds: tuple(meta, id_map)
+            downstream: tuple(meta, id_map)
+        }
+        .set { ch_id_split }
+
+    // Align CDS to retained proteins (same IDs); trim ORFs when transcripts include UTRs.
+    // A species already in 02_clean_cds is not processed again.
+    ch_raw_cds
+        .join(ch_fasta_split.cds, by: 0)
+        .join(ch_id_split.cds, by: 0)
+        .map { meta, cds, proteins, id_map -> tuple(meta, cds, proteins, id_map, existingCdsQc(meta)) }
+        .branch { meta, cds, proteins, id_map, prior ->
+            reuse: prior != null
+            run: prior == null
+        }
+        .set { ch_cds_qc }
+
+    ch_cds_qc.reuse
+        .multiMap { meta, cds, proteins, id_map, prior ->
+            notice: prior[0] ? "${meta.id}: ${prior[0]}" : "${meta.id}: no CDS retained"
+            cds: tuple(meta, prior[0])
+        }
+        .set { ch_cds_kept }
+    ch_cds_kept.notice.subscribe { msg ->
+        log.info "Reusing CDS QC for ${msg}"
+    }
+    QC_CDS(ch_cds_qc.run.map { meta, cds, proteins, id_map, prior -> tuple(meta, cds, proteins, id_map) })
+
+    ch_clean_cds = ch_cds_kept.cds
+        .filter { meta, path -> path }
+        .mix(QC_CDS.out.cds)
+    ch_clean_cds
+        .multiMap { meta, cds ->
+            check: cds
+            codon: cds
+        }
+        .set { ch_cds_split }
 
     // -------------------------------------------------------------------------
     // BUSCO completeness gate — failing species are dropped before OrthoFinder
     // -------------------------------------------------------------------------
     if (params.run_busco) {
-        RUN_BUSCO(QC_PROTEOME.out.fasta)
-
-        QC_PROTEOME.out.fasta
-            .join(QC_PROTEOME.out.id_map, by: 0)
-            .join(RUN_BUSCO.out.metrics, by: 0)
-            .join(RUN_BUSCO.out.status, by: 0)
-            .map { meta, fasta, id_map, metrics, status ->
-                [meta, fasta, id_map, metrics, status]
+        ch_fasta_split.downstream
+            .join(ch_id_split.downstream, by: 0)
+            .map { meta, fasta, id_map -> tuple(meta, fasta, id_map, existingBusco(meta)) }
+            .branch { meta, fasta, id_map, prior ->
+                reuse: prior != null
+                run: prior == null
             }
+            .set { ch_busco }
+
+        ch_busco.reuse
+            .multiMap { meta, fasta, id_map, prior ->
+                notice: "${meta.id}: ${prior[1]}"
+                gate: tuple(meta, fasta, id_map, prior[0], prior[1])
+                summary: prior[0]
+            }
+            .set { ch_busco_kept }
+        ch_busco.run
+            .multiMap { meta, fasta, id_map, prior ->
+                busco: tuple(meta, fasta)
+                gate: tuple(meta, fasta, id_map)
+            }
+            .set { ch_busco_run }
+
+        ch_busco_kept.notice.subscribe { msg ->
+            log.info "Reusing BUSCO results for ${msg}"
+        }
+        RUN_BUSCO(ch_busco_run.busco)
+
+        ch_busco_kept.gate
+            .mix(
+                ch_busco_run.gate
+                    .join(RUN_BUSCO.out.metrics, by: 0)
+                    .join(RUN_BUSCO.out.status, by: 0)
+            )
             .set { ch_busco_gate_in }
 
         FILTER_BUSCO(ch_busco_gate_in)
 
         COLLECT_BUSCO_SUMMARY(
-            RUN_BUSCO.out.metrics.map { _meta, m -> m }.collect()
+            ch_busco_kept.summary
+                .mix(RUN_BUSCO.out.metrics.map { _meta, metrics -> metrics })
+                .collect()
         )
         ch_busco_summary = COLLECT_BUSCO_SUMMARY.out.summary
 
@@ -175,12 +371,12 @@ workflow {
     } else {
         log.warn "BUSCO gate disabled (--run_busco false); all QC'd proteomes proceed"
         ch_busco_summary = Channel.fromPath("${projectDir}/assets/empty.tsv")
-        QC_PROTEOME.out.fasta
+        ch_fasta_split.downstream
             .map { _meta, fa -> fa }
             .collect()
             .set { ch_proteomes }
 
-        QC_PROTEOME.out.id_map
+        ch_id_split.downstream
             .map { _meta, m -> m }
             .collect()
             .set { ch_id_maps }
@@ -192,9 +388,7 @@ workflow {
     // Select orthogroups containing genes of interest
     ch_goi = Channel.fromPath(params.genes_of_interest, checkIfExists: true)
 
-    ch_gffs = DOWNLOAD_PROTEOME.out.gff
-        .map { _meta, gff -> gff }
-        .collect()
+    ch_gffs = ch_gff_split.select.collect()
 
     SELECT_ORTHOGROUPS(
         RUN_ORTHOFINDER.out.results,
@@ -207,13 +401,11 @@ workflow {
     // are the characterized gene. Downstream steps wait on this when the
     // FASTA is set, and a strict failure stops the run before annotation.
     if (params.candidate_cds) {
-        ch_clean_proteins = QC_PROTEOME.out.fasta
-            .map { _meta, fa -> fa }
+        ch_clean_proteins = ch_fasta_split.check
             .collect()
             .ifEmpty([])
             .map { files -> files ?: [file("${projectDir}/assets/empty.tsv")] }
-        ch_clean_cds = QC_CDS.out.cds
-            .map { _meta, cds -> cds }
+        ch_clean_cds = ch_cds_split.check
             .collect()
             .ifEmpty([])
             .map { files -> files ?: [file("${projectDir}/assets/empty.tsv")] }
@@ -251,6 +443,7 @@ workflow {
         ch_candidate_report = Channel.fromPath("${projectDir}/assets/empty.tsv")
         ch_sel_tsv = SELECT_ORTHOGROUPS.out.tsv
         ch_sel_list = SELECT_ORTHOGROUPS.out.list
+        ch_fasta_split.check.subscribe { }
     }
 
     // Protein-MSA-guided codon alignments (for HyPhy / selection)
@@ -259,13 +452,14 @@ workflow {
             ch_sel_list,
             RUN_ORTHOFINDER.out.alignments,
             RUN_ORTHOFINDER.out.results,
-            QC_CDS.out.cds.map { _meta, cds -> cds }.collect()
+            ch_cds_split.codon.collect()
         )
         ch_codon_dir = BUILD_CODON_ALIGNMENTS.out.dir
         ch_codon_report = BUILD_CODON_ALIGNMENTS.out.report
     } else {
         ch_codon_dir = Channel.fromPath("${projectDir}/assets/empty.tsv")
         ch_codon_report = Channel.fromPath("${projectDir}/assets/empty.tsv")
+        ch_cds_split.codon.subscribe { }
     }
 
     // Extract only selected OG proteins for annotation
@@ -392,7 +586,7 @@ workflow {
         ch_rank_curated = ch_af_priority
     }
 
-    ch_provenance = DOWNLOAD_PROTEOME.out.provenance
+    ch_provenance = ch_raw_provenance
         .map { _meta, prov -> prov }
         .collect()
 

@@ -161,12 +161,15 @@ To use local files on the server:
 - Gzip/bzip2 detected by magic bytes and decompressed  
 - Keep longest isoform; optionally drop alt-haplotig proteins (GFF/ID patterns)  
 - Output: `results/01_raw_proteomes/`, `results/02_clean_proteomes/`
+- If `<species>.proteins.faa`, `.cds.fna`, `.gff3`, and `.provenance.tsv` are already in `01_raw_proteomes/`, that species is not downloaded again. `--reuse_downloads false` fetches them again.
+- If `<species>.clean.faa` and `<species>.id_map.tsv` are already in `02_clean_proteomes/`, protein QC is skipped. `--reuse_proteome_qc false` runs it again.
 
 ### 3. CDS QC
 
 - Retain CDS matching cleaned proteins via id map  
 - If the download is cDNA/transcript (Nben), find the ORF that translates to the protein  
 - Output: `results/02_clean_cds/`
+- If `<species>.cds_qc_report.tsv` is already in `02_clean_cds/`, CDS QC is skipped and `<species>.clean.cds.fna` is reused when it exists. `--reuse_cds_qc false` runs it again.
 
 ### 4. BUSCO gate
 
@@ -176,6 +179,7 @@ To use local files on the server:
 - Failing species are excluded from OrthoFinder onward  
 - Pipeline errors if fewer than `--busco_min_species` (default 2) pass  
 - Output: `results/02b_busco/`
+- If `02b_busco/<species>/<species>.busco_metrics.tsv` and `busco_status.txt` are already present, BUSCO is not run again for that species. The saved pass/fail is reused, so change `--busco_min_complete` only with `--reuse_busco false`.
 
 ### 5. OrthoFinder
 
@@ -404,6 +408,10 @@ nextflow run workflows/compare_structures.nf -profile hpc,conda \
 | `--candidate_cds_require_all` | `true` | Every resolved candidate must have a reference CDS |
 | `--candidate_cds_strict` | `true` | Stop the run when the check fails |
 | `--species_yaml` | `conf/species.yaml` | Species / download config |
+| `--reuse_downloads` | `true` | Skip download when that species is already in `01_raw_proteomes/` |
+| `--reuse_proteome_qc` | `true` | Skip protein QC when `02_clean_proteomes/` already has the cleaned FASTA and id map |
+| `--reuse_cds_qc` | `true` | Skip CDS QC when `02_clean_cds/` already has the QC report |
+| `--reuse_busco` | `true` | Skip BUSCO when that species already has metrics and a pass/fail status |
 | `--busco_min_complete` | `90` | Min Complete % to keep a species |
 | `--busco_lineage` | `embryophyta_odb10` | Default BUSCO lineage |
 | `--reference_species_id` | `auto` | Fallback species if the characterized protein is absent from the alignment |
