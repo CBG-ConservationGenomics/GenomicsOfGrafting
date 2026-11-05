@@ -47,6 +47,7 @@ class SpeciesTreeHeatmapTest(unittest.TestCase):
         self.assertEqual(report.match_tip("Ath_clean", known), "Ath")
         self.assertEqual(report.match_tip("'Nbe.clean'", known), "Nbe")
         self.assertEqual(report.match_tip("Cpe", known), "Cpe")
+        self.assertEqual(report.match_tip("1.Sly.clean.faa", known), "Sly")
         self.assertIsNone(report.match_tip("ghost.clean", known))
 
     def test_tree_order_and_reorder(self) -> None:
@@ -82,6 +83,17 @@ class SpeciesTreeHeatmapTest(unittest.TestCase):
         # Ath (index 3) vs the Sly reference (index 0) stays 12.
         self.assertEqual(ordered["values"][3][0], 12)
         self.assertIsNone(ordered["values"][1][1])
+
+    def test_bracket_support_does_not_drop_the_tree(self) -> None:
+        known = {"Ath", "Sly", "Nbe"}
+        newick = "((Sly.clean:0.05[98],Nbe.clean:0.06[95]):0.2[100],Ath.clean:0.3);"
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "SpeciesTree_rooted.txt"
+            path.write_text(newick + "\n")
+            tree = report.load_species_tree(str(path), known)
+        self.assertIsNotNone(tree)
+        assert tree is not None
+        self.assertEqual(tree["order"], ["Ath", "Sly", "Nbe"])
 
     def test_unmatched_tip_is_dropped(self) -> None:
         known = {"Ath", "Sly"}

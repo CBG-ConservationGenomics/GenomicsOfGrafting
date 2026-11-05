@@ -384,6 +384,8 @@ workflow {
 
     // OrthoFinder (MSA mode so alignments are available for %ID)
     RUN_ORTHOFINDER(ch_proteomes)
+    // One file, read by graft phenotype and by the curated report.
+    ch_species_tree = RUN_ORTHOFINDER.out.species_tree.first()
 
     // Select orthogroups containing genes of interest
     ch_goi = Channel.fromPath(params.genes_of_interest, checkIfExists: true)
@@ -556,7 +558,7 @@ workflow {
 
         GRAFT_PHENOTYPE(
             Channel.fromPath(params.graft_matrix, checkIfExists: true),
-            RUN_ORTHOFINDER.out.species_tree,
+            ch_species_tree,
             ch_sel_list,
             RUN_ORTHOFINDER.out.alignments,
             ch_og_alns,
@@ -603,7 +605,7 @@ workflow {
         ch_codon_dir,
         RUN_ORTHOFINDER.out.alignments,
         ch_candidate_report,
-        RUN_ORTHOFINDER.out.species_tree,
+        ch_species_tree,
         ch_ips
     )
 }

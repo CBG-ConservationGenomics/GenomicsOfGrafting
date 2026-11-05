@@ -123,13 +123,28 @@ def match_tip(label: str, known: set[str]) -> str | None:
     if not label or not known:
         return None
     lookup = {sid.lower(): sid for sid in known}
+    raw = label.strip().strip("'\"")
     for cand in tip_candidates(label):
         if cand in known:
             return cand
         hit = lookup.get(cand.lower())
         if hit:
             return hit
-    return None
+    # OrthoFinder and Nextflow add prefixes and suffixes around the species id
+    # (Sly.clean, 1.Sly.clean, Sly.clean.faa). A whole token still names the species.
+    hits = []
+    for token in re.split(r"[^A-Za-z0-9]+", raw):
+        if not token:
+            continue
+        if token in known:
+            hits.append(token)
+            continue
+        hit = lookup.get(token.lower())
+        if hit:
+            hits.append(hit)
+    if not hits:
+        return None
+    return max(set(hits), key=len)
 
 
 class _Clade:
@@ -170,6 +185,23 @@ def parse_newick(text: str) -> _Clade:
         while pos < len(raw) and raw[pos].isspace():
             pos += 1
 
+    def skip_comment() -> None:
+        """Ignore Newick [support] comments. They follow a name or a length."""
+        nonlocal pos
+        skip()
+        while pos < len(raw) and raw[pos] == "[":
+            depth = 0
+            while pos < len(raw):
+                char = raw[pos]
+                pos += 1
+                if char == "[":
+                    depth += 1
+                elif char == "]":
+                    depth -= 1
+                    if depth == 0:
+                        break
+            skip()
+
     def parse_name() -> str:
         nonlocal pos
         skip()
@@ -190,7 +222,7 @@ def parse_newick(text: str) -> _Clade:
                 chars.append(char)
             return "".join(chars).strip()
         start = pos
-        while pos < len(raw) and raw[pos] not in ":,();":
+        while pos < len(raw) and raw[pos] not in ":,();[":
             pos += 1
         return raw[start:pos].strip()
 
@@ -220,10 +252,11 @@ def parse_newick(text: str) -> _Clade:
                     break
                 raise ValueError(f"Newick ended inside a clade at position {pos}")
         node.name = parse_name()
-        skip()
+        skip_comment()
         if pos < len(raw) and raw[pos] == ":":
             pos += 1
             node.length = parse_length()
+        skip_comment()
         return node
 
     root = parse_clade()
@@ -629,10 +662,11 @@ HTML = r"""<!DOCTYPE html>
   .source-note { margin: 0; padding: 0 1rem 0.7rem; color: var(--muted); font-size: 0.85rem; }
   tr.warn td { color: var(--rust); }
   td.url { word-break: break-all; }
-  .heat-wrap { margin-top: 0.9rem; overflow-x: auto; }
+  .heat-wrap { margin-top: 0.9rem; }
   .heat-note { margin: 0 0 0.55rem; color: var(--muted); font-size: 0.85rem; max-width: 52rem; }
-  .heat-fig { display: flex; align-items: flex-start; gap: 0; }
-  svg.heat-tree { flex: 0 0 auto; display: block; }
+  .heat-fig { display: flex; align-items: flex-start; gap: 0.35rem; }
+  .heat-scroll { overflow-x: auto; min-width: 0; flex: 1 1 auto; }
+  svg.heat-tree { flex: 0 0 168px; width: 168px; min-width: 168px; display: block; overflow: visible; }
   svg.heat-tree line { stroke: #6d6458; stroke-width: 1.5; }
   svg.heat-tree text {
     fill: var(--muted);
@@ -995,7 +1029,7 @@ function matrixHtml(row) {
     : "Pairwise identity for every protein in this alignment. The characterized protein is marked * and listed first. Homologs from the same species each have their own row.";
   const table = `<table class="heat"><thead><tr><th></th>${head}</tr></thead><tbody>${body}</tbody></table>`;
   const fig = onTree
-    ? `<div class="heat-fig"><svg class="heat-tree" width="168" height="1" role="img" aria-label="OrthoFinder species tree"></svg>${table}</div>`
+    ? `<div class="heat-fig"><svg class="heat-tree" width="168" height="1" role="img" aria-label="OrthoFinder species tree"></svg><div class="heat-scroll">${table}</div></div>`
     : table;
   return `<div class="heat-wrap">
     <p class="heat-note">${note}</p>
@@ -1073,14 +1107,26 @@ function alignTrees() {
     const table = fig.querySelector("table.heat");
     if (!svg || !table) return;
     const figTop = fig.getBoundingClientRect().top;
-    const tipRows = {};
-    table.querySelectorAll("tbody tr").forEach(tr => {
+    const entries = [];
+    table.querySelectorAll("tbody tr").forEach((tr, index) => {
       const sid = tr.getAttribute("data-species") || "";
       if (!known.has(sid)) return;
       const box = tr.getBoundingClientRect();
-      const y = (box.top - figTop) + box.height / 2;
-      if (!tipRows[sid]) tipRows[sid] = [];
-      tipRows[sid].push(y);
+      entries.push({
+        sid,
+        index,
+        height: box.height,
+        y: (box.top - figTop) + box.height / 2
+      });
+    });
+    const tipRows = {};
+    const measured = entries.some(entry => entry.height >= 2);
+    const headH = 118;
+    const rowH = 34;
+    entries.forEach(entry => {
+      const y = measured ? entry.y : headH + entry.index * rowH + rowH / 2;
+      if (!tipRows[entry.sid]) tipRows[entry.sid] = [];
+      tipRows[entry.sid].push(y);
     });
     const present = new Set(Object.keys(tipRows));
     if (!present.size) {
@@ -1150,14 +1196,14 @@ function alignTrees() {
     })(pruned);
     const head = table.querySelector("thead");
     const headBottom = head ? head.getBoundingClientRect().bottom - figTop : 0;
-    if (headBottom > 36) {
+    if (headBottom > 36 || !measured) {
       svg.appendChild(svgEl("text", { x: String(pad), y: "16" })).textContent = "species tree";
     }
-    if (phylogram && headBottom > 36) {
+    if (phylogram && (headBottom > 36 || !measured)) {
       const step = niceDistance(maxX);
       const barW = step ? step * scale : 0;
       if (step && barW >= 18 && barW <= inner) {
-        const y = Math.min(headBottom - 16, 36);
+        const y = measured ? Math.min(headBottom - 16, 36) : 28;
         addLine(pad, y, pad + barW, y);
         const labelX = pad + barW + 6;
         if (labelX < width - 28) {
@@ -1168,10 +1214,14 @@ function alignTrees() {
       }
     }
     const svgWidth = width.toFixed(2);
-    const svgHeight = Math.max(tableBottom, 1).toFixed(2);
+    const nRows = table.querySelectorAll("tbody tr").length;
+    const svgHeight = (measured ? Math.max(tableBottom, 1) : headH + nRows * rowH).toFixed(2);
     svg.setAttribute("width", svgWidth);
     svg.setAttribute("height", svgHeight);
     svg.setAttribute("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
+    svg.style.width = svgWidth + "px";
+    svg.style.height = svgHeight + "px";
+    svg.style.flex = "0 0 " + svgWidth + "px";
   });
 }
 function esc(s) {
@@ -1258,6 +1308,7 @@ function draw() {
   }
   document.getElementById("count").textContent = `${rows.length} of ${DATA.families.length}`;
   alignTrees();
+  requestAnimationFrame(alignTrees);
 }
 const summary = DATA.summary || {};
 const cards = [
