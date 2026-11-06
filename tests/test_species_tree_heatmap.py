@@ -95,6 +95,18 @@ class SpeciesTreeHeatmapTest(unittest.TestCase):
         assert tree is not None
         self.assertEqual(tree["order"], ["Ath", "Sly", "Nbe"])
 
+    def test_filename_species_ids_match_short_ids(self) -> None:
+        known = {"Ath", "Sly", "Nbe"}
+        matrix = {
+            "labels": ["a", "b"],
+            "full": ["Sly.clean_NP_1", "Ath.clean_NP_2"],
+            "species": ["Sly.clean", "Ath.clean"],
+            "reference": [True, False],
+            "values": [[None, 1], [1, None]],
+        }
+        report.normalize_matrix_species(matrix, known)
+        self.assertEqual(matrix["species"], ["Sly", "Ath"])
+
     def test_unmatched_tip_is_dropped(self) -> None:
         known = {"Ath", "Sly"}
         newick = "((Sly.clean:0.05,ghost.clean:0.06):0.2,Ath.clean:0.3);"
@@ -170,11 +182,15 @@ class SpeciesTreeHeatmapTest(unittest.TestCase):
             data = json.loads(payload)
         # Nbe is a single-tip clade, so ladderize places it before Ath+Sly.
         self.assertEqual(data["species_tree"]["order"], ["Nbe", "Ath", "Sly"])
+        self.assertEqual([sp["id"] for sp in data["species"]], ["Nbe", "Ath", "Sly"])
         self.assertEqual(
             data["families"][0]["matrix"]["species"],
             ["Nbe", "Ath", "Sly"],
         )
         self.assertIn("OrthoFinder species tree", html)
+        self.assertIn("species-phylogeny", html)
+        self.assertIn(">Nbe<", html)
+        self.assertIn("col-tree", html)
         self.assertIn("alignTrees", html)
 
 

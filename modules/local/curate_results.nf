@@ -49,6 +49,9 @@ process CURATE_RESULTS {
     TREE_ARG=""
     if [ -s "${species_tree}" ]; then
         TREE_ARG="--species-tree ${species_tree}"
+        echo "Curated report will draw the species tree from ${species_tree}" >&2
+    else
+        echo "Curated report has no species tree file" >&2
     fi
 
     curate_results.py \\

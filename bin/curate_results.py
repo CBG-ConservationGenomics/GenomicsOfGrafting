@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import html as html_lib
 import json
 import re
 import shutil
@@ -287,18 +288,33 @@ def clade_payload(clade: _Clade, known: set[str]) -> dict | None:
     return {"name": "", "length": round(float(clade.length), 8), "children": children}
 
 
-def load_species_tree(path: str | None, known: set[str]) -> dict | None:
+def load_species_tree(
+    path: str | None,
+    known: set[str],
+    notes: list[str] | None = None,
+) -> dict | None:
     """Ladderized OrthoFinder species tree, or None when it cannot be used."""
-    if not path or not known:
+
+    def note(message: str) -> None:
+        print(f"[curate_results] {message}", file=sys.stderr)
+        if notes is not None:
+            notes.append(message)
+
+    if not path:
+        note("no species tree file was given to the report")
+        return None
+    if not known:
+        note("no species ids were available to match the species tree")
         return None
     file = Path(path)
     if not file.is_file() or file.stat().st_size == 0:
+        note(f"species tree file was missing or empty ({file.name})")
         return None
     try:
         tree = parse_newick(file.read_text())
         tree.ladderize()
     except Exception as exc:
-        print(f"[curate_results] could not read species tree {file}: {exc}", file=sys.stderr)
+        note(f"could not read species tree {file.name}: {exc}")
         return None
     order: list[str] = []
     seen: set[str] = set()
@@ -314,18 +330,34 @@ def load_species_tree(path: str | None, known: set[str]) -> dict | None:
             order.append(sid)
     root = clade_payload(tree, known)
     if not order or root is None:
-        print(
-            "[curate_results] species tree tips did not match matrix species ids"
-            + (f" ({', '.join(unmatched)})" if unmatched else ""),
-            file=sys.stderr,
-        )
+        tip_list = ", ".join(unmatched) or "none"
+        known_list = ", ".join(sorted(known)) or "none"
+        note(f"species tree tips did not match species ids (tips: {tip_list}; species ids: {known_list})")
         return None
     if unmatched:
-        print(
-            "[curate_results] species tree tips not in the identity matrix: " + ", ".join(unmatched),
-            file=sys.stderr,
-        )
+        note("species tree tips not in the identity matrix: " + ", ".join(unmatched))
     return {"order": order, "root": root}
+
+
+def species_ids_for_tree(species: list[dict], provenance: list[dict]) -> set[str]:
+    """Short species ids from the identity table and the download records."""
+    known = {sp["id"] for sp in species if sp.get("id")}
+    for row in provenance:
+        sid = (row.get("species_id") or "").strip()
+        if sid:
+            known.add(sid)
+    return known
+
+
+def normalize_matrix_species(matrix: dict, known: set[str]) -> None:
+    """Store the short species id on each protein, including OrthoFinder filename tips."""
+    species = []
+    for sid, seq_id in zip(matrix["species"], matrix["full"]):
+        hit = match_tip(sid, known) if sid else None
+        if not hit and seq_id:
+            hit = match_tip(seq_id, known)
+        species.append(hit or sid)
+    matrix["species"] = species
 
 
 def reorder_matrix(matrix: dict, species_order: list[str]) -> dict:
@@ -667,7 +699,13 @@ HTML = r"""<!DOCTYPE html>
   .heat-fig { display: flex; align-items: flex-start; gap: 0.35rem; }
   .heat-scroll { overflow-x: auto; min-width: 0; flex: 1 1 auto; }
   svg.heat-tree { flex: 0 0 168px; width: 168px; min-width: 168px; display: block; overflow: visible; }
-  svg.heat-tree line { stroke: #6d6458; stroke-width: 1.5; }
+  svg.heat-tree line, svg.col-tree line { stroke: #6d6458; stroke-width: 1.5; }
+  tr.phylogeny th { position: static; padding: 0.15rem 0.2rem 0; border: 0; background: transparent; vertical-align: bottom; }
+  svg.col-tree { display: block; overflow: visible; }
+  .species-phylogeny { display: block; margin: 0.35rem 1rem 0.15rem; }
+  .species-phylogeny line { stroke: #1b4332; stroke-width: 1.6; fill: none; }
+  .species-phylogeny text { font-size: 12px; fill: #1c1915; font-family: "Avenir Next", "Segoe UI", sans-serif; }
+  .tree-missing { margin: 0.7rem 1rem 0.2rem; color: var(--rust); font-size: 0.92rem; }
   svg.heat-tree text {
     fill: var(--muted);
     font-size: 11px;
@@ -864,6 +902,7 @@ HTML = r"""<!DOCTYPE html>
       <label class="check" id="ranked-wrap"><input id="ranked" type="checkbox"> Priority score &gt; 0</label>
       <span class="count" id="count"></span>
     </div>
+    <div id="species-phylogeny">__SPECIES_TREE__</div>
     <div class="scroller">
       <table>
         <thead id="head"></thead>
@@ -968,13 +1007,23 @@ function columns() {
 }
 function drawHead() {
   const head = document.getElementById("head");
-  const cells = columns().map(col => {
+  const cols = columns();
+  const cells = cols.map(col => {
     if (col.nosort) return `<th>${col.label}</th>`;
     const mark = state.sort === col.key ? (state.dir === "asc" ? " ↑" : " ↓") : "";
     const title = col.title ? ` title="${col.title}"` : "";
     return `<th><button type="button" data-sort="${col.key}"${title}>${col.label}${mark}</button></th>`;
   }).join("");
-  head.innerHTML = `<tr><th></th>${cells}</tr>`;
+  let phy = "";
+  const speciesAt = cols.findIndex(col => col.key.startsWith("id:"));
+  const nSp = cols.filter(col => col.key.startsWith("id:")).length;
+  if (DATA.species_tree && DATA.species_tree.root && speciesAt >= 0 && nSp > 0) {
+    const lead = 1 + speciesAt;
+    const after = cols.length - speciesAt - nSp;
+    const tail = after > 0 ? `<th colspan="${after}"></th>` : "";
+    phy = `<tr class="phylogeny"><th colspan="${lead}"></th><th class="phy" colspan="${nSp}"><svg class="col-tree" role="img" aria-label="OrthoFinder species tree"></svg></th>${tail}</tr>`;
+  }
+  head.innerHTML = phy + `<tr><th></th>${cells}</tr>`;
   head.querySelectorAll("button").forEach(btn => {
     btn.addEventListener("click", () => {
       const key = btn.dataset.sort;
@@ -1098,6 +1147,64 @@ function svgEl(name, attrs) {
   const el = document.createElementNS("http://www.w3.org/2000/svg", name);
   Object.keys(attrs).forEach(key => el.setAttribute(key, attrs[key]));
   return el;
+}
+function alignColumnTree() {
+  if (!DATA.species_tree || !DATA.species_tree.root) return;
+  const svg = document.querySelector("svg.col-tree");
+  const cell = svg && svg.parentElement;
+  if (!svg || !cell) return;
+  const cellBox = cell.getBoundingClientRect();
+  const tips = {};
+  document.querySelectorAll('#head button[data-sort^="id:"]').forEach(btn => {
+    const box = btn.getBoundingClientRect();
+    if (box.width < 2) return;
+    tips[btn.dataset.sort.slice(3)] = box.left - cellBox.left + box.width / 2;
+  });
+  const present = new Set(Object.keys(tips));
+  if (!present.size) return;
+  let pruned = pruneTree(DATA.species_tree.root, present);
+  if (!pruned) return;
+  if (!(treeSpan(pruned) > 0)) pruned = asCladogram(pruned, true);
+  placeTree(pruned, 0, tips);
+  let maxX = 0;
+  (function walkMax(node) {
+    if (node.x > maxX) maxX = node.x;
+    (node.children || []).forEach(walkMax);
+  })(pruned);
+  const depth = 64;
+  const scale = maxX > 0 ? depth / maxX : 1;
+  const height = depth + 14;
+  const width = Math.max(cellBox.width, 10);
+  svg.setAttribute("width", String(width));
+  svg.setAttribute("height", String(height));
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.style.width = width + "px";
+  svg.style.height = height + "px";
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  const yOf = node => 6 + node.x * scale;
+  const addLine = (x1, y1, x2, y2) => {
+    svg.appendChild(svgEl("line", {
+      x1: x1.toFixed(2), y1: y1.toFixed(2), x2: x2.toFixed(2), y2: y2.toFixed(2)
+    }));
+  };
+  (function drawNode(node) {
+    const y = yOf(node);
+    (node.children || []).forEach(child => {
+      addLine(child.y, y, child.y, yOf(child));
+      drawNode(child);
+    });
+    if (node.children && node.children.length > 1) {
+      const xs = node.children.map(child => child.y);
+      addLine(Math.min.apply(null, xs), y, Math.max.apply(null, xs), y);
+    }
+  })(pruned);
+  (function drawTips(node) {
+    if (node.children && node.children.length) {
+      node.children.forEach(drawTips);
+      return;
+    }
+    addLine(node.y, yOf(node), node.y, height - 1);
+  })(pruned);
 }
 function alignTrees() {
   if (!DATA.species_tree || !DATA.species_tree.root) return;
@@ -1307,8 +1414,9 @@ function draw() {
     });
   }
   document.getElementById("count").textContent = `${rows.length} of ${DATA.families.length}`;
+  alignColumnTree();
   alignTrees();
-  requestAnimationFrame(alignTrees);
+  requestAnimationFrame(() => { alignColumnTree(); alignTrees(); });
 }
 const summary = DATA.summary || {};
 const cards = [
@@ -1323,7 +1431,8 @@ document.getElementById("stats").innerHTML = cards.map(([label, value, tip]) =>
 const bits = [`Report date ${esc(DATA.generated)}.`];
 bits.push("Genes mined are the literature genes placed in an orthogroup. Species in the run are the proteomes included in this job. Proteomes downloaded counts remote NCBI or URL fetches, not a local file. Run time is from job start until this report.");
 bits.push("Each species column is the closest protein from that species to the reference, and Best %ID is the single closest protein in the family. Darker green is higher identity.");
-if (DATA.species_tree) bits.push("The identity matrix in each family follows the OrthoFinder species tree, drawn beside the heatmap. Branch lengths are the species-tree distances.");
+if (DATA.species_tree) bits.push("The OrthoFinder species tree is drawn above the species columns and beside each family's identity heatmap. Branch lengths are the species-tree distances.");
+else if (DATA.species_tree_status) bits.push("Species tree was not drawn. " + DATA.species_tree_status);
 if (DATA.has_ranking) bits.push("Priority adds ASR substitutions on phenotype-shift branches, divergence beyond species relatedness, HyPhy hits, and convergence.");
 if (DATA.has_folding) bits.push("Fold rank is the AlphaFold queue order (1 is first).");
 if (DATA.candidate_check) bits.push(`Characterized CDS check: ${DATA.candidate_check.n_match} of ${DATA.candidate_check.n} reference sequences match the annotation CDS and protein. See tables/candidate_cds_check.tsv.`);
@@ -1359,6 +1468,71 @@ draw();
 """
 
 
+def species_tree_svg(tree: dict) -> str:
+    """Static phylogeny, so the tree is in the page even before JavaScript runs."""
+    root = tree["root"]
+    order = tree["order"]
+    y_of = {sid: index for index, sid in enumerate(order)}
+    row_h = 22
+    pad = 10
+    depth_w = 150
+
+    def walk_span(node: dict, equal: bool) -> float:
+        kids = node.get("children") or []
+        length = 1.0 if equal else float(node.get("length") or 0)
+        if not kids:
+            return length
+        return length + max(walk_span(child, equal) for child in kids)
+
+    equal = walk_span(root, False) <= 0
+    placed: dict[int, tuple[float, float]] = {}
+
+    def place(node: dict, parent_x: float) -> None:
+        kids = node.get("children") or []
+        raw = float(node.get("length") or 0)
+        if equal:
+            raw = 0.0 if parent_x == 0 and kids else 1.0
+        x = parent_x + raw
+        if not kids:
+            y = pad + y_of.get(node.get("name") or "", 0) * row_h + row_h / 2
+            placed[id(node)] = (x, y)
+            return
+        for child in kids:
+            place(child, x)
+        child_y = [placed[id(child)][1] for child in kids]
+        placed[id(node)] = (x, sum(child_y) / len(child_y))
+
+    place(root, 0)
+    max_x = max((pos[0] for pos in placed.values()), default=1) or 1
+    scale = depth_w / max_x
+    height = pad * 2 + max(len(order), 1) * row_h
+    width = 16 + depth_w + 72
+    parts = [
+        f'<svg class="species-phylogeny" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-label="OrthoFinder species tree">'
+    ]
+
+    def draw(node: dict) -> None:
+        x, y = placed[id(node)]
+        sx = 16 + x * scale
+        kids = node.get("children") or []
+        for child in kids:
+            cx, cy = placed[id(child)]
+            parts.append(
+                f'<line x1="{sx:.1f}" y1="{cy:.1f}" x2="{16 + cx * scale:.1f}" y2="{cy:.1f}"/>'
+            )
+            draw(child)
+        if len(kids) > 1:
+            ys = [placed[id(child)][1] for child in kids]
+            parts.append(f'<line x1="{sx:.1f}" y1="{min(ys):.1f}" x2="{sx:.1f}" y2="{max(ys):.1f}"/>')
+        if not kids and node.get("name"):
+            label = html_lib.escape(str(node["name"]))
+            parts.append(f'<text x="{sx + 8:.1f}" y="{y + 4:.1f}">{label}</text>')
+
+    draw(root)
+    parts.append("</svg>")
+    return "".join(parts)
+
+
 def main() -> None:
     args = parse_args()
     outdir = Path(args.outdir)
@@ -1379,13 +1553,18 @@ def main() -> None:
     candidate_check = load_candidate_check(args.candidate_check)
     n_run, n_downloaded = species_run_counts(provenance, species)
     matrices = load_matrices(args.identity_matrix_pairs, args.identity_matrix_labels)
-    known_species = {sid for matrix in matrices.values() for sid in matrix.get("species", []) if sid}
-    species_tree = load_species_tree(args.species_tree, known_species)
+    known_species = species_ids_for_tree(species, provenance)
+    tree_notes: list[str] = []
+    species_tree = load_species_tree(args.species_tree, known_species, tree_notes)
     if species_tree:
+        for matrix in matrices.values():
+            normalize_matrix_species(matrix, known_species)
         on_tree = set(species_tree["order"])
         for og, matrix in list(matrices.items()):
             if any(sid in on_tree for sid in matrix["species"]):
                 matrices[og] = reorder_matrix(matrix, species_tree["order"])
+        rank = {sid: i for i, sid in enumerate(species_tree["order"])}
+        species.sort(key=lambda sp: (rank.get(sp["id"], len(rank)), sp["id"]))
     for rec in records:
         rec["matrix"] = matrices.get(rec["orthogroup"])
     payload = {
@@ -1404,12 +1583,20 @@ def main() -> None:
     }
     if species_tree:
         payload["species_tree"] = species_tree
+    elif tree_notes:
+        payload["species_tree_status"] = tree_notes[0]
     if candidate_check:
         payload["candidate_check"] = {
             "n": len(candidate_check),
             "n_match": sum(1 for row in candidate_check if row.get("status") == "match"),
         }
     html = HTML.replace("__PAYLOAD__", json.dumps(payload, ensure_ascii=False).replace("<", "\\u003c"))
+    if species_tree:
+        banner = species_tree_svg(species_tree)
+    else:
+        reason = tree_notes[0] if tree_notes else "No species tree file was passed."
+        banner = f'<p class="tree-missing">Species tree was not drawn. {html_lib.escape(reason)}</p>'
+    html = html.replace("__SPECIES_TREE__", banner)
     (outdir / "index.html").write_text(html)
 
     copied = []
