@@ -1,5 +1,7 @@
-# Per-machine paths and options. Start from conf/server.config.example.
+# Leftover local copy. The pipeline loads conf/server.config.example.
 conf/server.config
+# Per-machine genome files. Start from conf/local_genomes.example.yaml.
+conf/local_genomes.yaml
 
 # Nextflow
 .work/

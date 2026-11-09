@@ -1,0 +1,69 @@
+# Functionally characterized genes, one per line.
+# Column 1: gene symbol or locus ID. A species prefix (SlWOX4) is removed.
+#            A locus in parentheses is used as written: SlWOX4 (Solyc04g078650)
+# Column 2: genus and species of that characterized gene.
+#
+# Locus IDs match with or without an isoform suffix (Solyc04g078650 = Solyc04g078650.4.1).
+# A symbol matches the annotation symbol, or a description with the same family and
+# number. ITAG has no WOX4 token; the note is "wuschel related homobox 4".
+# Names ending in -like are not matched to a different number.
+# The resolution of every name is written to gene_id_crosswalk.tsv.
+# Optional: --candidate_cds is a FASTA of the characterized CDS for each gene.
+# A tab follows the gene name. Spaces then separate species, locus, and annotation:
+#   >WOX13      Arabidopsis thaliana AT4G35550.1 TAIR10
+# That CDS is translated and compared with the annotation protein, and the
+# nucleotides are compared with the annotation CDS. See candidate_cds.example.fna.
+At1g46480	Arabidopsis thaliana WOX4
+At1g71380	Arabidopsis thaliana GH9B3
+At3g62980	Arabidopsis thaliana TIR1
+At3g26810	Arabidopsis thaliana AFB2
+At1g12820	Arabidopsis thaliana AFB3
+At1g05180	Arabidopsis thaliana AXR1
+At5g62940	Arabidopsis thaliana DOF5.6(synonym:HCA2)
+At4g35550	Arabidopsis thaliana WOX13
+At5g11030	Arabidopsis thaliana ALF4
+At2g28510	Arabidopsis thaliana DOF2.1
+At1g04550	Arabidopsis thaliana IAA12(synonym:BDL)
+At5g60200	Arabidopsis thaliana TMO6
+At1g51950	Arabidopsis thaliana IAA18
+At5g61480	Arabidopsis thaliana PXY
+At4g32880	Arabidopsis thaliana ATHB8
+At5g57130	Arabidopsis thaliana SMXL5
+At5g25890	Arabidopsis thaliana IAA28
+At4g29920	Arabidopsis thaliana SMXL4
+At4g13260	Arabidopsis thaliana YUC2
+At5g11320	Arabidopsis thaliana YUC4
+At5g43890	Arabidopsis thaliana YUC5
+At4g28720	Arabidopsis thaliana YUC8
+At1g04180	Arabidopsis thaliana YUC9
+At1g48910	Arabidopsis thaliana YUC10
+At1g21430	Arabidopsis thaliana YUC11
+At1g71380	Arabidopsis thaliana CEL3
+At5g48150	Arabidopsis thaliana PAT1
+At2g18040	Arabidopsis thaliana PIN1
+At3g49750	Arabidopsis thaliana RLP44
+At4g03210	Arabidopsis thaliana XTH9
+At3g19190	Arabidopsis thaliana ATG2
+At5g17290	Arabidopsis thaliana ATG5
+At1g75900	Arabidopsis thaliana EXL3
+At1g51950	Arabidopsis thaliana IAA18
+At5g13330	Arabidopsis thaliana ERF113(synonym:RAP2.6L)
+At4g30290	Arabidopsis thaliana XTH19
+At5g48070	Arabidopsis thaliana XTH20
+At3g54220	Arabidopsis thaliana SCR
+At1g30330	Arabidopsis thaliana ARF6
+At5g37020	Arabidopsis thaliana ARF8
+At5g07310	Arabidopsis thaliana ERF115
+At5g44030	Arabidopsis thaliana CESA4
+At1g70710	Arabidopsis thaliana CEL1
+At4g39810	Arabidopsis thaliana NEN4
+At1g54330	Arabidopsis thaliana NAC020
+At2g04890	Arabidopsis thaliana SCL21
+At2g18480	Arabidopsis thaliana PLT3
+At3g18830	Arabidopsis thaliana PLT5
+At5g65510	Arabidopsis thaliana PLT7
+At2g42430	Arabidopsis thaliana LBD16
+At2g45420	Arabidopsis thaliana LBD18
+At3g58190	Arabidopsis thaliana LBD29
+At2g06850	Arabidopsis thaliana XTH4
+At4g37800	Arabidopsis thaliana XTH7

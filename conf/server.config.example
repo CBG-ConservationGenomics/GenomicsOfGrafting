@@ -1,11 +1,9 @@
 /*
- * Optional server settings for GraftingGeneFamilies.
+ * Server settings for GraftingGeneFamilies.
  *
- * Copy this file to conf/server.config. The pipeline loads that file when
- * it is present. A flag on the command line still wins, so a new run can
- * change --outdir without editing this file.
- *
- * conf/server.config is not committed. ${projectDir} is the pipeline directory.
+ * nextflow.config loads this file. A flag on the command line still wins,
+ * so a new run can change --outdir without editing this file.
+ * ${projectDir} is the pipeline directory.
  *
  * Filled in from the curie command:
  *   screen -L nextflow run main.nf -profile hpc,conda \
@@ -16,7 +14,7 @@
  *     --signalp_bin /home/srs57/anaconda3/envs/grafting-gene-families/bin/signalp6 \
  *     --orthofinder_threads 40 \
  *     --candidate_cds data/candidate_cds.example.fna \
- *     --run_graft_phenotype true \
+ *     --run_evolutionary_patterns true \
  *     --graft_matrix data/graft_outcomes.example.tsv \
  *     --run_hyphy
  */
@@ -29,7 +27,7 @@ params {
     genes_of_interest     = "${projectDir}/data/genes_of_interest.txt"
     candidate_cds         = "${projectDir}/data/candidate_cds.example.fna"
     orthofinder_threads   = 40
-    run_graft_phenotype   = true
+    run_evolutionary_patterns = true
     graft_matrix          = "${projectDir}/data/graft_outcomes.example.tsv"
     run_hyphy             = true
 
@@ -39,4 +37,8 @@ params {
     // deeptmhmm_bin       = 'biolib'
     // busco_download_path = '/path/to/busco_downloads'
     // busco_offline       = true
+
+    // Local protein, CDS, and GFF files. Copy conf/local_genomes.example.yaml
+    // to conf/local_genomes.yaml. That file is used automatically when present.
+    // local_genomes       = "${projectDir}/conf/local_genomes.yaml"
 }

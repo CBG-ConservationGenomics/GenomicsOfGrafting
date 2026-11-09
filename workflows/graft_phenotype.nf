@@ -2,7 +2,8 @@
 nextflow.enable.dsl = 2
 
 /*
- * Standalone graft-phenotype workflow. See docs/graft_phenotype.md
+ * Standalone evolutionary-patterns workflow: selection, convergence,
+ * ancestral reconstruction, and divergence. See docs/graft_phenotype.md
  */
 
 include { GRAFT_PHENOTYPE } from '../subworkflows/local/graft_phenotype'
@@ -53,7 +54,7 @@ workflow {
             .fromPath("${params.codon_alignments_dir}/*.{fa,fasta,fna}")
             .map { f ->
                 def og = f.simpleName
-                def tree = file("${params.outdir}/10_graft_phenotype/asr/${og}/${og}.treefile")
+                def tree = file("${params.outdir}/10_evolutionary_patterns/asr/${og}/${og}.treefile")
                 tuple(og, f, tree)
             }
     } else {
@@ -72,5 +73,5 @@ workflow {
 }
 
 workflow.onComplete {
-    log.info "Graft phenotype done → ${params.outdir}/10_graft_phenotype/"
+    log.info "Evolutionary patterns done → ${params.outdir}/10_evolutionary_patterns/"
 }

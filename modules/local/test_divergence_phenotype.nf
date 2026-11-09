@@ -1,6 +1,6 @@
 process TEST_DIVERGENCE_PHENOTYPE {
     label 'process_low'
-    publishDir "${params.outdir}/10_graft_phenotype/divergence", mode: 'copy'
+    publishDir "${params.outdir}/10_evolutionary_patterns/divergence", mode: 'copy'
 
     input:
     path pair_divergence

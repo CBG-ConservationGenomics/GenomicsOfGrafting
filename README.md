@@ -4,7 +4,7 @@ Nextflow pipeline for **plant gene-family analysis** in a grafting / scion–roo
 
 It downloads proteomes and CDS for a set of species, QC’s them, gates annotation quality with BUSCO, builds orthogroups with OrthoFinder, pulls out families containing genes of interest, annotates those proteins, and computes protein % identity. Optionally it then links a bidirectional graft-outcome matrix to candidate sequence changes via ancestral reconstruction, selection, convergence, and divergence tests. The AlphaFold handoff is the last CPU step, so the GPU queue can be limited to families that ranking (or % identity, if phenotype is off) actually selects.
 
-**Status:** v0.1 scaffold — core workflow is implemented and partially run-tested on the HPC (`curie`). Several server-side tool paths and a full end-to-end production run still need to be completed.
+**Status:** v0.1 — the core workflow is implemented and has been run on the HPC (`curie`). `conf/server.config.example` is loaded on every run and already sets the eggNOG, InterProScan, and SignalP paths, 40 OrthoFinder threads, evolutionary patterns, and HyPhy. A finished production run through the AlphaFold handoff is still ahead.
 
 ---
 
@@ -33,7 +33,7 @@ Produce:
 | Area | What’s in place |
 |------|-----------------|
 | **Engine** | Nextflow DSL2 (`main.nf`), conda env, `hpc` / `slurm` / `gpu` profiles |
-| **Species config** | `conf/species.yaml` — Sly, Nbe, Ath, Cpe (proteins + CDS URLs/accessions) |
+| **Species config** | `conf/species.yaml` — Sly, Nbe, Ath, Cpe (proteins + CDS URLs/accessions). `conf/local_genomes.yaml` maps those ids to files already on the server |
 | **Download** | NCBI Datasets or URL/local; auto-decompress gzip; reject HTML/empty files |
 | **Protein QC** | Longest isoform; haplotig filters; rename to `Sly\|Genus_species\|origID` + id map |
 | **CDS QC** | Match retained proteins; trim transcript ORFs to protein sequence |
@@ -45,7 +45,7 @@ Produce:
 | **Annotation** | eggNOG-mapper, InterProScan, SignalP, DeepTMHMM on selected OG proteins |
 | **% identity** | From OrthoFinder MSAs; reference = matched GOI (`auto`) or fixed species |
 | **Report tables** | Polished family table + wide %ID-by-species |
-| **Graft phenotype** | Matrix → lineage/pair traits; IQ-TREE ASR; pair divergence + partial Mantel; HyPhy/PCOC/CSUBST hooks; candidate ranking |
+| **Evolutionary patterns** | Graft outcomes plus selection, convergence, ancestral reconstruction, divergence, and candidate ranking |
 | **AlphaFold** | Last CPU step: handoff limited to prioritized families; separate GPU ColabFold workflow; CPU structure comparison |
 
 ### Run / debug notes so far (HPC)
@@ -58,13 +58,13 @@ Produce:
 
 ### Still to do / harden
 
-- Full production run with real GOI list + real graft matrix  
-- Confirm server paths for eggNOG DB, InterProScan, SignalP, BUSCO download cache  
-- DeepTMHMM / BioLib availability on the server  
-- Supply or verify CDS completeness for all four species after QC reports  
-- AlphaFold: install LocalColabFold on the GPU box; tune `conf/gpu.config`  
-- Optional: automate CDS for more species; ChimeraX/PyMOL scripts for AF diffs  
-- Example graft matrix is illustrative — replace with experimental outcomes  
+- Finish a production run on `curie` with `-resume` through the curated report
+- The loaded config uses `data/graft_outcomes.example.tsv`. Point `graft_matrix` at `data/graft_outcomes_11-09-2026.tsv` for a run that should use the dated outcomes table
+- Set `--busco_download_path` when BUSCO should use the shared lineage cache
+- Confirm DeepTMHMM / BioLib on the server
+- Check CDS completeness for Sly, Nbe, Ath, and Cpe from the QC reports
+- AlphaFold: install LocalColabFold on the GPU box and tune `conf/gpu.config`
+- Optional: ChimeraX/PyMOL scripts for structure differences
 
 ---
 
@@ -91,7 +91,7 @@ Produce:
 │                    └─► % identity + tables                                             │
 │                                      │                                                 │
 │                                      ▼                                                 │
-│                    optional graft phenotype (ASR / HyPhy / ranking)                    │
+│                    optional evolutionary patterns (selection, ASR, convergence)        │
 │                                      │                                                 │
 │                                      ▼                                                 │
 │                    AlphaFold handoff (fold_rank from ranking)                          │
@@ -111,7 +111,7 @@ Secondary entrypoints:
 | Workflow | Role |
 |----------|------|
 | `main.nf` | Full CPU pipeline |
-| `workflows/graft_phenotype.nf` | Phenotype association only (after OrthoFinder exists) |
+| `workflows/graft_phenotype.nf` | Evolutionary patterns only (after OrthoFinder exists) |
 | `workflows/alphafold.nf` | GPU folding |
 | `workflows/compare_structures.nf` | Post-AF structure comparison |
 
@@ -136,16 +136,13 @@ Sly|Solanum_lycopersicum|Solyc01g000570.3.1
 
 so OrthoFinder and downstream tools keep species identity in the sequence header. Original IDs are retained in `*.id_map.tsv`.
 
-To use local files on the server:
+To read files that are already on the server, copy `conf/local_genomes.example.yaml` to `conf/local_genomes.yaml` and list each species id with its protein, CDS, and optional GFF path. The pipeline uses that file when it is present. It is not committed. A species in the file is staged from those paths. A species that is not listed is still downloaded from `conf/species.yaml`. An id that is not already in `conf/species.yaml` needs `genus` and `species` in the local file. If that species is already in the output directory, pass `--reuse_downloads false` once so the local files replace the earlier copy.
 
 ```yaml
 - id: Nbe
-  genus: Nicotiana
-  species: benthamiana
-  source: local
-  fasta_path: /data/proteomes/Niben.proteins.fasta
-  cds_path: /data/proteomes/Niben.transcripts.fasta
-  gff_path: null
+  proteins: /data/proteomes/Niben.proteins.fasta
+  cds: /data/proteomes/Niben.transcripts.fasta
+  gff: /data/proteomes/Niben.gene_models.gff
 ```
 
 ---
@@ -216,6 +213,8 @@ The gene name and the rest of the header are separated by a tab. After the tab, 
 
 The pipeline translates that CDS and aligns it to the cleaned annotation protein chosen for the gene. It also aligns the nucleotides to the cleaned annotation CDS. NCBI `cds_from_genomic` records (`lcl|NC_..._cds_NP_195280.1_1`, with `[protein_id=NP_195280.1]`) are renamed to the same cleaned id as that protein. A terminal stop codon is ignored. Both identities default to a 98% minimum (`--candidate_cds_min_protein_identity`, `--candidate_cds_min_cds_identity`). Lower the CDS threshold when the published cDNA and the genome annotation differ by synonymous substitutions.
 
+The genome download already fetches the whole CDS for each species. For Arabidopsis that file is the TAIR10.1 CDS from NCBI assembly `GCF_000001735.4`, published as `01_raw_proteomes/Ath.cds.fna`. A candidate that is not in `--candidate_cds` is looked up in that file. An AGI name matches `[locus_tag=AT4G35550]` or `[db_xref=TAIR:AT4G35550]`. A protein accession matches `[protein_id=NP_195280.1]` and selects one isoform when the locus has several. The other genes in the file stay out of the report. A sequence supplied in `--candidate_cds` is still the one that is compared.
+
 The report is `results/05_selected_orthogroups/candidate_cds_check.tsv`.
 
 | status | Meaning |
@@ -224,7 +223,7 @@ The report is `results/05_selected_orthogroups/candidate_cds_check.tsv`.
 | `cds_mismatch` | Protein matches; CDS identity is below the threshold |
 | `mismatch` | Protein identity is below the threshold. This is still a mismatch when the annotation CDS is missing |
 | `missing_annotation_cds` / `missing_annotation_protein` | The resolved id is absent from the cleaned sequences |
-| `no_reference` | This candidate has no sequence in the FASTA |
+| `no_reference` | This candidate is absent from the characterized FASTA and from the downloaded CDS |
 | `unmatched_header` / `ambiguous_header` / `duplicate_header` | The FASTA record could not be tied to one candidate |
 | `bad_cds` | The characterized sequence is not a translatable CDS |
 | `unresolved` | The gene name was not found in the annotation |
@@ -265,13 +264,13 @@ Toggle with `--run_eggnog false`, etc. Point DB/tool installs with `--eggnog_dat
 - Main table: `results/07_tables/gene_families_of_interest.tsv`  
 - Wide table: `gene_families_pctid_by_species.tsv`. `best_pct_id_*` is the closest protein from that species to the reference. `mean_pct_id_*` is still the average of every homolog from that species.
 
-Stages 10 and 11 always run in this order on the CPU: phenotype ranking first, AlphaFold handoff last. Folding itself stays on the GPU.
+Stages 10 and 11 always run in this order on the CPU: evolutionary patterns first, AlphaFold handoff last. Folding itself stays on the GPU.
 
-### 10. Graft phenotype association (optional; before the AlphaFold handoff)
+### 10. Evolutionary patterns (optional; before the AlphaFold handoff)
 
-Enable with `--run_graft_phenotype true` or run `workflows/graft_phenotype.nf` after OrthoFinder.
+Enable with `--run_evolutionary_patterns true` or run `workflows/graft_phenotype.nf` after OrthoFinder. `--run_graft_phenotype true` is the older name for the same switch.
 
-Runs **before** the AlphaFold handoff so ASR / divergence / HyPhy ranking can prioritize what to fold.
+Runs **before** the AlphaFold handoff so selection, convergence, ancestral reconstruction, and divergence can prioritize what to fold.
 
 Input matrix: `data/graft_outcomes_11-09-2026.tsv`
 
@@ -281,7 +280,7 @@ Solanum lycopersicum,Nicotiana benthamiana,TRUE
 Arabidopsis thaliana,Solanum lycopersicum,FALSE
 ```
 
-`success` is `TRUE` or `FALSE`. Names are scientific names. Only the species in the current run are compared, and `10_graft_phenotype/traits/analyzed_species.tsv` records each of those species and whether the graft table has an entry for it.
+`success` is `TRUE` or `FALSE`. Names are scientific names. Only the species in the current run are compared, and `10_evolutionary_patterns/traits/analyzed_species.tsv` records each of those species and whether the graft table has an entry for it.
 
 Analyses:
 
@@ -298,12 +297,12 @@ Details: [`docs/graft_phenotype.md`](docs/graft_phenotype.md).
 
 ### 11. AlphaFold handoff (optional; last analysis step)
 
-1. **CPU** (`main.nf`, after graft phenotype when that flag is on): writes `results/08_alphafold_inputs/alphafold_inputs/`  
-   (`sequences/`, `manifest.tsv` sorted by `fold_rank`, `og_priority.tsv`, `pairs.tsv`). The `08_` folder name is unchanged; it is published after `10_graft_phenotype/`.  
+1. **CPU** (`main.nf`, after evolutionary patterns when that flag is on): writes `results/08_alphafold_inputs/alphafold_inputs/`  
+   (`sequences/`, `manifest.tsv` sorted by `fold_rank`, `og_priority.tsv`, `pairs.tsv`). The `08_` folder name is unchanged; it is published after `10_evolutionary_patterns/`.  
 2. **GPU** (`workflows/alphafold.nf -profile gpu`): ColabFold (fold high `fold_rank` first)  
 3. **CPU** (`workflows/compare_structures.nf`): CA RMSD, substitution list + pLDDT → `09_structure_comparison/`  
 
-Shrink the GPU queue with `--af_max_ogs 20` or `--af_min_priority_score 5` (requires `--run_graft_phenotype true`).
+Shrink the GPU queue with `--af_max_ogs 20` or `--af_min_priority_score 5` (requires `--run_evolutionary_patterns true`).
 
 See [`docs/alphafold_plan.md`](docs/alphafold_plan.md).
 
@@ -319,11 +318,7 @@ Written at the end of `main.nf` to `results/11_curated/`. Open `index.html` in a
 
 ### Server paths and options
 
-Copy `conf/server.config.example` to `conf/server.config` on the server. That example already has the eggNOG, InterProScan, and SignalP paths, 40 OrthoFinder threads, the candidate CDS file, graft phenotype, and HyPhy. The pipeline reads `conf/server.config` when the file exists. It is not committed. A flag on the command line still overrides the file, which is how each run picks its own `--outdir`.
-
-```bash
-cp conf/server.config.example conf/server.config
-```
+Database paths, OrthoFinder threads, the candidate CDS file, evolutionary patterns, and HyPhy are in `conf/server.config.example`. The pipeline loads that file. A flag on the command line still overrides it, which is how each run picks its own `--outdir`.
 
 ### Main pipeline (HPC)
 
@@ -334,13 +329,13 @@ export NXF_OPTS='-Xms1g -Xmx8g'
 screen -L nextflow run main.nf -profile hpc,conda --outdir test_out8
 ```
 
-`conf/server.config` supplies the gene list, `data/candidate_cds.example.fna`, the graft table, HyPhy, and the database paths. Resume the same folder with `-resume`:
+`conf/server.config.example` supplies the gene list, `data/candidate_cds.example.fna`, the graft table, HyPhy, and the database paths. Copy `conf/local_genomes.example.yaml` to `conf/local_genomes.yaml` when the protein, CDS, and GFF files are already on the server. Resume the same folder with `-resume`:
 
 ```bash
 screen -L nextflow run main.nf -profile hpc,conda --outdir test_out8 -resume
 ```
 
-### Standalone graft phenotype (after OrthoFinder exists)
+### Standalone evolutionary patterns (after OrthoFinder exists)
 
 ```bash
 nextflow run workflows/graft_phenotype.nf -profile hpc,conda \
@@ -378,12 +373,13 @@ nextflow run workflows/compare_structures.nf -profile hpc,conda \
 | Parameter | Default | Meaning |
 |-----------|---------|---------|
 | `--genes_of_interest` | `data/genes_of_interest.txt` | `gene<TAB>Genus species` for each characterized gene |
-| `--candidate_cds` | unset | Characterized CDS FASTA used to confirm each resolved annotation sequence |
+| `--candidate_cds` | unset | Characterized CDS FASTA. Candidates missing from it are looked up in the downloaded genome CDS |
 | `--candidate_cds_min_protein_identity` | `98` | Minimum identity between the CDS translation and the annotation protein |
 | `--candidate_cds_min_cds_identity` | `98` | Minimum identity between the characterized CDS and the annotation CDS |
 | `--candidate_cds_require_all` | `true` | Every resolved candidate must have a reference CDS |
 | `--candidate_cds_strict` | `true` | Stop the run when the check fails |
 | `--species_yaml` | `conf/species.yaml` | Species / download config |
+| `--local_genomes` | `conf/local_genomes.yaml` when that file exists | Species ids and local protein, CDS, and GFF paths |
 | `--reuse_downloads` | `true` | Skip download when that species is already in `01_raw_proteomes/` |
 | `--reuse_proteome_qc` | `true` | Skip protein QC when `02_clean_proteomes/` already has the cleaned FASTA and id map |
 | `--reuse_cds_qc` | `true` | Skip CDS QC when `02_clean_cds/` already has the QC report |
@@ -392,7 +388,7 @@ nextflow run workflows/compare_structures.nf -profile hpc,conda \
 | `--busco_lineage` | `embryophyta_odb10` | Default BUSCO lineage |
 | `--reference_species_id` | `auto` | Fallback species if the characterized protein is absent from the alignment |
 | `--build_codon_alignments` | `true` | Build codon MSAs from CDS + protein MSAs |
-| `--run_graft_phenotype` | `false` | ASR/selection/ranking; runs before the AF handoff |
+| `--run_evolutionary_patterns` | `false` | Selection, convergence, ancestral reconstruction, and divergence; runs before the AF handoff. `--run_graft_phenotype` is the older name |
 | `--graft_matrix` | `data/graft_outcomes_11-09-2026.tsv` | Rootstock, scion, and TRUE/FALSE success |
 | `--run_hyphy` | `false` | Selection tests (needs codon MSAs). `-profile conda` installs HyPhy from `conf/hyphy.yml` |
 | `--run_asr` | `true` | IQ-TREE ancestral reconstruction |
@@ -406,7 +402,7 @@ nextflow run workflows/compare_structures.nf -profile hpc,conda \
 | `--eggnog_cpus` | profile default | CPUs for `emapper.py` (`24` on `-profile hpc`) |
 | `--eggnog_extra` | empty | Extra `emapper.py` args, e.g. faster Diamond search |
 
-Database paths and any of the options above can be set in `conf/server.config` (copy `conf/server.config.example`). The matching flags are `--eggnog_data_dir`, `--interproscan_dir`, `--signalp_bin`, `--deeptmhmm_bin`, `--busco_download_path`, and `--usalign_bin`.
+Database paths and any of the options above can be set in `conf/server.config.example`. The matching flags are `--eggnog_data_dir`, `--interproscan_dir`, `--signalp_bin`, `--deeptmhmm_bin`, `--busco_download_path`, and `--usalign_bin`.
 
 ---
 
@@ -424,7 +420,7 @@ Database paths and any of the options above can be set in `conf/server.config` (
 | `04_annotation/` | eggNOG / InterProScan / SignalP / DeepTMHMM |
 | `06_percent_identity/` | Identity to the reference, plus an all-by-all matrix for each family |
 | `07_tables/` | Polished family tables |
-| `10_graft_phenotype/` | Traits, ASR, divergence tests, ranking (before the handoff) |
+| `10_evolutionary_patterns/` | Selection, convergence, ancestral reconstruction, divergence, and ranking (before the handoff) |
 | `08_alphafold_inputs/` | GPU handoff package (written last; folder number kept) |
 | `09_structure_comparison/` | RMSD, substitutions, superimposed PDBs (after GPU folding) |
 | `11_curated/` | Family report (`index.html`), genome and BUSCO page (`genomes.html`), protein alignments (`protein_alignments.html`), codon alignments (`codon_alignments.html`), AlphaFold viewer (`structures.html`), and copies of the tables |
@@ -439,9 +435,10 @@ GraftingGeneFamilies/
 ├── nextflow.config                  # Params + profiles
 ├── conf/
 │   ├── species.yaml                 # Species, URLs, accessions, BUSCO lineage
+│   ├── local_genomes.example.yaml   # Copy to local_genomes.yaml for files on this machine
 │   ├── environment.yml              # Conda dependencies
 │   ├── hyphy.yml                    # HyPhy env for the selection step
-│   ├── server.config.example       # Copy to server.config for paths and options
+│   ├── server.config.example       # Database paths and run options, loaded by nextflow.config
 │   ├── base.config / hpc.config / gpu.config
 ├── modules/local/                   # Nextflow process modules
 ├── subworkflows/local/
@@ -449,7 +446,7 @@ GraftingGeneFamilies/
 ├── workflows/
 │   ├── alphafold.nf                 # GPU folding
 │   ├── compare_structures.nf        # Post-AF comparison
-│   └── graft_phenotype.nf           # Standalone phenotype association
+│   └── graft_phenotype.nf           # Standalone evolutionary patterns
 ├── bin/                             # Python helpers (on PATH in Nextflow)
 ├── data/
 │   ├── genes_of_interest.txt
@@ -491,7 +488,7 @@ GraftingGeneFamilies/
 - **Annotate selected OGs only** to save InterProScan/eggNOG time  
 - **Optional characterized CDS check** so a gene-name match is confirmed against the sequence from the species where that gene was described
 - **Codon MSAs from protein MSAs** so HyPhy uses the same homology hypothesis as OrthoFinder  
-- **AlphaFold handoff last** so phenotype ranking can drop low-priority families before anything is staged for the GPU  
+- **AlphaFold handoff last** so evolutionary-pattern ranking can drop low-priority families before anything is staged for the GPU  
 - **AlphaFold split CPU/GPU** so OrthoFinder and folding don’t fight for resources  
 - **Phenotype tests control for phylogeny** (shift branches, partial Mantel, HyPhy foregrounds) rather than raw residue counting  
 
@@ -499,11 +496,10 @@ GraftingGeneFamilies/
 
 ## Suggested next steps
 
-1. Replace example GOIs / graft matrix with experimental data  
-2. Point all DB/tool params at real paths on `curie`  
-3. Complete a `-resume` run through tables + codon alignments  
-4. Turn on `--run_graft_phenotype true` once the matrix is real  
-5. After the CPU pipeline finishes, sync the AlphaFold handoff (its last output) to the GPU server and fold prioritized pairs  
-6. Iterate on candidates that are (a) on phenotype-shift branches, (b) significant beyond species distance, and (c) structurally plausible in AF comparisons  
+1. Point `graft_matrix` in `conf/server.config.example` at `data/graft_outcomes_11-09-2026.tsv` for a run that should use the dated outcomes. Evolutionary patterns and HyPhy are already on in that file
+2. Set the BUSCO download cache and the DeepTMHMM path in that same file when those installs are ready
+3. Complete a `-resume` run through the curated report
+4. After the CPU pipeline finishes, sync the AlphaFold handoff (its last output) to the GPU server and fold prioritized pairs
+5. Iterate on candidates that are (a) on phenotype-shift branches, (b) significant beyond species distance, and (c) structurally plausible in AF comparisons
 
 Questions or design changes: adjust `conf/species.yaml` and `nextflow.config` first — most behavior is parameterized there.

@@ -5,7 +5,10 @@
 # source:
 #   ncbi  - NCBI Datasets (protein + CDS + GFF3)
 #   url   - direct FASTA URLs (fasta_url, cds_url, optional gff_url)
-#   local - fasta_path / cds_path / gff_path on the server
+#   local - fasta_path / cds_path / gff_path
+#           Prefer conf/local_genomes.yaml for paths on one machine.
+#           Copy conf/local_genomes.example.yaml and leave this file as the
+#           shared species list.
 #
 # busco_lineage: optional per-species override (default: params.busco_lineage)
 

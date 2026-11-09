@@ -7,6 +7,7 @@ process CHECK_CANDIDATE_CDS {
     path proteins
     path cds_files
     path reference_cds
+    path annotation_cds
 
     output:
     path "candidate_cds_check.tsv", emit: report
@@ -23,6 +24,7 @@ process CHECK_CANDIDATE_CDS {
         --proteins ${proteins} \\
         --cds ${cds_files} \\
         --reference-cds ${reference_cds} \\
+        --annotation-cds ${annotation_cds} \\
         --min-protein-identity ${params.candidate_cds_min_protein_identity} \\
         --min-cds-identity ${params.candidate_cds_min_cds_identity} \\
         ${require_flag} \\

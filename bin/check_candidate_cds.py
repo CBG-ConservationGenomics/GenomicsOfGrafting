@@ -7,7 +7,13 @@ resolved annotation sequence is the gene that was characterized.
 
 The reference FASTA holds one coding sequence per candidate. A tab separates
 the gene name from the species. A locus id and annotation name may follow
-the species, separated by spaces:
+the species, separated by spaces.
+
+A candidate with no record in that FASTA is looked up in the CDS downloaded
+with the genome. NCBI cds_from_genomic headers carry the AGI id as
+``[locus_tag=AT4G35550]`` and ``[db_xref=TAIR:AT4G35550]``, and the protein
+accession as ``[protein_id=NP_195280.1]``. Other genes in that file are not
+treated as extra references.
 
   >WOX13<TAB>Arabidopsis thaliana AT4G35550.1 TAIR10
   >WOX4 Solanum lycopersicum
@@ -22,6 +28,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -32,6 +39,7 @@ from Bio.Seq import Seq
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from gene_names import gene_key, id_forms, locus_species, norm  # noqa: E402
+from qc_and_rename_cds import header_accessions  # noqa: E402
 
 
 STOP_CODONS = {"TAA", "TAG", "TGA"}
@@ -88,6 +96,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--proteins", nargs="+", required=True, help="Cleaned protein FASTA files")
     p.add_argument("--cds", nargs="+", required=True, help="Cleaned CDS FASTA files")
     p.add_argument("--reference-cds", required=True, help="Characterized CDS FASTA")
+    p.add_argument(
+        "--annotation-cds",
+        nargs="*",
+        default=[],
+        help=(
+            "CDS FASTA files downloaded with the genomes. "
+            "A candidate missing from --reference-cds is looked up by locus tag, gene symbol, or protein id. "
+            "The file name starts with the species id (Ath.cds.fna)."
+        ),
+    )
     p.add_argument("--min-protein-identity", type=float, default=98.0)
     p.add_argument("--min-cds-identity", type=float, default=98.0)
     p.add_argument(
@@ -283,6 +301,128 @@ def peel_embedded_taxon(gene: str, rows: list[CrosswalkRow]) -> tuple[str, str]:
     return gene, ""
 
 
+_BRACKET = re.compile(r"\[([A-Za-z0-9_]+)=([^\]]*)\]")
+_ID_FIELDS = {"gene", "locus_tag", "protein_id", "transcript_id", "gene_id", "old_locus_tag"}
+
+
+def annotation_keys(header: str) -> tuple[set[str], set[str]]:
+    """Identifier forms and protein-accession forms carried by one CDS header."""
+    keys: set[str] = set()
+    protein_keys: set[str] = set()
+    token = header.split()[0] if header else ""
+    keys |= id_forms(token)
+    for accession in header_accessions(header):
+        forms = id_forms(accession)
+        keys |= forms
+        protein_keys |= forms
+    for field, value in _BRACKET.findall(header):
+        if field == "db_xref":
+            for piece in value.split(","):
+                piece = piece.strip()
+                if ":" in piece:
+                    piece = piece.split(":", 1)[1]
+                keys |= id_forms(piece)
+            continue
+        if field not in _ID_FIELDS or field == "protein_id":
+            continue
+        keys |= id_forms(value)
+    return keys, protein_keys
+
+
+def load_annotation_cds(paths: list[str]) -> list[tuple[str, str, str]]:
+    """Return (species id, header, sequence) from downloaded CDS FASTA files.
+
+    The species id is the file name before the first dot, so ``Ath.cds.fna``
+    belongs to Arabidopsis. Empty files and non-FASTA placeholders are skipped.
+    """
+    records: list[tuple[str, str, str]] = []
+    for path in paths:
+        file = Path(path)
+        if not file.is_file() or file.stat().st_size == 0:
+            continue
+        species = file.name.split(".", 1)[0]
+        with file.open() as fh:
+            start = ""
+            for line in fh:
+                stripped = line.strip()
+                if stripped:
+                    start = stripped
+                    break
+            if not start.startswith(">"):
+                continue
+            fh.seek(0)
+            for rec in SeqIO.parse(fh, "fasta"):
+                header = (rec.description or rec.id).strip()
+                records.append((species, header, str(rec.seq)))
+    return records
+
+
+def index_annotation_cds(records: list[tuple[str, str, str]]) -> list[dict]:
+    catalog = []
+    for species, header, seq in records:
+        keys, protein_keys = annotation_keys(header)
+        catalog.append(
+            {
+                "species_id": species,
+                "header": header,
+                "seq": seq,
+                "keys": keys,
+                "protein_keys": protein_keys,
+                "exact_proteins": {norm(token) for token in header_accessions(header)},
+            }
+        )
+    return catalog
+
+
+def row_lookup_keys(row: CrosswalkRow) -> set[str]:
+    keys = id_forms(row.query_gene) | id_forms(row.original_id) | id_forms(row.gene_key)
+    if row.new_id:
+        keys |= id_forms(row.new_id.split("|")[-1])
+    return keys
+
+
+def find_annotation_cds(row: CrosswalkRow, catalog: list[dict]) -> tuple[str, str, str] | None:
+    """Find this candidate in the downloaded CDS.
+
+    Returns ``("found", header, sequence)``, ``("ambiguous", "", "")`` when
+    more than one sequence matches, or None when the locus is absent.
+    A protein accession picks one isoform when the locus has several.
+    """
+    if not row.species_id:
+        return None
+    wanted = row_lookup_keys(row)
+    if not wanted:
+        return None
+    hits = [
+        item
+        for item in catalog
+        if item["species_id"].lower() == row.species_id.lower() and item["keys"] & wanted
+    ]
+    if not hits:
+        return None
+    exact = set()
+    if row.original_id:
+        exact.add(norm(row.original_id))
+    if row.new_id:
+        exact.add(norm(row.new_id.split("|")[-1]))
+    exact_hits = [item for item in hits if item["exact_proteins"] & exact]
+    if exact_hits:
+        chosen = exact_hits
+    else:
+        protein_keys = id_forms(row.original_id)
+        if row.new_id:
+            protein_keys |= id_forms(row.new_id.split("|")[-1])
+        protein_hits = [item for item in hits if item["protein_keys"] & protein_keys]
+        chosen = protein_hits or hits
+    unique: dict[str, dict] = {}
+    for item in chosen:
+        unique.setdefault("".join(item["seq"].split()).upper(), item)
+    if len(unique) > 1:
+        return ("ambiguous", "", "")
+    item = next(iter(unique.values()))
+    return ("found", item["header"], item["seq"])
+
+
 def gene_matches(row: CrosswalkRow, gene: str) -> bool:
     if norm(gene) == norm(row.query_gene):
         return True
@@ -368,8 +508,9 @@ def compare_pair(
     min_protein: float,
     min_cds: float,
     aligner: PairwiseAligner,
+    source: str = "characterized",
 ) -> dict[str, str]:
-    """Compare one characterized CDS with the annotation sequences for one candidate."""
+    """Compare one CDS with the annotation sequences for one candidate."""
     base = blank_row(
         query_gene=row.query_gene,
         query_taxon=row.query_taxon,
@@ -443,7 +584,10 @@ def compare_pair(
     cds_ok = cds_identity + 1e-9 >= min_cds
     if cds_ok:
         base["status"] = "match"
-        base["detail"] = "annotation CDS and protein match the characterized CDS"
+        if source == "downloaded":
+            base["detail"] = "downloaded CDS for this locus matches the annotation CDS and protein"
+        else:
+            base["detail"] = "annotation CDS and protein match the characterized CDS"
     else:
         base["status"] = "cds_mismatch"
         base["detail"] = (
@@ -461,6 +605,7 @@ def run_check(
     min_protein: float,
     min_cds: float,
     require_all: bool,
+    annotation_cds: list[tuple[str, str, str]] | None = None,
 ) -> tuple[list[dict[str, str]], list[str]]:
     aligner = PairwiseAligner()
     aligner.mode = "global"
@@ -468,6 +613,7 @@ def run_check(
     aligner.mismatch_score = -1.0
     aligner.open_gap_score = -2.0
     aligner.extend_gap_score = -0.5
+    catalog = index_annotation_cds(annotation_cds or [])
 
     prepared = []
     for gene, taxon, header, seq in references:
@@ -546,6 +692,34 @@ def run_check(
     rows: list[dict[str, str]] = []
     for index, row in enumerate(crosswalk):
         if index not in assigned:
+            found = find_annotation_cds(row, catalog) if row.resolved else None
+            if found and found[0] == "ambiguous":
+                rows.append(
+                    blank_row(
+                        query_gene=row.query_gene,
+                        query_taxon=row.query_taxon,
+                        species_id=row.species_id,
+                        new_id=row.new_id,
+                        original_id=row.original_id,
+                        status="ambiguous_header",
+                        detail="downloaded CDS has more than one sequence for this gene",
+                    )
+                )
+                continue
+            if found and found[0] == "found":
+                _kind, header, seq = found
+                rows.append(
+                    compare_pair(
+                        row, header, seq, proteins, cds_seqs, min_protein, min_cds, aligner, source="downloaded"
+                    )
+                )
+                continue
+            if row.resolved and catalog:
+                missing = "no characterized CDS was provided, and this gene is not in the downloaded CDS"
+            elif row.resolved:
+                missing = "no characterized CDS was provided for this candidate"
+            else:
+                missing = "candidate name was not resolved to an annotation protein"
             rows.append(
                 blank_row(
                     query_gene=row.query_gene,
@@ -554,11 +728,7 @@ def run_check(
                     new_id=row.new_id,
                     original_id=row.original_id,
                     status="no_reference" if row.resolved else "unresolved",
-                    detail=(
-                        "no characterized CDS was provided for this candidate"
-                        if row.resolved
-                        else "candidate name was not resolved to an annotation protein"
-                    ),
+                    detail=missing,
                 )
             )
             continue
@@ -633,6 +803,7 @@ def main(argv: list[str] | None = None) -> int:
         args.min_protein_identity,
         args.min_cds_identity,
         args.require_all,
+        load_annotation_cds(args.annotation_cds),
     )
     write_report(args.out, rows)
     write_summary(args.summary, rows, failures)

@@ -1,0 +1,44 @@
+# Local protein, CDS, and gene-model files for GraftingGeneFamilies.
+#
+# Copy this file to conf/local_genomes.yaml. The pipeline reads that copy
+# when it exists. It is not committed. A --local_genomes path on the command
+# line, or local_genomes in conf/server.config, overrides this location.
+#
+# Each entry maps one species to files on this machine. These are the
+# annotated proteins, CDS, and optional GFF, not the chromosome assembly.
+# id matches conf/species.yaml. A listed species is read from these files.
+# A species that is not listed is still taken from conf/species.yaml.
+#
+# Add genus and species when the id is not already in conf/species.yaml.
+# If a listed species is already in the output directory, pass
+# --reuse_downloads false once so these files replace the earlier copy.
+#
+# Uncomment a species and replace the paths.
+#
+# - id: Sly
+#   genus: Solanum
+#   species: lycopersicum
+#   proteins: /path/to/ITAG4.0_proteins.fasta
+#   cds: /path/to/ITAG4.0_CDS.fasta
+#   gff: /path/to/ITAG4.0_gene_models.gff
+#
+# - id: Nbe
+#   genus: Nicotiana
+#   species: benthamiana
+#   proteins: /path/to/Niben101_annotation.proteins.fasta
+#   cds: /path/to/Niben101_annotation.transcripts.fasta
+#   gff: /path/to/Niben101_annotation.gene_models.gff
+#
+# - id: Ath
+#   genus: Arabidopsis
+#   species: thaliana
+#   proteins: /path/to/GCF_000001735.4.protein.faa
+#   cds: /path/to/GCF_000001735.4.cds.fna
+#   gff: /path/to/GCF_000001735.4.genomic.gff
+#
+# - id: Cpe
+#   genus: Cucurbita
+#   species: pepo
+#   proteins: /path/to/GCF_002806865.2.protein.faa
+#   cds: /path/to/GCF_002806865.2.cds.fna
+#   gff: /path/to/GCF_002806865.2.genomic.gff

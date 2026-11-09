@@ -1,8 +1,6 @@
-# Graft phenotype → sites associated with compatibility
+# Evolutionary patterns
 
-## Goal
-
-Link a **bidirectional scion×rootstock graft-outcome matrix** to sequence change in gene families of interest, while keeping the **OrthoFinder species tree** as the phylogenetic backbone.
+Selection, convergence, ancestral reconstruction, and divergence for the gene families of interest. The graft-outcome table supplies which species combinations succeeded or failed. The OrthoFinder species tree is the phylogenetic backbone.
 
 ## Input matrix
 
@@ -16,13 +14,13 @@ Arabidopsis thaliana,Solanum lycopersicum,FALSE
 
 `success` is `TRUE` or `FALSE`. Names are scientific names (`Genus species`). A hybrid such as `Solanum lycopersicum × S. pimpinellifolium` is not treated as `Solanum lycopersicum`. The pipeline matches a name to a species id in `conf/species.yaml` only when the binomial is exact.
 
-A run does not have to include every species in that file. `10_graft_phenotype/traits/analyzed_species.tsv` lists the species on the OrthoFinder tree and whether each one has a row in the graft table. Pairs used for divergence are the ones where both species were in the run.
+A run does not have to include every species in that file. `10_evolutionary_patterns/traits/analyzed_species.tsv` lists the species on the OrthoFinder tree and whether each one has a row in the graft table. Pairs used for divergence are the ones where both species were in the run.
 
 ## Analyses implemented
 
 | Step | What it does | Key outputs |
 |------|----------------|-------------|
-| **Code the phenotype** | Derive pair outcomes, lineage traits (e.g. broad scion), phenotype-shift branches, species distances | `10_graft_phenotype/traits/` |
+| **Code the phenotype** | Derive pair outcomes, lineage traits (e.g. broad scion), phenotype-shift branches, species distances | `10_evolutionary_patterns/traits/` |
 | **Pairwise divergence** | Scion–rootstock protein %ID per selected OG | `divergence/graft_pair_divergence.tsv` |
 | **Divergence vs phenotype** | Mann–Whitney + partial Mantel (protein divergence \| species distance) | `divergence/divergence_vs_phenotype.tsv` |
 | **Ancestral reconstruction** | IQ-TREE `-asr`; AA changes on branches; flag phenotype-shift branches | `asr/<OG>/*.asr_substitutions.tsv` |
@@ -72,9 +70,11 @@ HyPhy is installed by `-profile conda` from `conf/hyphy.yml` the first time the 
 ### From `main.nf`
 
 ```bash
---run_graft_phenotype true \
+--run_evolutionary_patterns true \
 --graft_matrix data/graft_outcomes_11-09-2026.tsv
 ```
+
+`--run_graft_phenotype true` is the older name for the same switch. Results are written to `10_evolutionary_patterns/`.
 
 ## Lineage traits
 

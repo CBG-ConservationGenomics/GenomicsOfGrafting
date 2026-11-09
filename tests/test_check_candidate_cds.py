@@ -460,6 +460,140 @@ class CheckCandidateCdsTest(unittest.TestCase):
         self.assertIn("AT4G35550.1", header)
         self.assertNotIn("TAIR10", taxon)
 
+    def test_downloaded_cds_matches_an_agi_locus_tag(self):
+        candidate = row(
+            query_gene="AT4G35550",
+            query_taxon="Arabidopsis thaliana",
+            species_id="Ath",
+            match_method="locus",
+            original_id="NP_195280.1",
+            gene_key="AT4G35550",
+            new_id="Ath|Arabidopsis_thaliana|NP_195280.1",
+        )
+        header = (
+            "lcl|NC_003075.7_cds_NP_195280.1_1 [gene=WOX13] [locus_tag=AT4G35550] "
+            "[db_xref=GeneID:828068,TAIR:AT4G35550] [protein_id=NP_195280.1] [gbkey=CDS]"
+        )
+        other = (
+            "lcl|NC_003070.9_cds_NP_171609.1_1 [gene=ANAC001] [locus_tag=AT1G01010] "
+            "[protein_id=NP_171609.1] [gbkey=CDS]"
+        )
+        rows, failures = check.run_check(
+            [candidate],
+            {candidate.new_id: "MKTF"},
+            {candidate.new_id: "ATGAAAACCTTC"},
+            [],
+            98,
+            98,
+            True,
+            [
+                ("Ath", header, "ATGAAAACCTTC"),
+                ("Ath", other, "ATGGGGGGGGGG"),
+            ],
+        )
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["status"], "match")
+        self.assertIn("downloaded CDS", rows[0]["detail"])
+        self.assertIn("AT4G35550", rows[0]["reference_header"])
+        self.assertEqual(failures, [])
+
+    def test_characterized_sequence_is_used_ahead_of_the_downloaded_cds(self):
+        candidate = row(
+            query_gene="AT4G35550",
+            query_taxon="Arabidopsis thaliana",
+            species_id="Ath",
+            match_method="locus",
+            original_id="NP_195280.1",
+            gene_key="AT4G35550",
+            new_id="Ath|Arabidopsis_thaliana|NP_195280.1",
+        )
+        downloaded = (
+            "lcl|NC_003075.7_cds_NP_195280.1_1 [locus_tag=AT4G35550] [protein_id=NP_195280.1]"
+        )
+        rows, failures = check.run_check(
+            [candidate],
+            {candidate.new_id: "MKTF"},
+            {candidate.new_id: "ATGAAAACCTTC"},
+            [("AT4G35550", "Arabidopsis thaliana", "AT4G35550\tArabidopsis thaliana", "ATGAAAACCTTC")],
+            98,
+            98,
+            True,
+            [("Ath", downloaded, "ATGCCCCCCCCCCC")],
+        )
+        self.assertEqual(rows[0]["status"], "match")
+        self.assertEqual(rows[0]["reference_header"], "AT4G35550\tArabidopsis thaliana")
+        self.assertEqual(failures, [])
+
+    def test_protein_id_selects_one_isoform_in_the_downloaded_cds(self):
+        candidate = row(
+            query_gene="AT4G35550",
+            query_taxon="Arabidopsis thaliana",
+            species_id="Ath",
+            match_method="locus",
+            original_id="NP_195280.1",
+            gene_key="AT4G35550",
+            new_id="Ath|Arabidopsis_thaliana|NP_195280.1",
+        )
+        first = "lcl|NC_003075.7_cds_NP_195280.1_1 [locus_tag=AT4G35550] [protein_id=NP_195280.1]"
+        second = "lcl|NC_003075.7_cds_NP_195280.2_1 [locus_tag=AT4G35550] [protein_id=NP_195280.2]"
+        rows, failures = check.run_check(
+            [candidate],
+            {candidate.new_id: "MKTF"},
+            {candidate.new_id: "ATGAAAACCTTC"},
+            [],
+            98,
+            98,
+            True,
+            [
+                ("Ath", first, "ATGAAAACCTTC"),
+                ("Ath", second, "ATGAAAAAAAAAAA"),
+            ],
+        )
+        self.assertEqual(rows[0]["status"], "match")
+        self.assertIn("NP_195280.1", rows[0]["reference_header"])
+        self.assertEqual(failures, [])
+
+    def test_downloaded_cds_from_another_species_is_not_used(self):
+        candidate = row(
+            query_gene="AT4G35550",
+            query_taxon="Arabidopsis thaliana",
+            species_id="Ath",
+            match_method="locus",
+            original_id="NP_195280.1",
+            gene_key="AT4G35550",
+            new_id="Ath|Arabidopsis_thaliana|NP_195280.1",
+        )
+        header = "lcl|NC_003075.7_cds_NP_195280.1_1 [locus_tag=AT4G35550] [protein_id=NP_195280.1]"
+        rows, failures = check.run_check(
+            [candidate],
+            {candidate.new_id: "MKTF"},
+            {candidate.new_id: "ATGAAAACCTTC"},
+            [],
+            98,
+            98,
+            True,
+            [("Sly", header, "ATGAAAACCTTC")],
+        )
+        self.assertEqual(rows[0]["status"], "no_reference")
+        self.assertIn("not in the downloaded CDS", rows[0]["detail"])
+        self.assertEqual(len(failures), 1)
+
+    def test_annotation_cds_loader_reads_the_species_prefix(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cds = Path(tmp) / "Ath.cds.fna"
+            cds.write_text(
+                ">lcl|NC_003075.7_cds_NP_195280.1_1 [locus_tag=AT4G35550] [protein_id=NP_195280.1]\n"
+                "ATGAAAACCTTC\n"
+            )
+            placeholder = Path(tmp) / "notes.txt"
+            placeholder.write_text("not a fasta\n")
+            records = check.load_annotation_cds([str(cds), str(placeholder)])
+        self.assertEqual(len(records), 1)
+        species, header, seq = records[0]
+        self.assertEqual(species, "Ath")
+        self.assertIn("AT4G35550", header)
+        self.assertEqual(seq, "ATGAAAACCTTC")
+
 
 if __name__ == "__main__":
     unittest.main()

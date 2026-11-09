@@ -1,7 +1,7 @@
 process IQTREE_ASR {
     tag "${og_id}"
     label 'process_medium'
-    publishDir "${params.outdir}/10_graft_phenotype/asr/${og_id}", mode: 'copy'
+    publishDir "${params.outdir}/10_evolutionary_patterns/asr/${og_id}", mode: 'copy'
 
     input:
     tuple val(og_id), path(alignment)

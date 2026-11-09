@@ -40,8 +40,11 @@ def helpMessage() {
 
     Key parameters:
       --species_yaml          Species list (default: conf/species.yaml)
+      --local_genomes         Local protein, CDS, and GFF files for those species
+                              (default: conf/local_genomes.yaml when that file exists)
       --genes_of_interest     gene name, then genus and species (WOX4<TAB>Solanum lycopersicum)
-      --candidate_cds         optional characterized CDS FASTA; confirms the annotation CDS and protein
+      --candidate_cds         optional characterized CDS FASTA; confirms the annotation CDS and protein.
+                              Candidates missing from that file are looked up in the downloaded genome CDS.
       --outdir                Output directory
       --reuse_downloads       Skip download when 01_raw_proteomes already has that species (default: true)
       --reuse_proteome_qc     Skip protein QC when 02_clean_proteomes already has that species (default: true)
@@ -55,9 +58,10 @@ def helpMessage() {
       --eggnog_data_dir       Path to eggNOG DB on the server
       --interproscan_dir      Path to InterProScan installation
 
-    Or copy conf/server.config.example to conf/server.config and set the
-    database paths and other options there. A flag on the command line
-    overrides that file.
+    Database paths and run options are in conf/server.config.example.
+    Copy conf/local_genomes.example.yaml to conf/local_genomes.yaml to read
+    protein, CDS, and GFF files from this machine. A flag on the command
+    line overrides the config file.
     """.stripIndent()
 }
 
@@ -83,6 +87,91 @@ def loadSpecies(String yamlPath) {
         }
     }
     if (current) species << current
+    return species
+}
+
+def localGenomesPath() {
+    if (params.local_genomes) {
+        return params.local_genomes.toString()
+    }
+    def candidate = "${projectDir}/conf/local_genomes.yaml"
+    return file(candidate).exists() ? candidate : null
+}
+
+def applyLocalGenomes(List species, String yamlPath) {
+    if (!yamlPath) {
+        return species
+    }
+    if (!file(yamlPath).exists()) {
+        error "Local genomes config not found: ${yamlPath}"
+    }
+    def rows = loadSpecies(yamlPath)
+    if (!rows) {
+        log.info "No genome entries in ${yamlPath}; every species still comes from ${params.species_yaml}"
+        return species
+    }
+    def byId = species.collectEntries { [(it.id): it] }
+    def seen = [] as Set
+    def used = []
+    rows.each { row ->
+        if (!row.id) {
+            error "A genome entry in ${yamlPath} is missing id"
+        }
+        if (row.id in seen) {
+            error "Genome ${row.id} is listed twice in ${yamlPath}"
+        }
+        seen << row.id
+        def proteins = row.proteins ?: row.fasta ?: row.fasta_path
+        def cds = row.cds ?: row.cds_path
+        def gff = row.gff ?: row.gff_path
+        if (!proteins) {
+            error "Genome ${row.id} in ${yamlPath} needs a proteins path"
+        }
+        def proteinsFile = file(proteins)
+        if (!proteinsFile.exists() || proteinsFile.size() == 0) {
+            error "Proteins for ${row.id} were not found: ${proteins}"
+        }
+        if (cds) {
+            def cdsFile = file(cds)
+            if (!cdsFile.exists() || cdsFile.size() == 0) {
+                error "CDS for ${row.id} were not found: ${cds}"
+            }
+        }
+        if (gff) {
+            def gffFile = file(gff)
+            if (!gffFile.exists() || gffFile.size() == 0) {
+                error "GFF for ${row.id} was not found: ${gff}"
+            }
+        }
+        def target = byId[row.id]
+        if (!target) {
+            if (!row.genus || !row.species) {
+                error "Genome ${row.id} is not in ${params.species_yaml}. Add genus and species to ${yamlPath}, or add that species there."
+            }
+            target = [
+                id           : row.id,
+                genus        : row.genus,
+                species      : row.species,
+                busco_lineage: row.busco_lineage,
+                notes        : row.notes
+            ]
+            species << target
+            byId[row.id] = target
+        } else {
+            if (row.genus) target.genus = row.genus
+            if (row.species) target.species = row.species
+            if (row.busco_lineage) target.busco_lineage = row.busco_lineage
+            if (row.notes) target.notes = row.notes
+        }
+        target.source = 'local'
+        target.fasta_path = proteins
+        target.cds_path = cds
+        target.gff_path = gff
+        used << row.id
+    }
+    def remote = species.findAll { !(it.id in seen) }.collect { it.id }
+    def where = remote ? "${remote.join(', ')} still come from ${params.species_yaml}" : "no species are left to download"
+    log.info "Local genome files for ${used.join(', ')} from ${yamlPath}; ${where}"
     return species
 }
 
@@ -167,14 +256,13 @@ workflow {
         exit 0
     }
 
-    if (file("${projectDir}/conf/server.config").exists()) {
-        log.info "Using conf/server.config for database paths and options"
-    }
+    log.info "Using conf/server.config.example for database paths and options"
 
     def species_list = loadSpecies(params.species_yaml)
     if (!species_list) {
         error "No species parsed from ${params.species_yaml}"
     }
+    species_list = applyLocalGenomes(species_list, localGenomesPath())
 
     Channel
         .fromList(species_list)
@@ -209,7 +297,7 @@ workflow {
 
     ch_download.existing
         .multiMap { meta, prior ->
-            notice: "${meta.id}: ${prior[0]}"
+            notice: "${meta.id} (${meta.source}): ${prior[0]}"
             fasta: tuple(meta, prior[0])
             cds: tuple(meta, prior[1])
             gff: tuple(meta, prior[2])
@@ -224,6 +312,14 @@ workflow {
 
     ch_raw_fasta = ch_kept_download.fasta.mix(DOWNLOAD_PROTEOME.out.fasta)
     ch_raw_cds = ch_kept_download.cds.mix(DOWNLOAD_PROTEOME.out.cds)
+    // QC renames CDS onto protein ids and drops the GenBank header.
+    // The candidate check still needs locus_tag and protein_id from the raw file.
+    ch_raw_cds
+        .multiMap { meta, cds ->
+            qc: tuple(meta, cds)
+            catalog: cds
+        }
+        .set { ch_raw_cds_split }
     ch_raw_gff = ch_kept_download.gff.mix(DOWNLOAD_PROTEOME.out.gff)
     ch_raw_provenance = ch_kept_download.provenance.mix(DOWNLOAD_PROTEOME.out.provenance)
 
@@ -273,7 +369,7 @@ workflow {
 
     // Align CDS to retained proteins (same IDs); trim ORFs when transcripts include UTRs.
     // A species already in 02_clean_cds is not processed again.
-    ch_raw_cds
+    ch_raw_cds_split.qc
         .join(ch_fasta_split.cds, by: 0)
         .join(ch_id_split.cds, by: 0)
         .map { meta, cds, proteins, id_map -> tuple(meta, cds, proteins, id_map, existingCdsQc(meta)) }
@@ -392,7 +488,7 @@ workflow {
 
     // OrthoFinder (MSA mode so alignments are available for %ID)
     RUN_ORTHOFINDER(ch_proteomes)
-    // One file, read by graft phenotype and by the curated report.
+    // One file, read by the evolutionary-patterns step and by the curated report.
     ch_species_tree = RUN_ORTHOFINDER.out.species_tree.first()
     ch_gene_trees = RUN_ORTHOFINDER.out.gene_trees.ifEmpty(file("${projectDir}/assets/empty.tsv")).first()
 
@@ -421,11 +517,17 @@ workflow {
             .ifEmpty([])
             .map { files -> files ?: [file("${projectDir}/assets/empty.tsv")] }
 
+        ch_annotation_cds = ch_raw_cds_split.catalog
+            .collect()
+            .ifEmpty([])
+            .map { files -> files ?: [file("${projectDir}/assets/empty.tsv")] }
+
         CHECK_CANDIDATE_CDS(
             SELECT_ORTHOGROUPS.out.crosswalk,
             ch_clean_proteins,
             ch_clean_cds,
-            Channel.fromPath(params.candidate_cds, checkIfExists: true)
+            Channel.fromPath(params.candidate_cds, checkIfExists: true),
+            ch_annotation_cds
         )
 
         ch_candidate_report = CHECK_CANDIDATE_CDS.out.summary
@@ -455,6 +557,7 @@ workflow {
         ch_sel_tsv = SELECT_ORTHOGROUPS.out.tsv
         ch_sel_list = SELECT_ORTHOGROUPS.out.list
         ch_fasta_split.check.subscribe { }
+        ch_raw_cds_split.catalog.subscribe { }
     }
 
     // Protein-MSA-guided codon alignments (for HyPhy / selection)
@@ -529,11 +632,11 @@ workflow {
         ch_tm
     )
 
-    // Graft phenotype (ASR / selection / divergence) BEFORE AlphaFold handoff
-    // so GPU folding can be prioritized by evolutionary evidence.
+    // Evolutionary patterns (selection, convergence, ASR, divergence)
+    // BEFORE the AlphaFold handoff, so folding can follow that evidence.
     ch_af_priority = Channel.fromPath("${projectDir}/assets/empty.tsv")
 
-    if (params.run_graft_phenotype) {
+    if (params.run_evolutionary_patterns || params.run_graft_phenotype) {
         ch_og_alns = ch_sel_list
             .splitText()
             .map { it.trim() }
@@ -558,7 +661,7 @@ workflow {
                     .filter { it && it.exists() }
                     .map { f ->
                         def og = f.name.replaceAll(/\.codon\.fna$/, '')
-                        tuple(og, f, file("${params.outdir}/10_graft_phenotype/asr/${og}/${og}.treefile"))
+                        tuple(og, f, file("${params.outdir}/10_evolutionary_patterns/asr/${og}/${og}.treefile"))
                     }
             } else if (params.codon_alignments_dir) {
                 ch_codon = Channel
@@ -581,7 +684,7 @@ workflow {
         ch_af_priority = GRAFT_PHENOTYPE.out.ranking
     }
 
-    // AlphaFold handoff last among CPU analysis steps — uses graft ranking when present.
+    // AlphaFold handoff last among CPU analysis steps — uses the evolutionary-patterns ranking when present.
     // The curated HTML report is published after that, from the same tables.
     if (params.prepare_alphafold) {
         def ranks = ch_af_priority.multiMap { f ->

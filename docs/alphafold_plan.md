@@ -5,8 +5,8 @@
 ```text
 CPU server (main.nf)
   … → gene family tables
-  → graft phenotype (ASR / divergence / optional HyPhy)
-  → 08_alphafold_inputs/   handoff ranked by phenotype priority
+  → evolutionary patterns (selection, convergence, ASR, divergence)
+  → 08_alphafold_inputs/   handoff ranked by that evidence
         ↓ rsync
 GPU server (workflows/alphafold.nf)
   → ColabFold models (fold high fold_rank first)
@@ -17,7 +17,7 @@ CPU server (workflows/compare_structures.nf)
 
 ## 1. CPU handoff (`main.nf`)
 
-Runs **after** `--run_graft_phenotype` when that flag is on, so
+Runs **after** `--run_evolutionary_patterns` when that flag is on, so
 `graft_candidate_ranking.tsv` can prioritize which OGs to stage.
 
 Writes `results/08_alphafold_inputs/alphafold_inputs/`:

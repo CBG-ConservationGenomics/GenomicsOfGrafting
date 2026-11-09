@@ -59,6 +59,11 @@ class GraftOutcomeFormatTest(unittest.TestCase):
         self.assertEqual(rows["Cpe"]["in_graft_outcomes"], "no")
         self.assertEqual(rows["Cpe"]["n_as_scion"], 0)
 
+    def test_a_species_with_no_scion_grafts_is_not_a_broad_scion(self) -> None:
+        self.assertEqual(traits.is_broad([], 0.5), 0)
+        self.assertEqual(traits.is_broad([True, True, True, True], 0.5), 1)
+        self.assertEqual(traits.is_broad([True, False, False], 0.5), 0)
+
     def test_example_file_uses_the_same_columns(self) -> None:
         pairs = traits.load_matrix(str(ROOT / "data" / "graft_outcomes.example.tsv"))
         self.assertEqual(pairs[0]["rootstock"], "Solanum lycopersicum")

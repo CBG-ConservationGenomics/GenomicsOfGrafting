@@ -252,6 +252,14 @@ def coverage_rows(analyzed: list[dict], pairs: list[dict]) -> list[dict]:
     return rows
 
 
+def is_broad(values: list[bool], threshold: float) -> int:
+    """1 when this species has grafts in the role and the success rate meets the threshold."""
+    if not values:
+        return 0
+    rate = sum(values) / len(values)
+    return int(rate >= threshold)
+
+
 def clade_trait_majority(clade, tip_traits: dict[str, int]) -> float | None:
     tips = [t.name for t in clade.get_terminals() if t.name]
     vals = [tip_traits[t] for t in tips if t in tip_traits]
@@ -376,8 +384,8 @@ def main() -> None:
         rs_vals = as_stock.get(sp, [])
         sc_rate = sum(sc_vals) / len(sc_vals) if sc_vals else float("nan")
         rs_rate = sum(rs_vals) / len(rs_vals) if rs_vals else float("nan")
-        broad_sc = int(sc_vals and sc_rate >= args.broad_threshold)
-        broad_rs = int(rs_vals and rs_rate >= args.broad_threshold)
+        broad_sc = is_broad(sc_vals, args.broad_threshold)
+        broad_rs = is_broad(rs_vals, args.broad_threshold)
         broad_either = int(broad_sc or broad_rs)
         lineage_rows.append(
             {

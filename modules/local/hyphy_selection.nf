@@ -2,7 +2,7 @@ process HYPHY_SELECTION {
     tag "${og_id}"
     label 'process_high'
     conda "${projectDir}/conf/hyphy.yml"
-    publishDir "${params.outdir}/10_graft_phenotype/selection/${og_id}", mode: 'copy'
+    publishDir "${params.outdir}/10_evolutionary_patterns/selection/${og_id}", mode: 'copy'
 
     input:
     tuple val(og_id), path(codon_alignment), path(tree)

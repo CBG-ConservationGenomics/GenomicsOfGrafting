@@ -1,6 +1,6 @@
 process GRAFT_PAIR_DIVERGENCE {
     label 'process_medium'
-    publishDir "${params.outdir}/10_graft_phenotype/divergence", mode: 'copy'
+    publishDir "${params.outdir}/10_evolutionary_patterns/divergence", mode: 'copy'
 
     input:
     path pairs

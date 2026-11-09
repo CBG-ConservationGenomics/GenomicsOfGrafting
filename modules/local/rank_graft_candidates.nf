@@ -1,6 +1,6 @@
 process RANK_GRAFT_CANDIDATES {
     label 'process_low'
-    publishDir "${params.outdir}/10_graft_phenotype", mode: 'copy'
+    publishDir "${params.outdir}/10_evolutionary_patterns", mode: 'copy'
 
     input:
     path asr_dir
