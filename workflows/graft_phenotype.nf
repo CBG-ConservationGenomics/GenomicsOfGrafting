@@ -39,6 +39,12 @@ workflow {
         }
         .filter { it != null }
 
+    if (params.codon_alignments_dir) {
+        ch_codon_dir = Channel.fromPath(params.codon_alignments_dir, checkIfExists: true).first()
+    } else {
+        ch_codon_dir = Channel.fromPath("${projectDir}/assets/empty.tsv").first()
+    }
+
     if (params.run_hyphy) {
         if (!params.codon_alignments_dir) {
             error "--run_hyphy requires --codon_alignments_dir"
@@ -60,7 +66,8 @@ workflow {
         ch_oglist,
         ch_aln,
         ch_og_alns,
-        ch_codon
+        ch_codon,
+        ch_codon_dir
     )
 }
 

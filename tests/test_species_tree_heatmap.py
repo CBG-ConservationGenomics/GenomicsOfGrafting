@@ -193,6 +193,84 @@ class SpeciesTreeHeatmapTest(unittest.TestCase):
         self.assertIn("col-tree", html)
         self.assertIn("alignTrees", html)
 
+    def test_gene_tree_orders_the_identity_matrix(self) -> None:
+        seqs = {
+            "Nbe": "Nbe|Nicotiana_benthamiana|a",
+            "Sly": "Sly|Solanum_lycopersicum|ref",
+            "Ath": "Ath|Arabidopsis_thaliana|a",
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            families = root / "families.tsv"
+            wide = root / "wide.tsv"
+            labels = root / "labels.tsv"
+            pairs = root / "pairs.tsv"
+            species_tree = root / "SpeciesTree_rooted.txt"
+            genes = root / "Gene_Trees"
+            genes.mkdir()
+            families.write_text(
+                "Orthogroup\tgenes_of_interest\tquery_species_ids\tn_members\t"
+                "n_species_with_members\tmean_pct_id_to_ref\tmin_pct_id_to_ref\tmax_pct_id_to_ref\n"
+                "OG0001\tWOX4\tSly\t3\t3\t70\t50\t100\n"
+            )
+            wide.write_text(
+                "Orthogroup\tbest_pct_id_Ath\tbest_pct_id_Sly\tbest_pct_id_Nbe\n"
+                "OG0001\t80\t100\t90\n"
+            )
+            labels.write_text(
+                "Orthogroup\tlabel\tsequence_id\tspecies_id\tis_reference\n"
+                "OG0001\tNbe:a\tNbe|Nicotiana_benthamiana|a\tNbe\t\n"
+                "OG0001\tSly:ref\tSly|Solanum_lycopersicum|ref\tSly\tyes\n"
+                "OG0001\tAth:a\tAth|Arabidopsis_thaliana|a\tAth\t\n"
+            )
+            pairs.write_text(
+                "Orthogroup\tseq_a\tseq_b\tlabel_a\tlabel_b\tspecies_a\tspecies_b\tpct_identity\treference_id\n"
+                "OG0001\tNbe|Nicotiana_benthamiana|a\tSly|Solanum_lycopersicum|ref\tNbe:a\tSly:ref\tNbe\tSly\t70\tSly|Solanum_lycopersicum|ref\n"
+                "OG0001\tNbe|Nicotiana_benthamiana|a\tAth|Arabidopsis_thaliana|a\tNbe:a\tAth:a\tNbe\tAth\t60\tSly|Solanum_lycopersicum|ref\n"
+                "OG0001\tSly|Solanum_lycopersicum|ref\tAth|Arabidopsis_thaliana|a\tSly:ref\tAth:a\tSly\tAth\t55\tSly|Solanum_lycopersicum|ref\n"
+            )
+            species_tree.write_text("((Ath.clean:0.1,Sly.clean:0.2):0.3,Nbe.clean:0.4);\n")
+            (genes / "OG0001_tree.txt").write_text(
+                f"(({seqs['Ath']}:0.1,{seqs['Nbe']}:0.2):0.3,{seqs['Sly']}:0.4);\n"
+            )
+            (genes / "SequenceIDs.txt").write_text(
+                "0_1: Sly|Solanum_lycopersicum|ref\n"
+            )
+            out = root / "report"
+            sys.argv = [
+                "curate_results.py",
+                "--families",
+                str(families),
+                "--wide-identity",
+                str(wide),
+                "--identity-matrix-pairs",
+                str(pairs),
+                "--identity-matrix-labels",
+                str(labels),
+                "--species-tree",
+                str(species_tree),
+                "--gene-trees",
+                str(genes),
+                "--outdir",
+                str(out),
+            ]
+            report.main()
+            html = (out / "index.html").read_text()
+            payload = html.split('<script id="payload" type="application/json">', 1)[1]
+            payload = payload.split("</script>", 1)[0]
+            data = json.loads(payload)
+        family = data["families"][0]
+        # Sly is the smaller clade, so the gene tree lists it before Ath+Nbe.
+        self.assertEqual(family["gene_tree"]["order"], [seqs["Sly"], seqs["Ath"], seqs["Nbe"]])
+        self.assertEqual(family["matrix"]["full"], [seqs["Sly"], seqs["Ath"], seqs["Nbe"]])
+        self.assertIn("OrthoFinder gene tree", html)
+        self.assertIn("data-seq", html)
+        self.assertEqual(report.match_gene_tip("Sly_Solanum_lycopersicum_ref", list(seqs.values()), {}), seqs["Sly"])
+        self.assertEqual(
+            report.match_gene_tip("0_1", list(seqs.values()), {"0_1": seqs["Sly"]}),
+            seqs["Sly"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

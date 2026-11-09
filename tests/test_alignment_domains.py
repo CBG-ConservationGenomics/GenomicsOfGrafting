@@ -117,6 +117,63 @@ class DomainMappingTest(unittest.TestCase):
         found = pages.domains_for("0_42", index, {"0_42": "Ath|Arabidopsis_thaliana|NP_195280.1"})
         self.assertTrue(any(item.accession == "IPR001356" for item in found))
 
+    def test_protein_page_can_hide_domains(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "OG0001.fa").write_text(">Ath_Arabidopsis_thaliana_NP_195280.1\nMK--TFAA\n")
+            ips = root / "interproscan.tsv"
+            ips.write_text(IPS)
+            index = pages.parse_interpro(ips)
+            html = pages.render_proteins(["OG0001"], root, index, {})
+            plain = pages.render_proteins(["OG0001"], root, None, {})
+        self.assertIn("InterPro domains", html)
+        self.assertIn('data-track="interpro"', html)
+        self.assertIn("hide-interpro", html)
+        self.assertIn("domain-legend", html)
+        self.assertIn('class="domrow kind-interpro"', html)
+        self.assertNotIn("data-track=", plain)
+
+    def test_signal_transmembrane_and_glycan_are_separate_tracks(self) -> None:
+        signalp = "\n".join(
+            [
+                "# ID\tPrediction\tOTHER\tSP(Sec/SPI)\tCS Position",
+                "Ath|Arabidopsis_thaliana|NP_195280.1\tSP\t0.01\t0.99\tCS pos: 3-4. Pr: 0.9",
+                "Sly|Solanum_lycopersicum|NP_2\tOTHER\t0.99\t0.01\t",
+            ]
+        ) + "\n"
+        topology = "\n".join(
+            [
+                "id\ttopology",
+                "Ath|Arabidopsis_thaliana|NP_195280.1\tSSSMMMMIII",
+            ]
+        ) + "\n"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "signalp.tsv").write_text(signalp)
+            (root / "deeptmhmm.tsv").write_text(topology)
+            (root / "OG0001.fa").write_text(">Ath|Arabidopsis_thaliana|NP_195280.1\nMKNGTFAAAA\n")
+            signal = pages.parse_signalp(root / "signalp.tsv")
+            tm = pages.parse_deeptmhmm(root / "deeptmhmm.tsv")
+            glycan = pages.glycans_from_alignments(root, ["OG0001"])
+            index = pages.combine_indexes(signal, tm, glycan)
+            html = pages.render_proteins(["OG0001"], root, index, {})
+        protein = "Ath|Arabidopsis_thaliana|NP_195280.1"
+        kinds = {item.kind for item in index[protein]}
+        self.assertEqual(kinds, {"signal", "transmembrane", "glycan"})
+        signal_bar = next(item for item in index[protein] if item.kind == "signal")
+        self.assertEqual((signal_bar.start, signal_bar.end), (1, 3))
+        helix = next(item for item in index[protein] if item.kind == "transmembrane")
+        self.assertEqual((helix.start, helix.end), (4, 7))
+        sequon = next(item for item in index[protein] if item.kind == "glycan")
+        self.assertEqual((sequon.start, sequon.end), (3, 5))
+        self.assertNotIn("Sly|Solanum_lycopersicum|NP_2", index)
+        self.assertIn("Signal peptides", html)
+        self.assertIn("Transmembrane helices", html)
+        self.assertIn("N-glycosylation", html)
+        self.assertIn("kind-signal", html)
+        self.assertIn("kind-transmembrane", html)
+        self.assertIn("kind-glycan", html)
+
 
 if __name__ == "__main__":
     unittest.main()

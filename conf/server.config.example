@@ -1,0 +1,42 @@
+/*
+ * Optional server settings for GraftingGeneFamilies.
+ *
+ * Copy this file to conf/server.config. The pipeline loads that file when
+ * it is present. A flag on the command line still wins, so a new run can
+ * change --outdir without editing this file.
+ *
+ * conf/server.config is not committed. ${projectDir} is the pipeline directory.
+ *
+ * Filled in from the curie command:
+ *   screen -L nextflow run main.nf -profile hpc,conda \
+ *     --genes_of_interest data/genes_of_interest.txt \
+ *     --outdir test_out8 \
+ *     --eggnog_data_dir /home/general/Databases/Annotation/eggnog/ \
+ *     --interproscan_dir /home/general/Databases/Annotation/interproscan/interproscan-5.78-109.0/ \
+ *     --signalp_bin /home/srs57/anaconda3/envs/grafting-gene-families/bin/signalp6 \
+ *     --orthofinder_threads 40 \
+ *     --candidate_cds data/candidate_cds.example.fna \
+ *     --run_graft_phenotype true \
+ *     --graft_matrix data/graft_outcomes.example.tsv \
+ *     --run_hyphy
+ */
+
+params {
+    eggnog_data_dir       = '/home/general/Databases/Annotation/eggnog/'
+    interproscan_dir      = '/home/general/Databases/Annotation/interproscan/interproscan-5.78-109.0/'
+    signalp_bin           = '/home/srs57/anaconda3/envs/grafting-gene-families/bin/signalp6'
+
+    genes_of_interest     = "${projectDir}/data/genes_of_interest.txt"
+    candidate_cds         = "${projectDir}/data/candidate_cds.example.fna"
+    orthofinder_threads   = 40
+    run_graft_phenotype   = true
+    graft_matrix          = "${projectDir}/data/graft_outcomes.example.tsv"
+    run_hyphy             = true
+
+    // Pass --outdir on the command line. test_out8 was the folder for one run.
+    // outdir              = "${projectDir}/test_out8"
+
+    // deeptmhmm_bin       = 'biolib'
+    // busco_download_path = '/path/to/busco_downloads'
+    // busco_offline       = true
+}

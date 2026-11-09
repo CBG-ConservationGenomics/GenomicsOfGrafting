@@ -54,6 +54,10 @@ def helpMessage() {
       --run_eggnog / --run_interproscan / --run_signalp / --run_deeptmhmm
       --eggnog_data_dir       Path to eggNOG DB on the server
       --interproscan_dir      Path to InterProScan installation
+
+    Or copy conf/server.config.example to conf/server.config and set the
+    database paths and other options there. A flag on the command line
+    overrides that file.
     """.stripIndent()
 }
 
@@ -161,6 +165,10 @@ workflow {
     if (params.help) {
         helpMessage()
         exit 0
+    }
+
+    if (file("${projectDir}/conf/server.config").exists()) {
+        log.info "Using conf/server.config for database paths and options"
     }
 
     def species_list = loadSpecies(params.species_yaml)
@@ -386,6 +394,7 @@ workflow {
     RUN_ORTHOFINDER(ch_proteomes)
     // One file, read by graft phenotype and by the curated report.
     ch_species_tree = RUN_ORTHOFINDER.out.species_tree.first()
+    ch_gene_trees = RUN_ORTHOFINDER.out.gene_trees.ifEmpty(file("${projectDir}/assets/empty.tsv")).first()
 
     // Select orthogroups containing genes of interest
     ch_goi = Channel.fromPath(params.genes_of_interest, checkIfExists: true)
@@ -456,10 +465,14 @@ workflow {
             RUN_ORTHOFINDER.out.results,
             ch_cds_split.codon.collect()
         )
-        ch_codon_dir = BUILD_CODON_ALIGNMENTS.out.dir
+        ch_codon_dir = BUILD_CODON_ALIGNMENTS.out.dir.first()
         ch_codon_report = BUILD_CODON_ALIGNMENTS.out.report
+    } else if (params.codon_alignments_dir) {
+        ch_codon_dir = Channel.fromPath(params.codon_alignments_dir, checkIfExists: true).first()
+        ch_codon_report = Channel.fromPath("${projectDir}/assets/empty.tsv")
+        ch_cds_split.codon.subscribe { }
     } else {
-        ch_codon_dir = Channel.fromPath("${projectDir}/assets/empty.tsv")
+        ch_codon_dir = Channel.fromPath("${projectDir}/assets/empty.tsv").first()
         ch_codon_report = Channel.fromPath("${projectDir}/assets/empty.tsv")
         ch_cds_split.codon.subscribe { }
     }
@@ -488,16 +501,16 @@ workflow {
 
     if (params.run_signalp) {
         ANNOTATE_SIGNALP(ch_ann_fasta)
-        ch_signalp = ANNOTATE_SIGNALP.out.tsv
+        ch_signalp = ANNOTATE_SIGNALP.out.tsv.first()
     } else {
-        ch_signalp = Channel.fromPath("${projectDir}/assets/empty.tsv")
+        ch_signalp = Channel.fromPath("${projectDir}/assets/empty.tsv").first()
     }
 
     if (params.run_deeptmhmm) {
         ANNOTATE_DEEPTMHMM(ch_ann_fasta)
-        ch_tm = ANNOTATE_DEEPTMHMM.out.tsv
+        ch_tm = ANNOTATE_DEEPTMHMM.out.tsv.first()
     } else {
-        ch_tm = Channel.fromPath("${projectDir}/assets/empty.tsv")
+        ch_tm = Channel.fromPath("${projectDir}/assets/empty.tsv").first()
     }
 
     CALC_PERCENT_IDENTITY(
@@ -562,7 +575,8 @@ workflow {
             ch_sel_list,
             RUN_ORTHOFINDER.out.alignments,
             ch_og_alns,
-            ch_codon
+            ch_codon,
+            ch_codon_dir
         )
         ch_af_priority = GRAFT_PHENOTYPE.out.ranking
     }
@@ -606,7 +620,10 @@ workflow {
         RUN_ORTHOFINDER.out.alignments,
         ch_candidate_report,
         ch_species_tree,
-        ch_ips
+        ch_gene_trees,
+        ch_ips,
+        ch_signalp,
+        ch_tm
     )
 }
 
@@ -621,6 +638,7 @@ workflow.onComplete {
       Genomes : ${params.outdir}/11_curated/genomes.html
       Codons  : ${params.outdir}/11_curated/codon_alignments.html
       Proteins: ${params.outdir}/11_curated/protein_alignments.html
+      Structures: ${params.outdir}/11_curated/structures.html
       Sources : ${params.outdir}/01_raw_proteomes/*.provenance.tsv
       CDS check: ${params.candidate_cds ? params.outdir + '/05_selected_orthogroups/candidate_cds_check.tsv' : 'not requested'}
     """.stripIndent()

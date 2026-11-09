@@ -1,3 +1,6 @@
+# Per-machine paths and options. Start from conf/server.config.example.
+conf/server.config
+
 # Nextflow
 .work/
 .nextflow/

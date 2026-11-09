@@ -1,0 +1,3223 @@
+Rootstock,Scion,success
+Crossandra infundibuliformis,Petunia axillaris × P. inflata,TRUE
+Actinidia arguta,Actinidia chinensis,TRUE
+Actinidia arguta,Actinidia arguta × A. melanandra,TRUE
+Actinidia chinensis,Actinidia arguta,TRUE
+Actinidia chinensis,Actinidia callosa,TRUE
+Actinidia chinensis,Actinidia chinensis,TRUE
+Actinidia chinensis,Actinidia cylindrica,TRUE
+Actinidia chinensis,Actinidia eriantha,TRUE
+Actinidia chinensis,Actinidia fulvicoma,TRUE
+Actinidia chinensis,Actinidia hemsleyana,TRUE
+Actinidia chinensis,Actinidia henryi,TRUE
+Actinidia chinensis,Actinidia hubeiensis,TRUE
+Actinidia chinensis,Actinidia indochinensis,TRUE
+Actinidia chinensis,Actinidia lanceolata,TRUE
+Actinidia chinensis,Actinidia latifolia,TRUE
+Actinidia chinensis,Actinidia lijiangensis,TRUE
+Actinidia chinensis,Actinidia macrosperma,TRUE
+Actinidia chinensis,Actinidia polygama,TRUE
+Actinidia chinensis,Actinidia rufa,TRUE
+Actinidia chinensis,Actinidia valvata,TRUE
+Actinidia chinensis,Actinidia zhejiangensis,TRUE
+Actinidia chinensis,Actinidia arguta × A. chinensis,TRUE
+Actinidia chinensis,Actinidia arguta × A. melanandra,TRUE
+Actinidia eriantha,Actinidia chinensis,TRUE
+Actinidia hemsleyana,Actinidia arguta,TRUE
+Actinidia kolomikta,Actinidia chinensis,TRUE
+Actinidia macrosperma,Actinidia chinensis,TRUE
+Actinidia polygama,Actinidia arguta,TRUE
+Actinidia polygama,Actinidia chinensis,TRUE
+Actinidia polygama,Actinidia arguta × A. melanandra,TRUE
+Actinidia valvata,Actinidia chinensis,TRUE
+Actinidia arguta × A. chinensis,Actinidia arguta × A. melanandra,TRUE
+Liquidambar formosana,Liquidambar styraciflua,TRUE
+Liquidambar styraciflua,Liquidambar formosana,TRUE
+Liquidambar styraciflua,Liquidambar styraciflua,TRUE
+Alternanthera porrigens,Nicotiana benthamiana,TRUE
+Beta vulgaris,Beta vulgaris,TRUE
+Celosia argentea,Petunia axillaris × P. inflata,TRUE
+Gomphrena globosa,Petunia axillaris × P. inflata,TRUE
+Spinacia oleracea,Nicotiana benthamiana,TRUE
+Anacardium excelsum,Anacardium occidentale,TRUE
+Anacardium occidentale,Anacardium occidentale,TRUE
+Anacardium occidentale,Mangifera indica,TRUE
+Anacardium spruceanum,Anacardium occidentale,TRUE
+Choerospondias axillaris,Choerospondias axillaris,TRUE
+Mangifera casturi,Mangifera griffithii,TRUE
+Mangifera casturi,Mangifera indica,TRUE
+Mangifera casturi,Mangifera lalijiwa,TRUE
+Mangifera casturi,Mangifera merrillii,TRUE
+Mangifera casturi,Mangifera quadrifida,TRUE
+Mangifera duperreana,Mangifera indica,TRUE
+Mangifera duperreana,Mangifera odorata,TRUE
+Mangifera indica,Mangifera caesia,FALSE
+Mangifera indica,Mangifera casturi,TRUE
+Mangifera indica,Mangifera foetida,FALSE
+Mangifera indica,Mangifera griffithii,TRUE
+Mangifera indica,Mangifera indica,TRUE
+Mangifera indica,Mangifera lalijiwa,TRUE
+Mangifera indica,Mangifera laurina,TRUE
+Mangifera indica,Mangifera merrillii,TRUE
+Mangifera indica,Mangifera odorata,TRUE
+Mangifera indica,Mangifera pajang,TRUE
+Mangifera indica,Mangifera pentandra,TRUE
+Mangifera indica,Mangifera rubropetala,TRUE
+Mangifera indica,Mangifera zeylanica,TRUE
+Mangifera lalijiwa,Mangifera foetida,TRUE
+Mangifera lalijiwa,Mangifera griffithii,FALSE
+Mangifera lalijiwa,Mangifera quadrifida,FALSE
+Mangifera odorata,Mangifera indica,TRUE
+Mangifera odorata,Mangifera odorata,TRUE
+Pistacia atlantica,Pistacia atlantica,TRUE
+Pistacia atlantica,Pistacia vera,TRUE
+Pistacia chinensis,Pistacia atlantica,TRUE
+Pistacia chinensis,Pistacia chinensis,TRUE
+Pistacia chinensis,Pistacia vera,TRUE
+Pistacia eurycarpa,Pistacia vera,TRUE
+Pistacia khinjuk,Pistacia vera,TRUE
+Pistacia terebinthus,Pistacia vera,TRUE
+Pistacia vera,Pistacia vera,TRUE
+Schinus terebinthifolia,Schinus terebinthifolia,TRUE
+Sclerocarya birrea,Sclerocarya birrea,TRUE
+Spondias mombin,Spondias mombin,TRUE
+Pistacia atlantica × P. chinensis,Pistacia atlantica,TRUE
+Pistacia atlantica × P. chinensis,Pistacia vera,TRUE
+Pistacia atlantica × P. chinensis,Pistacia atlantica × P. chinensis,TRUE
+Annona cherimola,Annona cherimola,TRUE
+Annona cherimola,Annona muricata,TRUE
+Annona cherimola,Annona squamosa,TRUE
+Annona cherimola,Annona cherimola × A. squamosa,TRUE
+Annona emarginata,Annona cherimola,TRUE
+Annona emarginata,Annona cherimola × A. squamosa,TRUE
+Annona glabra,Annona macroprophyllata,TRUE
+Annona glabra,Annona muricata,TRUE
+Annona glabra,Annona reticulata,TRUE
+Annona glabra,Annona squamosa,TRUE
+Annona glabra,Annona cherimola × A. squamosa,TRUE
+Annona glabra,Annona cherimola × A. reticulata × A. squamosa,TRUE
+Annona montana,Annona muricata,TRUE
+Annona montana,Annona squamosa,TRUE
+Annona mucosa,Annona muricata,TRUE
+Annona mucosa,Annona cherimola × A. squamosa,TRUE
+Annona muricata,Annona cherimola,TRUE
+Annona muricata,Annona muricata,TRUE
+Annona muricata,Annona squamosa,TRUE
+Annona muricata,Annona cherimola × A. squamosa,TRUE
+Annona purpurea,Annona muricata,TRUE
+Annona reticulata,Annona muricata,TRUE
+Annona reticulata,Annona squamosa,TRUE
+Annona reticulata,Annona cherimola × A. squamosa,TRUE
+Annona reticulata,Annona cherimola × A. reticulata × A. squamosa,TRUE
+Annona senegalensis,Annona squamosa,TRUE
+Annona squamosa,Annona cherimola,TRUE
+Annona squamosa,Annona muricata,TRUE
+Annona squamosa,Annona squamosa,TRUE
+Annona squamosa,Annona cherimola × A. squamosa,TRUE
+Asimina triloba,Asimina triloba,TRUE
+Monodora myristica,Monodora myristica,TRUE
+Annona cherimola × A. squamosa,Annona squamosa,TRUE
+Annona cherimola × A. squamosa,Annona cherimola × A. squamosa,TRUE
+Annona cherimola × A. reticulata × A. squamosa,Annona cherimola × A. squamosa,TRUE
+Cryptotaenia japonica,Nicotiana benthamiana,TRUE
+Daucus carota,Daucus carota,TRUE
+Daucus carota,Nicotiana benthamiana,TRUE
+Catharanthus roseus,Catharanthus roseus,TRUE
+Catharanthus roseus,Petunia axillaris × P. inflata,TRUE
+Vinca major,Nicotiana benthamiana,TRUE
+Vinca major,Petunia axillaris × P. inflata,TRUE
+Ilex aquifolium,Ilex aquifolium,TRUE
+Ilex paraguariensis,Ilex paraguariensis,TRUE
+Epipremnum aureum,Epipremnum aureum,TRUE
+Epipremnum aureum,Nephthytis afzelii,TRUE
+Epipremnum aureum,Nicotiana benthamiana,FALSE
+Epipremnum pinnatum,Epipremnum pinnatum,TRUE
+Nephthytis afzelii,Nephthytis afzelii,TRUE
+Aralia chinensis,Aralia chinensis,TRUE
+Hedera canariensis,Hedera canariensis,TRUE
+Hedera helix,Hedera helix,TRUE
+Hedera helix,Fatsia japonica × Hedera hibernica,TRUE
+Kalopanax septemlobus,Kalopanax septemlobus,TRUE
+Araucaria angustifolia,Araucaria angustifolia,TRUE
+Araucaria cunninghamii,Araucaria cunninghamii,TRUE
+Arctium lappa,Nicotiana benthamiana,FALSE
+Argyranthemum frutescens,Petunia axillaris × P. inflata,TRUE
+Artemisia annua,Chrysanthemum argyrophyllum × C. dichrum × C. indicum × C. nankingense × C. zawadzkii,TRUE
+Artemisia scoparia,Chrysanthemum argyrophyllum × C. dichrum × C. indicum × C. nankingense × C. zawadzkii,TRUE
+Artemisia sieversiana,Galinsoga parviflora,TRUE
+Aster indicus,Galinsoga parviflora,TRUE
+Baculellum articulatum,Baculellum articulatum,TRUE
+Baculellum articulatum,Curio repens,TRUE
+Callistephus chinensis,Nicotiana benthamiana,TRUE
+Callistephus chinensis,Petunia axillaris × P. inflata,TRUE
+Chrysanthemum lavandulifolium,Nicotiana benthamiana,TRUE
+Chrysanthemum lavandulifolium,Nicotiana tabacum,TRUE
+Cosmos sulphureus,Cosmos sulphureus,TRUE
+Cosmos sulphureus,Petunia axillaris × P. inflata,FALSE
+Cynara cardunculus,Cynara cardunculus,TRUE
+Cynara cardunculus,Helianthus annuus,TRUE
+Erigeron canadensis,Galinsoga parviflora,TRUE
+Glebionis coronaria,Nicotiana benthamiana,TRUE
+Helianthus annuus,Cynara cardunculus,TRUE
+Helianthus annuus,Helianthus annuus,TRUE
+Helianthus annuus,Helianthus tuberosus,TRUE
+Helianthus annuus,Smallanthus sonchifolius,TRUE
+Helianthus annuus,Melilotus albus,TRUE
+Helianthus annuus,Vicia faba,TRUE
+Helianthus annuus,Gossypium hirsutum,FALSE
+Helianthus tuberosus,Helianthus annuus,TRUE
+Helianthus tuberosus,Vicia faba,FALSE
+Jacobaea maritima,Petunia axillaris × P. inflata,TRUE
+Senecio scandens,Galinsoga parviflora,TRUE
+Stevia rebaudiana,Nicotiana benthamiana,TRUE
+Stevia rebaudiana,Petunia axillaris × P. inflata,TRUE
+Chrysanthemum argyrophyllum × C. dichrum × C. indicum × C. nankingense × C. zawadzkii,Chrysanthemum argyrophyllum × C. dichrum × C. indicum × C. nankingense × C. zawadzkii,TRUE
+Chrysanthemum argyrophyllum × C. dichrum × C. indicum × C. nankingense × C. zawadzkii,Glycine max,FALSE
+Chrysanthemum argyrophyllum × C. dichrum × C. indicum × C. nankingense × C. zawadzkii,Nicotiana benthamiana,TRUE
+Chrysanthemum argyrophyllum × C. dichrum × C. indicum × C. nankingense × C. zawadzkii,Petunia axillaris × P. inflata,TRUE
+Impatiens sodenii,Impatiens walleriana,TRUE
+Berberis thunbergii,Berberis trigona,TRUE
+Berberis thunbergii,Berberis darwinii × B. trigona,TRUE
+Alnus alnobetula,Alnus glutinosa,TRUE
+Alnus cordata,Alnus cordata × A. incana,TRUE
+Alnus glutinosa,Alnus alnobetula,TRUE
+Alnus glutinosa,Alnus glutinosa,TRUE
+Alnus glutinosa,Alnus hirsuta,TRUE
+Alnus glutinosa,Alnus incana,TRUE
+Alnus glutinosa,Alnus japonica,TRUE
+Alnus glutinosa,Alnus serrulata,TRUE
+Alnus glutinosa,Alnus glutinosa × A. incana,TRUE
+Alnus hirsuta,Alnus cordata,TRUE
+Alnus hirsuta,Alnus glutinosa,TRUE
+Alnus hirsuta,Alnus incana,TRUE
+Alnus hirsuta,Alnus rubra,TRUE
+Alnus incana,Alnus alnobetula,TRUE
+Alnus incana,Alnus glutinosa,TRUE
+Alnus incana,Alnus glutinosa × A. incana,TRUE
+Betula nigra,Betula pendula,TRUE
+Betula nigra,Betula populifolia,TRUE
+Betula papyrifera,Betula pendula,TRUE
+Betula papyrifera,Betula populifolia,TRUE
+Betula papyrifera,Betula cordifolia × B. populifolia,TRUE
+Betula pendula,Betula alleghaniensis,TRUE
+Betula pendula,Betula cordifolia,TRUE
+Betula pendula,Betula ermanii,TRUE
+Betula pendula,Betula grossa,TRUE
+Betula pendula,Betula lenta,TRUE
+Betula pendula,Betula maximowicziana,TRUE
+Betula pendula,Betula medwediewii,TRUE
+Betula pendula,Betula nana,TRUE
+Betula pendula,Betula nigra,TRUE
+Betula pendula,Betula papyrifera,TRUE
+Betula pendula,Betula pendula,TRUE
+Betula pendula,Betula populifolia,TRUE
+Betula pendula,Betula pubescens,TRUE
+Betula pendula,Betula tianschanica,TRUE
+Betula pendula,Betula utilis,TRUE
+Betula pendula,Betula cordifolia × B. populifolia,TRUE
+Betula pendula,Betula nana × B. pubescens,TRUE
+Betula populifolia,Betula pendula,TRUE
+Betula populifolia,Betula populifolia,TRUE
+Betula populifolia,Betula cordifolia × B. populifolia,TRUE
+Betula pubescens,Betula alleghaniensis,TRUE
+Betula pubescens,Betula cordifolia,TRUE
+Betula pubescens,Betula ermanii,TRUE
+Betula pubescens,Betula maximowicziana,TRUE
+Betula pubescens,Betula medwediewii,TRUE
+Betula pubescens,Betula nana,TRUE
+Betula pubescens,Betula papyrifera,TRUE
+Betula pubescens,Betula pendula,TRUE
+Carpinus betulus,Carpinus betulus,TRUE
+Carpinus betulus,Carpinus caroliniana,TRUE
+Carpinus betulus,Carpinus japonica,TRUE
+Carpinus betulus,Carpinus turczaninovii,TRUE
+Carpinus betulus,Corylus avellana,TRUE
+Carpinus caroliniana,Carpinus betulus,TRUE
+Corylus avellana,Corylus avellana,TRUE
+Corylus avellana,Corylus maxima,TRUE
+Corylus colurna,Corylus avellana,TRUE
+Corylus colurna,Corylus heterophylla,TRUE
+Corylus maxima,Corylus avellana,TRUE
+Corylus avellana × C. colurna,Corylus avellana,TRUE
+Catalpa bignonioides,Catalpa bignonioides,TRUE
+Catalpa bignonioides,Catalpa bungei,TRUE
+Catalpa bignonioides,Catalpa bignonioides × C. ovata,TRUE
+Catalpa speciosa,Catalpa bignonioides,TRUE
+Catalpa speciosa,Catalpa bungei,TRUE
+Handroanthus heptaphyllus,Handroanthus heptaphyllus,TRUE
+Handroanthus impetiginosus,Handroanthus heptaphyllus,TRUE
+Jacaranda mimosifolia,Jacaranda mimosifolia,TRUE
+Bixa orellana,Bixa orellana,TRUE
+Arabidopsis thaliana,Arabidopsis thaliana,TRUE
+Arabidopsis thaliana,Cuscuta reflexa,TRUE
+Arabidopsis thaliana,Ipomoea nil,TRUE
+Arabidopsis thaliana,Glycine max,TRUE
+Arabidopsis thaliana,Phtheirospermum japonicum,TRUE
+Arabidopsis thaliana,Zea mays,FALSE
+Arabidopsis thaliana,Nicotiana amplexicaulis,TRUE
+Arabidopsis thaliana,Nicotiana benthamiana,TRUE
+Arabidopsis thaliana,Nicotiana sylvestris,TRUE
+Arabidopsis thaliana,Nicotiana tabacum,TRUE
+Arabidopsis thaliana,Nicotiana tomentosiformis,TRUE
+Arabidopsis thaliana,Petunia axillaris × P. inflata,TRUE
+Brassica oleracea,Alliaria petiolata,TRUE
+Brassica oleracea,Arabidopsis thaliana,TRUE
+Brassica oleracea,Brassica oleracea,TRUE
+Brassica oleracea,Brassica rapa,TRUE
+Brassica oleracea,Nasturtium officinale,TRUE
+Brassica oleracea,Nicotiana benthamiana,TRUE
+Brassica oleracea,Solanum lycopersicum,FALSE
+Brassica oleracea,Petunia axillaris × P. inflata,TRUE
+Brassica rapa,Brassica oleracea,TRUE
+Brassica rapa,Brassica rapa,TRUE
+Capsella bursa-pastoris,Capsella bursa-pastoris,TRUE
+Capsella rubella,Arabidopsis thaliana,TRUE
+Capsella rubella,Nicotiana benthamiana,TRUE
+Cardamine hirsuta,Arabidopsis thaliana,TRUE
+Cardamine hirsuta,Nicotiana benthamiana,TRUE
+Cardamine hirsuta,Nicotiana tabacum,TRUE
+Eutrema salsugineum,Arabidopsis thaliana,TRUE
+Matthiola incana,Petunia axillaris × P. inflata,TRUE
+Olimarabidopsis pumila,Arabidopsis thaliana,TRUE
+Raphanus raphanistrum,Arabidopsis thaliana,TRUE
+Raphanus raphanistrum,Brassica rapa,TRUE
+Raphanus raphanistrum,Raphanus raphanistrum,TRUE
+Brassica oleracea × B. rapa,Capsella bursa-pastoris,TRUE
+Brassica oleracea × B. rapa,Brassica oleracea × B. rapa,TRUE
+Brassica oleracea × B. rapa,Nicotiana benthamiana,TRUE
+Brassica oleracea × Mutarda nigra,Brassica oleracea × B. rapa,TRUE
+Pachysandra terminalis,Nicotiana benthamiana,TRUE
+Pachysandra terminalis,Petunia axillaris × P. inflata,TRUE
+Echinopsis pachanoi,Echinopsis spachiana,TRUE
+Echinopsis spachiana,Echinopsis pachanoi,TRUE
+Echinopsis spachiana,Lophophora williamsii,TRUE
+Opuntia cochenillifera,Opuntia ficus-indica,TRUE
+Selenicereus triangularis,Echinopsis chamaecereus,TRUE
+Selenicereus triangularis,Gymnocalycium mihanovichii,TRUE
+Selenicereus triangularis,Parodia mammulosa,TRUE
+Selenicereus undatus,Selenicereus megalanthus,TRUE
+Selenicereus undatus,Selenicereus undatus,TRUE
+Selenicereus undatus,Selenicereus megalanthus × S. monacanthus × S. undatus,TRUE
+Cannabis sativa,Cannabis sativa,TRUE
+Celtis laevigata,Celtis laevigata,TRUE
+Celtis laevigata,Celtis occidentalis,TRUE
+Celtis occidentalis,Celtis laevigata,TRUE
+Celtis occidentalis,Celtis occidentalis,TRUE
+Humulus lupulus,Cannabis sativa,TRUE
+Humulus lupulus,Humulus lupulus,TRUE
+Humulus scandens,Cannabis sativa,TRUE
+Diabelia spathulata,Nicotiana benthamiana,TRUE
+Scabiosa atropurpurea,Nicotiana benthamiana,TRUE
+Carica papaya,Carica papaya,TRUE
+Carica papaya,Vasconcellea pubescens × V. stipulata,TRUE
+Jacaratia spinosa,Carica papaya,FALSE
+Vasconcellea cauliflora,Carica papaya,TRUE
+Vasconcellea cauliflora,Vasconcellea goudotiana,TRUE
+Vasconcellea goudotiana,Carica papaya,TRUE
+Vasconcellea microcarpa,Carica papaya,TRUE
+Vasconcellea monoica,Carica papaya,TRUE
+Atocion armeria,Atocion armeria,TRUE
+Dianthus caryophyllus,Dianthus caryophyllus,TRUE
+Casuarina equisetifolia,Casuarina equisetifolia,TRUE
+Casuarina equisetifolia,Casuarina glauca,TRUE
+Euonymus europaeus,Euonymus alatus,TRUE
+Euonymus europaeus,Euonymus europaeus,TRUE
+Euonymus europaeus,Euonymus fortunei,TRUE
+Euonymus europaeus,Euonymus nanus,TRUE
+Cephalotaxus harringtonia,Taxus baccata,TRUE
+Cercidiphyllum japonicum,Cercidiphyllum japonicum,TRUE
+Sarcandra glabra,Nicotiana benthamiana,TRUE
+Cleome houtteana,Nicotiana benthamiana,TRUE
+Garcinia atroviridis,Garcinia atroviridis,TRUE
+Garcinia indica,Garcinia gummi-gutta,TRUE
+Garcinia indica,Garcinia indica,TRUE
+Garcinia kola,Garcinia kola,TRUE
+Garcinia mangostana,Garcinia mangostana,TRUE
+Garcinia oleosperma,Garcinia oleosperma,TRUE
+Platonia insignis,Platonia insignis,TRUE
+Combretum imberbe,Boscia albitrunca,TRUE
+Terminalia chebula,Terminalia chebula,TRUE
+Tripogandra diuretica,Tradescantia zebrina,TRUE
+Ipomoea aquatica,Ipomoea aquatica,TRUE
+Ipomoea batatas,Ipomoea batatas,TRUE
+Ipomoea batatas,Ipomoea nil,TRUE
+Ipomoea batatas,Ipomoea trifida,TRUE
+Ipomoea batatas,Ipomoea batatas × I. trifida,TRUE
+Ipomoea batatas,Vigna radiata,TRUE
+Ipomoea batatas,Triticum aestivum,TRUE
+Ipomoea cairica,Ipomoea batatas,TRUE
+Ipomoea carnea,Ipomoea batatas,TRUE
+Ipomoea hildebrandtii,Ipomoea batatas,TRUE
+Ipomoea hildebrandtii,Ipomoea setosa,FALSE
+Ipomoea involucrata,Ipomoea batatas,TRUE
+Ipomoea involucrata,Ipomoea setosa,TRUE
+Ipomoea nil,Ipomoea batatas,TRUE
+Ipomoea nil,Ipomoea nil,TRUE
+Ipomoea nil,Nicotiana benthamiana,TRUE
+Ipomoea trifida,Ipomoea batatas,TRUE
+Ipomoea trifida,Ipomoea trifida,TRUE
+Ipomoea wightii,Ipomoea batatas,TRUE
+Ipomoea wightii,Ipomoea setosa,TRUE
+Ipomoea batatas × I. trifida,Ipomoea batatas,TRUE
+Ipomoea batatas × I. trifida,Ipomoea batatas × I. trifida,TRUE
+Cornus alternifolia,Cornus controversa,TRUE
+Cornus controversa,Cornus controversa,TRUE
+Cornus florida,Cornus florida,TRUE
+Cornus florida,Cornus kousa,TRUE
+Cornus florida,Cornus nuttallii,TRUE
+Cornus florida,Cornus florida × C. nuttallii,TRUE
+Cornus kousa,Cornus florida,TRUE
+Cornus kousa,Cornus kousa,TRUE
+Cornus kousa,Cornus florida × C. nuttallii,TRUE
+Cornus nuttallii,Cornus nuttallii,TRUE
+Cornus nuttallii,Cornus florida × C. nuttallii,TRUE
+Hylotelephium telephioides,Hylotelephium telephioides,TRUE
+Hylotelephium telephioides,Solanum pennellii,FALSE
+Kalanchoe blossfeldiana,Echeveria harmsii,TRUE
+Kalanchoe blossfeldiana,Kalanchoe blossfeldiana,TRUE
+Kalanchoe blossfeldiana,Echeveria harmsii × E. pulvinata,TRUE
+Benincasa fistulosa,Citrullus lanatus,TRUE
+Benincasa hispida,Citrullus lanatus,TRUE
+Benincasa hispida,Cucumis melo,TRUE
+Benincasa hispida,Cucumis sativus,TRUE
+Benincasa hispida,Momordica charantia,TRUE
+Benincasa hispida,Trichosanthes kirilowii,TRUE
+Citrullus amarus,Citrullus lanatus,TRUE
+Citrullus colocynthis,Momordica charantia,TRUE
+Citrullus lanatus,Citrullus lanatus,TRUE
+Citrullus lanatus,Cucumis melo,TRUE
+Citrullus lanatus,Cucumis sativus,TRUE
+Citrullus lanatus,Lagenaria siceraria,TRUE
+Citrullus lanatus,Nicotiana benthamiana,FALSE
+Cucumis africanus,Citrullus lanatus,TRUE
+Cucumis anguria,Citrullus lanatus,TRUE
+Cucumis ficifolius,Citrullus lanatus,TRUE
+Cucumis melo,Citrullus lanatus,TRUE
+Cucumis melo,Cucumis melo,TRUE
+Cucumis melo,Cucumis sativus,TRUE
+Cucumis melo,Cucurbita ficifolia,TRUE
+Cucumis melo,Cucurbita maxima,TRUE
+Cucumis melo,Momordica charantia,TRUE
+Cucumis melo,Sicyos angulatus,TRUE
+Cucumis metuliferus,Cucumis melo,TRUE
+Cucumis metuliferus,Cucumis sativus,TRUE
+Cucumis metuliferus,Momordica charantia,TRUE
+Cucumis myriocarpus,Citrullus lanatus,TRUE
+Cucumis pustulatus,Citrullus lanatus,TRUE
+Cucumis pustulatus,Cucumis melo,TRUE
+Cucumis pustulatus,Cucumis sativus,TRUE
+Cucumis sativus,Citrullus lanatus,TRUE
+Cucumis sativus,Cucumis melo,TRUE
+Cucumis sativus,Cucumis sativus,TRUE
+Cucumis sativus,Cucurbita ficifolia,TRUE
+Cucumis sativus,Cucurbita maxima,TRUE
+Cucumis sativus,Sicyos angulatus,TRUE
+Cucumis sativus,Nicotiana benthamiana,TRUE
+Cucumis sativus,Nicotiana tabacum,TRUE
+Cucurbita argyrosperma,Citrullus lanatus,TRUE
+Cucurbita argyrosperma,Cucumis sativus,TRUE
+Cucurbita ficifolia,Citrullus lanatus,TRUE
+Cucurbita ficifolia,Cucumis melo,TRUE
+Cucurbita ficifolia,Cucumis sativus,TRUE
+Cucurbita ficifolia,Momordica charantia,TRUE
+Cucurbita maxima,Citrullus lanatus,TRUE
+Cucurbita maxima,Cucumis melo,TRUE
+Cucurbita maxima,Cucumis sativus,TRUE
+Cucurbita maxima,Cucurbita maxima,TRUE
+Cucurbita maxima,Cucurbita moschata,TRUE
+Cucurbita maxima,Lagenaria siceraria,TRUE
+Cucurbita maxima,Nicotiana benthamiana,FALSE
+Cucurbita maxima,Nicotiana tabacum,TRUE
+Cucurbita moschata,Citrullus lanatus,TRUE
+Cucurbita moschata,Cucumis melo,TRUE
+Cucurbita moschata,Cucumis sativus,TRUE
+Cucurbita moschata,Momordica charantia,TRUE
+Cucurbita moschata,Vigna radiata,TRUE
+Cucurbita okeechobeensis,Citrullus lanatus,TRUE
+Cucurbita pepo,Citrullus lanatus,TRUE
+Cucurbita pepo,Cucumis melo,TRUE
+Cucurbita pepo,Cucumis sativus,TRUE
+Cucurbita pepo,Momordica charantia,TRUE
+Lagenaria siceraria,Citrullus lanatus,TRUE
+Lagenaria siceraria,Cucumis melo,TRUE
+Lagenaria siceraria,Cucumis sativus,TRUE
+Lagenaria siceraria,Cucurbita maxima,TRUE
+Lagenaria siceraria,Lagenaria siceraria,TRUE
+Lagenaria siceraria,Momordica charantia,TRUE
+Luffa acutangula,Cucumis sativus,TRUE
+Luffa acutangula,Momordica charantia,TRUE
+Momordica charantia,Cucumis melo,TRUE
+Momordica charantia,Cucumis sativus,TRUE
+Momordica charantia,Momordica charantia,TRUE
+Sicana odorifera,Cucumis melo,TRUE
+Sicyos angulatus,Citrullus lanatus,TRUE
+Sicyos angulatus,Cucumis melo,TRUE
+Sicyos angulatus,Cucumis sativus,TRUE
+Trichosanthes cucumerina,Cucumis melo,TRUE
+Trichosanthes kirilowii,Trichosanthes kirilowii,TRUE
+Cucumis melo × C. metuliferus,Cucumis melo,TRUE
+Cucurbita maxima × C. moschata,Citrullus amarus,TRUE
+Cucurbita maxima × C. moschata,Citrullus lanatus,TRUE
+Cucurbita maxima × C. moschata,Cucumis melo,TRUE
+Cucurbita maxima × C. moschata,Cucumis sativus,TRUE
+Cucurbita maxima × C. moschata,Melothria scabra,TRUE
+Cucurbita maxima × C. moschata,Cucurbita maxima × C. moschata,TRUE
+Austrocedrus chilensis,Austrocedrus chilensis,TRUE
+Callitropsis nootkatensis,Chamaecyparis lawsoniana,FALSE
+Calocedrus decurrens,Calocedrus decurrens,TRUE
+Chamaecyparis formosensis,Chamaecyparis lawsoniana,TRUE
+Chamaecyparis lawsoniana,Callitropsis nootkatensis,TRUE
+Chamaecyparis lawsoniana,Chamaecyparis lawsoniana,TRUE
+Chamaecyparis lawsoniana,Chamaecyparis obtusa,TRUE
+Chamaecyparis pisifera,Chamaecyparis lawsoniana,TRUE
+Chamaecyparis pisifera,Chamaecyparis obtusa,TRUE
+Chamaecyparis thyoides,Chamaecyparis lawsoniana,TRUE
+Cryptomeria japonica,Cryptomeria japonica,TRUE
+Cryptomeria japonica,Metasequoia glyptostroboides,TRUE
+Cupressus sempervirens,Cupressus sempervirens,TRUE
+Cupressus torulosa,Hesperocyparis macrocarpa,TRUE
+Glyptostrobus pensilis,Metasequoia glyptostroboides,TRUE
+Hesperocyparis arizonica,Cupressus sempervirens,TRUE
+Hesperocyparis bakeri,Cupressus sempervirens,TRUE
+Hesperocyparis macrocarpa,Cupressus sempervirens,TRUE
+Hesperocyparis macrocarpa,Cupressus torulosa,TRUE
+Hesperocyparis macrocarpa,Hesperocyparis glabra,TRUE
+Hesperocyparis macrocarpa,Hesperocyparis macrocarpa,TRUE
+Juniperus chinensis,Callitropsis nootkatensis,TRUE
+Juniperus chinensis,Juniperus chinensis,TRUE
+Juniperus chinensis,Juniperus communis,TRUE
+Juniperus chinensis,Juniperus scopulorum,TRUE
+Juniperus chinensis,Juniperus virginiana,TRUE
+Juniperus virginiana,Juniperus scopulorum,TRUE
+Metasequoia glyptostroboides,Cryptomeria japonica,TRUE
+Metasequoia glyptostroboides,Cunninghamia lanceolata,TRUE
+Metasequoia glyptostroboides,Glyptostrobus pensilis,TRUE
+Metasequoia glyptostroboides,Metasequoia glyptostroboides,TRUE
+Metasequoia glyptostroboides,Sequoia sempervirens,TRUE
+Metasequoia glyptostroboides,Sequoiadendron giganteum,TRUE
+Metasequoia glyptostroboides,Taiwania cryptomerioides,TRUE
+Metasequoia glyptostroboides,Taxodium distichum,TRUE
+Platycladus orientalis,Callitropsis nootkatensis,TRUE
+Platycladus orientalis,Chamaecyparis obtusa,TRUE
+Platycladus orientalis,Hesperocyparis arizonica,TRUE
+Platycladus orientalis,Platycladus orientalis,TRUE
+Sequoia sempervirens,Metasequoia glyptostroboides,TRUE
+Sequoia sempervirens,Sequoia sempervirens,TRUE
+Sequoia sempervirens,Sequoiadendron giganteum,TRUE
+Sequoiadendron giganteum,Metasequoia glyptostroboides,TRUE
+Sequoiadendron giganteum,Sequoiadendron giganteum,TRUE
+Taxodium distichum,Metasequoia glyptostroboides,TRUE
+Taxodium distichum,Taxodium distichum,TRUE
+Thuja occidentalis,Calocedrus decurrens,TRUE
+Thuja occidentalis,Chamaecyparis lawsoniana,TRUE
+Thuja occidentalis,Chamaecyparis obtusa,TRUE
+Thuja occidentalis,Hesperocyparis arizonica,FALSE
+Thuja plicata,Hesperocyparis arizonica,FALSE
+Thuja plicata,Thuja plicata,TRUE
+Diospyros glandulosa,Diospyros kaki,TRUE
+Diospyros kaki,Diospyros kaki,TRUE
+Diospyros kaki,Diospyros rhombifolia,TRUE
+Diospyros kaki,Diospyros virginiana,TRUE
+Diospyros lotus,Diospyros kaki,TRUE
+Diospyros lotus,Diospyros lotus,TRUE
+Diospyros rhombifolia,Diospyros kaki,TRUE
+Diospyros virginiana,Diospyros kaki,TRUE
+Diospyros virginiana,Diospyros virginiana,TRUE
+Elaeagnus pungens,Elaeagnus pungens,TRUE
+Elaeagnus umbellata,Elaeagnus pungens,TRUE
+Elaeocarpus serratus,Elaeocarpus serratus,TRUE
+Arbutus unedo,Arbutus andrachne × A. unedo,TRUE
+Kalmia latifolia,Kalmia latifolia,TRUE
+Rhododendron grande,Rhododendron macabeanum,TRUE
+Rhododendron grande,Rhododendron sinogrande,TRUE
+Vaccinium arboreum,Vaccinium corymbosum,TRUE
+Vaccinium arboreum,Vaccinium virgatum,TRUE
+Vaccinium ashei,Vaccinium corymbosum,TRUE
+Vaccinium bracteatum,Vaccinium corymbosum,TRUE
+Vaccinium corymbosum,Vaccinium corymbosum,TRUE
+Vaccinium virgatum,Vaccinium corymbosum,TRUE
+Rhododendron caucasicum × R. ponticum,Rhododendron yakushimanum,TRUE
+Euphorbia pulcherrima,Euphorbia pulcherrima,TRUE
+Hevea brasiliensis,Hevea brasiliensis,TRUE
+Hevea brasiliensis,Hevea benthamiana × H. pauciflora,TRUE
+Jatropha curcas,Jatropha curcas,TRUE
+Jatropha gossypiifolia,Jatropha curcas,TRUE
+Manihot esculenta,Manihot esculenta,TRUE
+Manihot esculenta,Manihot fortalezensis,TRUE
+Manihot esculenta,Manihot glaziovii,TRUE
+Manihot esculenta,Manihot pohlii,TRUE
+Manihot esculenta,Manihot esculenta × M. glaziovii,TRUE
+Manihot glaziovii,Manihot esculenta,TRUE
+Mercurialis annua,Mercurialis annua,TRUE
+Plukenetia volubilis,Plukenetia volubilis,TRUE
+Reutealis trisperma,Reutealis trisperma,TRUE
+Ricinodendron heudelotii,Ricinodendron heudelotii,TRUE
+Ricinus communis,Ricinus communis,TRUE
+Hevea guianensis × H. pauciflora,Hevea brasiliensis,TRUE
+Manihot esculenta × M. glaziovii,Manihot esculenta,TRUE
+Acacia terminalis,Swainsona formosa,FALSE
+Anthyllis vulneraria,Trifolium pratense,TRUE
+Arachis hypogaea,Nicotiana benthamiana,TRUE
+Bauhinia variegata,Bauhinia purpurea × B. variegata,FALSE
+Cajanus cajan,Cajanus cajan,TRUE
+Caragana arborescens,Caragana arborescens,TRUE
+Caragana arborescens,Caragana frutex,TRUE
+Caragana arborescens,Caragana halodendron,TRUE
+Caragana arborescens,Caragana microphylla,TRUE
+Caragana arborescens,Caragana pekinensis,TRUE
+Caragana arborescens,Caragana spinosa,TRUE
+Caragana arborescens,Caragana tragacanthoides,TRUE
+Ceratonia siliqua,Ceratonia siliqua,TRUE
+Cercis canadensis,Cercis canadensis,TRUE
+Cercis canadensis,Cercis chinensis,TRUE
+Cercis canadensis,Cercis griffithii,TRUE
+Cercis canadensis,Cercis occidentalis,TRUE
+Cercis siliquastrum,Cercis siliquastrum,TRUE
+Cicer arietinum,Cicer arietinum,TRUE
+Cladrastis kentukea,Cladrastis kentukea,TRUE
+Clianthus puniceus,Swainsona formosa,TRUE
+Colophospermum mopane,Boscia albitrunca,TRUE
+Colutea arborescens,Swainsona formosa,TRUE
+Gleditsia triacanthos,Gleditsia triacanthos,TRUE
+Glycine max,Glycine max,TRUE
+Glycine max,Lupinus albus,TRUE
+Glycine max,Phaseolus vulgaris,TRUE
+Glycine max,Nicotiana benthamiana,TRUE
+Glycine max,Nicotiana rustica,TRUE
+Glycine max,Nicotiana tabacum,TRUE
+Glycine max,Nicotiana umbratica,TRUE
+Hymenaea courbaril,Hymenaea courbaril,TRUE
+Lablab purpureus,Glycine max,TRUE
+Lablab purpureus,Lablab purpureus,TRUE
+Laburnum alpinum,Laburnum anagyroides,TRUE
+Laburnum alpinum,Laburnum alpinum × L. anagyroides,TRUE
+Laburnum anagyroides,Argyrocytisus battandieri,TRUE
+Laburnum anagyroides,Chamaecytisus purpureus,TRUE
+Laburnum anagyroides,Laburnum anagyroides,TRUE
+Laburnum anagyroides,Chamaecytisus purpureus × Laburnum anagyroides,TRUE
+Laburnum anagyroides,Laburnum alpinum × L. anagyroides,TRUE
+Lathyrus odoratus,Lathyrus odoratus,TRUE
+Lathyrus oleraceus,Glycine max,TRUE
+Lathyrus oleraceus,Lathyrus oleraceus,TRUE
+Lathyrus oleraceus,Lupinus albus,TRUE
+Lathyrus oleraceus,Lupinus angustifolius,TRUE
+Lathyrus oleraceus,Nicotiana benthamiana,TRUE
+Leucaena diversifolia,Leucaena collinsii,TRUE
+Leucaena diversifolia,Leucaena diversifolia,TRUE
+Leucaena diversifolia,Leucaena esculenta,TRUE
+Leucaena diversifolia,Leucaena greggii,TRUE
+Leucaena diversifolia,Leucaena lanceolata,TRUE
+Leucaena diversifolia,Leucaena leucocephala,TRUE
+Leucaena diversifolia,Leucaena macrophylla,TRUE
+Leucaena diversifolia,Leucaena multicapitula,TRUE
+Leucaena diversifolia,Leucaena pallida,TRUE
+Leucaena diversifolia,Leucaena pulverulenta,TRUE
+Leucaena diversifolia,Leucaena retusa,TRUE
+Leucaena diversifolia,Leucaena salvadorensis,TRUE
+Leucaena diversifolia,Leucaena shannonii,TRUE
+Leucaena diversifolia,Leucaena trichodes,TRUE
+Leucaena diversifolia,Leucaena diversifolia × L. leucocephala,TRUE
+Leucaena diversifolia,Leucaena diversifolia × L. pulverulenta,TRUE
+Leucaena diversifolia,Leucaena esculenta × L. leucocephala,TRUE
+Leucaena leucocephala,Leucaena collinsii,TRUE
+Leucaena leucocephala,Leucaena diversifolia,TRUE
+Leucaena leucocephala,Leucaena esculenta,TRUE
+Leucaena leucocephala,Leucaena greggii,TRUE
+Leucaena leucocephala,Leucaena lanceolata,TRUE
+Leucaena leucocephala,Leucaena leucocephala,TRUE
+Leucaena leucocephala,Leucaena macrophylla,TRUE
+Leucaena leucocephala,Leucaena multicapitula,TRUE
+Leucaena leucocephala,Leucaena pallida,TRUE
+Leucaena leucocephala,Leucaena pulverulenta,TRUE
+Leucaena leucocephala,Leucaena retusa,TRUE
+Leucaena leucocephala,Leucaena salvadorensis,TRUE
+Leucaena leucocephala,Leucaena shannonii,TRUE
+Leucaena leucocephala,Leucaena trichodes,TRUE
+Leucaena leucocephala,Leucaena diversifolia × L. leucocephala,TRUE
+Leucaena leucocephala,Leucaena diversifolia × L. pulverulenta,TRUE
+Leucaena leucocephala,Leucaena esculenta × L. leucocephala,TRUE
+Lotus burttii,Nicotiana benthamiana,TRUE
+Lotus japonicus,Lotus japonicus,TRUE
+Lotus japonicus,Nicotiana benthamiana,FALSE
+Lupinus albus,Glycine max,FALSE
+Lupinus albus,Lathyrus oleraceus,FALSE
+Lupinus albus,Lupinus albus,TRUE
+Lupinus angustifolius,Lathyrus oleraceus,TRUE
+Lupinus angustifolius,Lupinus angustifolius,TRUE
+Lupinus luteus,Vicia faba,TRUE
+Medicago falcata,Medicago falcata,TRUE
+Medicago falcata,Medicago truncatula,TRUE
+Medicago sativa,Medicago sativa,TRUE
+Medicago sativa,Nicotiana benthamiana,TRUE
+Medicago truncatula,Medicago falcata,TRUE
+Medicago truncatula,Medicago truncatula,TRUE
+Melilotus officinalis,Nicotiana benthamiana,TRUE
+Mucuna pruriens,Mucuna pruriens,TRUE
+Neltuma alba,Neltuma alba,TRUE
+Neltuma alba,Neltuma articulata,TRUE
+Neltuma alba,Neltuma chilensis,TRUE
+Neltuma alba,Neltuma glandulosa,TRUE
+Neltuma alba,Neltuma juliflora,TRUE
+Neltuma alba,Strombocarpa tamarugo,FALSE
+Neltuma articulata,Neltuma alba,TRUE
+Neltuma articulata,Neltuma articulata,TRUE
+Neltuma articulata,Neltuma chilensis,TRUE
+Neltuma articulata,Neltuma glandulosa,TRUE
+Neltuma articulata,Neltuma juliflora,TRUE
+Neltuma chilensis,Neltuma alba,TRUE
+Neltuma chilensis,Neltuma articulata,TRUE
+Neltuma chilensis,Neltuma chilensis,TRUE
+Neltuma chilensis,Neltuma glandulosa,TRUE
+Neltuma chilensis,Neltuma juliflora,TRUE
+Neltuma glandulosa,Neltuma alba,TRUE
+Neltuma glandulosa,Neltuma articulata,TRUE
+Neltuma glandulosa,Neltuma chilensis,TRUE
+Neltuma glandulosa,Neltuma glandulosa,TRUE
+Neltuma glandulosa,Neltuma juliflora,TRUE
+Neltuma glandulosa,Strombocarpa tamarugo,FALSE
+Neltuma juliflora,Neltuma alba,TRUE
+Neltuma juliflora,Neltuma articulata,TRUE
+Neltuma juliflora,Neltuma chilensis,TRUE
+Neltuma juliflora,Neltuma glandulosa,TRUE
+Neltuma juliflora,Neltuma juliflora,TRUE
+Neltuma juliflora,Neltuma nigra,TRUE
+Neltuma pallida,Neltuma juliflora,TRUE
+Neltuma ruscifolia,Neltuma alba,TRUE
+Phaseolus acutifolius,Phaseolus vulgaris,TRUE
+Phaseolus coccineus,Phaseolus vulgaris,TRUE
+Phaseolus vulgaris,Glycine max,TRUE
+Phaseolus vulgaris,Phaseolus acutifolius,TRUE
+Phaseolus vulgaris,Phaseolus vulgaris,TRUE
+Robinia hispida,Robinia pseudoacacia,TRUE
+Robinia pseudoacacia,Robinia hispida,TRUE
+Robinia pseudoacacia,Robinia pseudoacacia,TRUE
+Robinia pseudoacacia,Robinia viscosa,TRUE
+Robinia pseudoacacia,Robinia hispida × R. pseudoacacia,TRUE
+Robinia viscosa,Robinia pseudoacacia,TRUE
+Senegalia wrightii,Senegalia wrightii,TRUE
+Senna artemisioides,Swainsona formosa,FALSE
+Serianthes kanehirae,Serianthes nelsonii,TRUE
+Serianthes nelsonii,Serianthes nelsonii,TRUE
+Sophora toromiro,Sophora cassioides,TRUE
+Strombocarpa tamarugo,Neltuma alba,TRUE
+Strombocarpa tamarugo,Neltuma glandulosa,TRUE
+Strombocarpa tamarugo,Strombocarpa tamarugo,FALSE
+Styphnolobium japonicum,Styphnolobium japonicum,TRUE
+Swainsona canescens,Swainsona formosa,TRUE
+Swainsona formosa,Swainsona formosa,TRUE
+Swainsona greyana,Swainsona formosa,TRUE
+Trifolium ambiguum,Trifolium hybridum,TRUE
+Trifolium ambiguum,Trifolium repens,TRUE
+Trifolium hybridum,Trifolium pratense,TRUE
+Trifolium hybridum,Trifolium repens,TRUE
+Trifolium pratense,Medicago sativa,TRUE
+Trifolium pratense,Trifolium hybridum,TRUE
+Trifolium pratense,Trifolium repens,TRUE
+Trifolium repens,Trifolium hybridum,TRUE
+Trifolium repens,Trifolium pratense,TRUE
+Trifolium repens,Trifolium repens,TRUE
+Trigonella foenum-graecum,Nicotiana benthamiana,TRUE
+Vicia faba,Helianthus annuus,TRUE
+Vicia faba,Lupinus luteus,TRUE
+Vicia faba,Vicia faba,TRUE
+Vicia faba,Nicotiana benthamiana,TRUE
+Vicia lens,Vicia lens,TRUE
+Vicia narbonensis,Vicia faba,TRUE
+Vigna angularis,Nicotiana benthamiana,TRUE
+Vigna unguiculata,Vigna unguiculata,TRUE
+Wisteria floribunda,Wisteria floribunda,TRUE
+Wisteria sinensis,Wisteria brachybotrys,TRUE
+Wisteria sinensis,Wisteria floribunda,TRUE
+Wisteria sinensis,Wisteria sinensis,TRUE
+Castanea crenata,Castanea crenata,TRUE
+Castanea crenata,Castanea sativa,TRUE
+Castanea crenata,Castanea crenata × C. dentata,TRUE
+Castanea crenata,Castanea crenata × C. seguinii,TRUE
+Castanea dentata,Castanea dentata,TRUE
+Castanea mollissima,Castanea crenata,TRUE
+Castanea mollissima,Castanea dentata,TRUE
+Castanea mollissima,Castanea henryi,TRUE
+Castanea mollissima,Castanea mollissima,TRUE
+Castanea mollissima,Castanea ozarkensis,TRUE
+Castanea mollissima,Castanea sativa,TRUE
+Castanea mollissima,Castanea seguinii,TRUE
+Castanea mollissima,Castanea crenata × C. mollissima,TRUE
+Castanea mollissima,Castanea crenata × C. seguinii,TRUE
+Castanea mollissima,Castanea dentata × C. mollissima,TRUE
+Castanea mollissima,Castanea mollissima × C. seguinii,TRUE
+Castanea mollissima,Castanea crenata × C. dentata × C. mollissima,TRUE
+Castanea pumila,Castanea sativa,TRUE
+Castanea pumila,Castanea crenata × C. dentata × C. mollissima,TRUE
+Castanea sativa,Castanea crenata,TRUE
+Castanea sativa,Castanea mollissima,TRUE
+Castanea sativa,Castanea sativa,TRUE
+Castanea sativa,Quercus petraea,TRUE
+Castanea sativa,Quercus robur,TRUE
+Castanea seguinii,Castanea mollissima,FALSE
+Fagus grandifolia,Fagus grandifolia,TRUE
+Fagus grandifolia,Fagus sylvatica,TRUE
+Fagus orientalis,Fagus engleriana,TRUE
+Fagus sylvatica,Fagus grandifolia,TRUE
+Fagus sylvatica,Fagus orientalis,TRUE
+Fagus sylvatica,Fagus sylvatica,TRUE
+Quercus acutissima,Castanea crenata,TRUE
+Quercus acutissima,Quercus acutissima,TRUE
+Quercus acutissima,Nicotiana benthamiana,TRUE
+Quercus alba,Quercus macrocarpa,TRUE
+Quercus alba,Quercus mongolica,TRUE
+Quercus bicolor,Quercus dentata,TRUE
+Quercus bicolor,Quercus frainetto,TRUE
+Quercus bicolor,Quercus macranthera,TRUE
+Quercus bicolor,Quercus petraea,TRUE
+Quercus bicolor,Quercus pontica,TRUE
+Quercus bicolor,Quercus robur,TRUE
+Quercus castaneifolia,Quercus suber,TRUE
+Quercus cerris,Castanea sativa,TRUE
+Quercus cerris,Quercus alba,FALSE
+Quercus cerris,Quercus bicolor,FALSE
+Quercus cerris,Quercus castaneifolia,TRUE
+Quercus cerris,Quercus cerris,TRUE
+Quercus cerris,Quercus coccinea,FALSE
+Quercus cerris,Quercus frainetto,TRUE
+Quercus cerris,Quercus macranthera,TRUE
+Quercus cerris,Quercus macrocarpa,TRUE
+Quercus cerris,Quercus marilandica,TRUE
+Quercus cerris,Quercus michauxii,TRUE
+Quercus cerris,Quercus petraea,FALSE
+Quercus cerris,Quercus robur,TRUE
+Quercus cerris,Quercus rubra,FALSE
+Quercus cerris,Quercus stellata,FALSE
+Quercus cerris,Quercus suber,TRUE
+Quercus ilex,Quercus cerris × Q. suber,TRUE
+Quercus macrocarpa,Quercus dentata,TRUE
+Quercus michauxii,Quercus frainetto,TRUE
+Quercus michauxii,Quercus macranthera,TRUE
+Quercus michauxii,Quercus petraea,TRUE
+Quercus michauxii,Quercus robur,TRUE
+Quercus mongolica,Nicotiana benthamiana,TRUE
+Quercus palustris,Castanea sativa,TRUE
+Quercus palustris,Quercus alba,FALSE
+Quercus palustris,Quercus bicolor,TRUE
+Quercus palustris,Quercus coccinea,TRUE
+Quercus palustris,Quercus imbricaria,TRUE
+Quercus palustris,Quercus macranthera,TRUE
+Quercus palustris,Quercus macrocarpa,TRUE
+Quercus palustris,Quercus marilandica,TRUE
+Quercus palustris,Quercus michauxii,TRUE
+Quercus palustris,Quercus montana,TRUE
+Quercus palustris,Quercus palustris,TRUE
+Quercus palustris,Quercus petraea,FALSE
+Quercus palustris,Quercus robur,TRUE
+Quercus palustris,Quercus rubra,TRUE
+Quercus palustris,Quercus stellata,TRUE
+Quercus palustris,Quercus suber,TRUE
+Quercus petraea,Castanea sativa,FALSE
+Quercus petraea,Quercus alba,TRUE
+Quercus petraea,Quercus imbricaria,FALSE
+Quercus petraea,Quercus marilandica,TRUE
+Quercus petraea,Quercus montana,TRUE
+Quercus petraea,Quercus palustris,TRUE
+Quercus petraea,Quercus robur,TRUE
+Quercus petraea,Quercus stellata,FALSE
+Quercus pubescens,Quercus suber,TRUE
+Quercus robur,Castanea sativa,FALSE
+Quercus robur,Quercus alba,TRUE
+Quercus robur,Quercus bicolor,TRUE
+Quercus robur,Quercus cerris,TRUE
+Quercus robur,Quercus coccinea,TRUE
+Quercus robur,Quercus falcata,FALSE
+Quercus robur,Quercus frainetto,TRUE
+Quercus robur,Quercus imbricaria,TRUE
+Quercus robur,Quercus macranthera,TRUE
+Quercus robur,Quercus macrocarpa,TRUE
+Quercus robur,Quercus marilandica,TRUE
+Quercus robur,Quercus michauxii,TRUE
+Quercus robur,Quercus montana,TRUE
+Quercus robur,Quercus palustris,TRUE
+Quercus robur,Quercus petraea,TRUE
+Quercus robur,Quercus robur,TRUE
+Quercus robur,Quercus rubra,TRUE
+Quercus robur,Quercus stellata,TRUE
+Quercus robur,Quercus suber,TRUE
+Quercus robur,Quercus velutina,TRUE
+Quercus rubra,Quercus alba,FALSE
+Quercus rubra,Quercus bicolor,FALSE
+Quercus rubra,Quercus cerris,TRUE
+Quercus rubra,Quercus coccinea,TRUE
+Quercus rubra,Quercus falcata,FALSE
+Quercus rubra,Quercus frainetto,TRUE
+Quercus rubra,Quercus imbricaria,TRUE
+Quercus rubra,Quercus macranthera,TRUE
+Quercus rubra,Quercus macrocarpa,TRUE
+Quercus rubra,Quercus marilandica,TRUE
+Quercus rubra,Quercus michauxii,TRUE
+Quercus rubra,Quercus montana,TRUE
+Quercus rubra,Quercus palustris,TRUE
+Quercus rubra,Quercus petraea,FALSE
+Quercus rubra,Quercus robur,TRUE
+Quercus rubra,Quercus rubra,TRUE
+Quercus rubra,Quercus stellata,FALSE
+Quercus rubra,Quercus suber,TRUE
+Quercus rubra,Quercus variabilis,FALSE
+Quercus rubra,Quercus velutina,FALSE
+Quercus suber,Castanea sativa,TRUE
+Castanea crenata × C. sativa,Castanea mollissima,FALSE
+Castanea crenata × C. sativa,Castanea sativa,TRUE
+Castanea crenata × C. sativa,Castanea crenata × C. sativa,TRUE
+Castanea mollissima × C. sativa,Castanea sativa,TRUE
+Castanea mollissima × C. seguinii,Castanea mollissima,TRUE
+Aucuba japonica,Garrya elliptica,TRUE
+Gentiana scabra,Nicotiana benthamiana,TRUE
+Geranium sanguineum,Nicotiana benthamiana,TRUE
+Ginkgo biloba,Ginkgo biloba,TRUE
+Ribes nigrum,Ribes nigrum,TRUE
+Hamamelis japonica,Hamamelis japonica,TRUE
+Hamamelis vernalis,Hamamelis mollis,TRUE
+Hamamelis vernalis,Hamamelis japonica × H. mollis,TRUE
+Hamamelis virginiana,Hamamelis japonica,TRUE
+Hamamelis virginiana,Hamamelis mollis,TRUE
+Hamamelis virginiana,Parrotia persica,TRUE
+Hamamelis virginiana,Hamamelis japonica × H. mollis,TRUE
+Irvingia gabonensis,Irvingia gabonensis,TRUE
+Irvingia grandifolia,Irvingia gabonensis,TRUE
+Irvingia tenuinucleata,Irvingia gabonensis,TRUE
+Carya aquatica,Carya illinoinensis,TRUE
+Carya cathayensis,Carya cathayensis,TRUE
+Carya cathayensis,Carya illinoinensis,TRUE
+Carya cordiformis,Carya cordiformis × C. ovata,TRUE
+Carya illinoinensis,Carya illinoinensis,TRUE
+Carya illinoinensis,Carya laciniosa,TRUE
+Carya illinoinensis,Carya ovata,TRUE
+Carya illinoinensis,Carya cordiformis × C. ovata,TRUE
+Carya ovata,Carya ovata,TRUE
+Juglans australis,Juglans regia,TRUE
+Juglans californica,Juglans regia,TRUE
+Juglans cinerea,Juglans regia,TRUE
+Juglans hindsii,Juglans hindsii,TRUE
+Juglans hindsii,Juglans regia,TRUE
+Juglans major,Juglans regia,TRUE
+Juglans mandshurica,Juglans regia,TRUE
+Juglans microcarpa,Juglans nigra,TRUE
+Juglans microcarpa,Juglans regia,TRUE
+Juglans nigra,Juglans cinerea,TRUE
+Juglans nigra,Juglans nigra,TRUE
+Juglans nigra,Juglans regia,TRUE
+Juglans regia,Juglans cinerea,TRUE
+Juglans regia,Juglans regia,TRUE
+Juglans regia,Juglans hindsii × J. regia,TRUE
+Pterocarya stenoptera,Juglans regia,TRUE
+Juglans hindsii × J. nigra,Juglans regia,TRUE
+Juglans hindsii × J. regia,Juglans regia,TRUE
+Juglans major × J. regia,Juglans regia,TRUE
+Juglans microcarpa × J. regia,Juglans regia,TRUE
+Juglans nigra × J. regia,Juglans regia,TRUE
+Coleus scutellarioides,Coleus scutellarioides,TRUE
+Gmelina arborea,Gmelina arborea,TRUE
+Lavandula angustifolia,Nicotiana benthamiana,TRUE
+Perilla frutescens,Perilla frutescens,TRUE
+Perilla frutescens,Nicotiana benthamiana,TRUE
+Tectona grandis,Tectona grandis,TRUE
+Tectona grandis,Tectona hamiltoniana,TRUE
+Camphora officinarum,Nicotiana benthamiana,TRUE
+Persea americana,Persea americana,TRUE
+Persea americana × P. schiedeana,Persea americana,TRUE
+Bertholletia excelsa,Bertholletia excelsa,TRUE
+Cariniana legalis,Cariniana legalis,TRUE
+Torenia fournieri,Nicotiana benthamiana,FALSE
+Punica granatum,Punica granatum,TRUE
+Liriodendron tulipifera,Liriodendron chinense,TRUE
+Liriodendron tulipifera,Liriodendron tulipifera,TRUE
+Magnolia biondii,Magnolia sprengeri,TRUE
+Magnolia campbellii,Magnolia campbellii,TRUE
+Magnolia dawsoniana,Magnolia dawsoniana,TRUE
+Magnolia grandiflora,Magnolia grandiflora,TRUE
+Magnolia kobus,Magnolia sargentiana,TRUE
+Magnolia kobus,Magnolia sprengeri,TRUE
+Magnolia kobus,Magnolia virginiana,TRUE
+Magnolia kwangtungensis,Magnolia longipedunculata,TRUE
+Magnolia obovata,Magnolia obovata × M. sieboldii,TRUE
+Magnolia sprengeri,Magnolia sprengeri,TRUE
+Magnolia virginiana,Magnolia sieboldii,TRUE
+Magnolia virginiana,Magnolia tripetala,TRUE
+Magnolia virginiana,Magnolia wilsonii,TRUE
+Byrsonima crassifolia,Byrsonima crassifolia,TRUE
+Malpighia coccigera,Malpighia emarginata,TRUE
+Malpighia emarginata,Malpighia emarginata,TRUE
+Malpighia glabra,Malpighia emarginata,TRUE
+Abelmoschus esculentus,Abelmoschus esculentus,TRUE
+Abelmoschus esculentus,Nicotiana benthamiana,FALSE
+Adansonia digitata,Adansonia digitata,TRUE
+Adansonia digitata,Adansonia fony,TRUE
+Adansonia digitata,Adansonia gregorii,TRUE
+Adansonia digitata,Adansonia perrieri,TRUE
+Adansonia digitata,Adansonia za,TRUE
+Adansonia digitata,Bombax costatum,TRUE
+Adansonia digitata,Ceiba pentandra,TRUE
+Bombax ceiba,Ceiba speciosa,TRUE
+Bombax costatum,Adansonia digitata,TRUE
+Ceiba pentandra,Adansonia digitata,TRUE
+Cola nitida,Cola nitida,TRUE
+Durio lowianus,Durio zibethinus,TRUE
+Durio zibethinus,Durio kutejensis,TRUE
+Durio zibethinus,Durio zibethinus,TRUE
+Gossypium arboreum,Gossypium hirsutum,TRUE
+Gossypium barbadense,Abelmoschus esculentus,FALSE
+Gossypium barbadense,Gossypium barbadense,TRUE
+Gossypium barbadense,Gossypium herbaceum,TRUE
+Gossypium barbadense,Gossypium hirsutum,TRUE
+Gossypium barbadense,Gossypium australe × G. herbaceum,TRUE
+Gossypium barbadense,Gossypium hirsutum × G. turneri,TRUE
+Gossypium herbaceum,Gossypium barbadense,TRUE
+Gossypium herbaceum,Gossypium herbaceum,TRUE
+Gossypium herbaceum,Gossypium hirsutum,TRUE
+Gossypium hirsutum,Abelmoschus esculentus,FALSE
+Gossypium hirsutum,Gossypium barbadense,TRUE
+Gossypium hirsutum,Gossypium herbaceum,TRUE
+Gossypium hirsutum,Gossypium hirsutum,TRUE
+Gossypium hirsutum,Gossypium arboreum × G. hirsutum,TRUE
+Gossypium hirsutum,Gossypium bickii × G. hirsutum,TRUE
+Gossypium hirsutum,Gossypium hirsutum × G. stocksii,TRUE
+Hibiscus acetosella,Abelmoschus esculentus,TRUE
+Hibiscus cannabinus,Abelmoschus esculentus,TRUE
+Hibiscus sabdariffa,Abelmoschus esculentus,TRUE
+Hibiscus syriacus,Hibiscus syriacus,TRUE
+Kokia cookei,Kokia kauaiensis,TRUE
+Kokia drynarioides,Kokia cookei,TRUE
+Kokia kauaiensis,Kokia cookei,TRUE
+Theobroma cacao,Theobroma cacao,TRUE
+Theobroma grandiflorum,Theobroma grandiflorum,TRUE
+Tilia americana,Tilia americana,TRUE
+Tilia americana,Tilia platyphyllos,TRUE
+Tilia americana,Tilia tomentosa,TRUE
+Tilia cordata,Tilia amurensis,TRUE
+Tilia cordata,Tilia cordata,TRUE
+Tilia cordata,Tilia mongolica,TRUE
+Tilia cordata,Tilia platyphyllos,TRUE
+Tilia cordata,Tilia tomentosa,TRUE
+Tilia cordata,Tilia cordata × T. dasystyla,TRUE
+Tilia japonica,Tilia americana,TRUE
+Tilia japonica,Tilia cordata,TRUE
+Tilia maximowicziana,Tilia americana,TRUE
+Tilia maximowicziana,Tilia cordata,TRUE
+Tilia mongolica,Tilia henryana,TRUE
+Tilia mongolica,Tilia oliveri,TRUE
+Tilia platyphyllos,Tilia americana,TRUE
+Tilia platyphyllos,Tilia cordata,TRUE
+Tilia platyphyllos,Tilia dasystyla,TRUE
+Tilia platyphyllos,Tilia platyphyllos,TRUE
+Tilia platyphyllos,Tilia tomentosa,TRUE
+Tilia platyphyllos,Tilia americana × T. tomentosa,TRUE
+Tilia platyphyllos,Tilia cordata × T. dasystyla,TRUE
+Tilia platyphyllos,Tilia cordata × T. tomentosa,TRUE
+Tilia platyphyllos,Tilia platyphyllos × T. tomentosa,TRUE
+Tilia tomentosa,Tilia americana,TRUE
+Tilia tomentosa,Tilia tomentosa,TRUE
+Tilia tomentosa,Tilia americana × T. tomentosa,TRUE
+Tilia tomentosa,Tilia cordata × T. tomentosa,TRUE
+Tilia tomentosa,Tilia platyphyllos × T. tomentosa,TRUE
+Urena lobata,Abelmoschus esculentus,TRUE
+Hibiscus cooperi × H. kaute,Hibiscus cooperi × H. kaute,TRUE
+Tilia cordata × T. platyphyllos,Tilia amurensis,TRUE
+Tilia cordata × T. platyphyllos,Tilia mongolica,TRUE
+Cedrela odorata,Cedrela odorata,TRUE
+Cedrela odorata,Khaya senegalensis,TRUE
+Cedrela odorata,Toona ciliata,TRUE
+Guarea glabra,Guarea glabra,TRUE
+Guarea guidonia,Guarea guidonia,TRUE
+Khaya anthotheca,Khaya anthotheca,TRUE
+Khaya anthotheca,Swietenia macrophylla,FALSE
+Khaya senegalensis,Cedrela odorata,TRUE
+Khaya senegalensis,Khaya senegalensis,TRUE
+Khaya senegalensis,Swietenia macrophylla,TRUE
+Lansium domesticum,Lansium domesticum,TRUE
+Melia azedarach,Azadirachta indica,TRUE
+Swietenia macrophylla,Khaya anthotheca,TRUE
+Swietenia macrophylla,Khaya senegalensis,TRUE
+Swietenia macrophylla,Swietenia macrophylla,TRUE
+Swietenia macrophylla,Toona ciliata,TRUE
+Toona ciliata,Cedrela fissilis,TRUE
+Toona ciliata,Cedrela odorata,TRUE
+Toona ciliata,Swietenia macrophylla,TRUE
+Toona ciliata,Toona ciliata,TRUE
+Artocarpus altilis,Artocarpus altilis,TRUE
+Artocarpus altilis,Artocarpus mariannensis,TRUE
+Artocarpus heterophyllus,Artocarpus heterophyllus,TRUE
+Artocarpus mariannensis,Artocarpus altilis,TRUE
+Artocarpus odoratissimus,Artocarpus altilis,TRUE
+Artocarpus sericicarpus,Artocarpus altilis,TRUE
+Ficus aurata,Ficus carica,TRUE
+Ficus benghalensis,Ficus carica,FALSE
+Ficus benjamina,Ficus benjamina,TRUE
+Ficus benjamina,Ficus carica,FALSE
+Ficus carica,Ficus carica,TRUE
+Ficus drupacea,Ficus carica,FALSE
+Ficus elastica,Ficus carica,FALSE
+Ficus erecta,Ficus carica,FALSE
+Ficus lyrata,Ficus carica,FALSE
+Ficus microcarpa,Ficus carica,FALSE
+Ficus natalensis,Ficus carica,FALSE
+Ficus palmata,Ficus carica,TRUE
+Ficus pumila,Ficus carica,TRUE
+Ficus racemosa,Ficus carica,TRUE
+Ficus religiosa,Ficus carica,FALSE
+Ficus rubiginosa,Ficus carica,FALSE
+Ficus salicifolia,Ficus carica,FALSE
+Ficus sarmentosa,Ficus carica,TRUE
+Ficus septica,Ficus carica,TRUE
+Ficus simplicissima,Ficus carica,FALSE
+Ficus superba,Ficus carica,FALSE
+Ficus sycomorus,Ficus carica,TRUE
+Ficus umbellata,Ficus carica,FALSE
+Morus alba,Morus acidosa,TRUE
+Morus alba,Morus alba,TRUE
+Morus alba,Morus indica,TRUE
+Morus alba,Morus nigra,TRUE
+Morus nigra,Morus acidosa,TRUE
+Morus nigra,Morus alba,TRUE
+Morus nigra,Morus indica,TRUE
+Morus nigra,Morus nigra,TRUE
+Morus rubra,Morus nigra,TRUE
+Moringa oleifera,Carica papaya,FALSE
+Corymbia citriodora,Corymbia citriodora,TRUE
+Corymbia clarksoniana,Corymbia citriodora,FALSE
+Corymbia eximia,Corymbia citriodora,TRUE
+Corymbia hylandii,Corymbia citriodora,TRUE
+Corymbia ptychocarpa,Corymbia citriodora,TRUE
+Eucalyptus argophloia,Eucalyptus moluccana,TRUE
+Eucalyptus bakeri,Eucalyptus propinqua,FALSE
+Eucalyptus behriana,Eucalyptus moluccana,TRUE
+Eucalyptus botryoides,Eucalyptus saligna,TRUE
+Eucalyptus cladocalyx,Eucalyptus robusta,TRUE
+Eucalyptus deglupta,Eucalyptus grandis,TRUE
+Eucalyptus grandis,Eucalyptus grandis,TRUE
+Eucalyptus infera,Eucalyptus tereticornis,TRUE
+Eucalyptus moluccana,Eucalyptus moluccana,TRUE
+Eucalyptus muelleriana,Eucalyptus pilularis,TRUE
+Eucalyptus nitens,Eucalyptus nitens,TRUE
+Eucalyptus pilularis,Eucalyptus muelleriana,TRUE
+Eucalyptus pilularis,Eucalyptus piperita,TRUE
+Eucalyptus propinqua,Eucalyptus propinqua,TRUE
+Eucalyptus resinifera,Eucalyptus resinifera,TRUE
+Eucalyptus robusta,Eucalyptus robusta,TRUE
+Eucalyptus saligna,Eucalyptus botryoides,TRUE
+Eucalyptus scias,Eucalyptus propinqua,TRUE
+Eucalyptus scias,Eucalyptus resinifera,TRUE
+Eucalyptus scias,Eucalyptus robusta,TRUE
+Eucalyptus tereticornis,Eucalyptus tereticornis,TRUE
+Eucalyptus urophylla,Eucalyptus urophylla,TRUE
+Eucalyptus urophylla,Eucalyptus grandis × E. urophylla,TRUE
+Eucalyptus viridis,Eucalyptus moluccana,TRUE
+Eugenia axillaris,Plinia cauliflora,FALSE
+Eugenia confusa,Plinia cauliflora,FALSE
+Eugenia foetida,Plinia cauliflora,FALSE
+Eugenia involucrata,Eugenia uniflora,FALSE
+Eugenia involucrata,Plinia cauliflora,FALSE
+Eugenia stipitata,Psidium guajava,FALSE
+Eugenia uniflora,Eugenia involucrata,FALSE
+Eugenia uniflora,Plinia cauliflora,FALSE
+Feijoa sellowiana,Psidium guajava,FALSE
+Melaleuca alternifolia,Melaleuca alternifolia,TRUE
+Myrcia chytraculia,Plinia cauliflora,FALSE
+Myrcianthes fragrans,Plinia cauliflora,FALSE
+Pimenta dioica,Pimenta dioica,TRUE
+Pimenta dioica,Plinia cauliflora,FALSE
+Plinia cauliflora,Plinia cauliflora,TRUE
+Psidium cattleyanum,Psidium cattleyanum,TRUE
+Psidium cattleyanum,Psidium guajava,TRUE
+Psidium friedrichsthalianum,Psidium guajava,TRUE
+Psidium guajava,Psidium cattleyanum,TRUE
+Psidium guajava,Psidium guajava,TRUE
+Psidium guineense,Psidium cattleyanum,TRUE
+Psidium guineense,Psidium guajava,TRUE
+Psidium rufum,Psidium guajava,FALSE
+Syzygium aromaticum,Pimenta dioica,FALSE
+Syzygium cumini,Pimenta dioica,FALSE
+Syzygium cumini,Plinia cauliflora,FALSE
+Syzygium cumini,Syzygium cumini,TRUE
+Syzygium malaccense,Syzygium malaccense,TRUE
+Corymbia citriodora × C. torelliana,Corymbia citriodora,TRUE
+Psidium guajava × P. guineense,Psidium guajava,TRUE
+Davidia involucrata,Davidia involucrata,TRUE
+Nyssa sylvatica,Nyssa sylvatica,TRUE
+Fraxinus americana,Fraxinus americana,TRUE
+Fraxinus americana,Fraxinus angustifolia,TRUE
+Fraxinus americana,Fraxinus chinensis,TRUE
+Fraxinus americana,Fraxinus excelsior,TRUE
+Fraxinus americana,Fraxinus ornus,TRUE
+Fraxinus americana,Fraxinus pennsylvanica,TRUE
+Fraxinus americana,Fraxinus quadrangulata,FALSE
+Fraxinus americana,Fraxinus velutina,TRUE
+Fraxinus excelsior,Chionanthus virginicus,TRUE
+Fraxinus excelsior,Fraxinus americana,TRUE
+Fraxinus excelsior,Fraxinus angustifolia,TRUE
+Fraxinus excelsior,Fraxinus excelsior,TRUE
+Fraxinus excelsior,Fraxinus pennsylvanica,TRUE
+Fraxinus mandshurica,Fraxinus mandshurica,TRUE
+Fraxinus mandshurica,Fraxinus pennsylvanica,TRUE
+Fraxinus ornus,Fraxinus bungeana,TRUE
+Fraxinus ornus,Fraxinus floribunda,TRUE
+Fraxinus ornus,Fraxinus ornus,TRUE
+Fraxinus ornus,Fraxinus sieboldiana,TRUE
+Fraxinus pennsylvanica,Fraxinus americana,TRUE
+Fraxinus pennsylvanica,Fraxinus angustifolia,TRUE
+Fraxinus pennsylvanica,Fraxinus chinensis,TRUE
+Fraxinus pennsylvanica,Fraxinus excelsior,TRUE
+Fraxinus pennsylvanica,Fraxinus mandshurica,TRUE
+Fraxinus pennsylvanica,Fraxinus pennsylvanica,TRUE
+Fraxinus pennsylvanica,Syringa reticulata,TRUE
+Fraxinus velutina,Fraxinus americana,TRUE
+Fraxinus velutina,Fraxinus velutina,TRUE
+Ligustrum ovalifolium,Ligustrum lucidum,TRUE
+Ligustrum ovalifolium,Syringa vulgaris,TRUE
+Ligustrum ovalifolium,Syringa oblata × S. vulgaris,TRUE
+Ligustrum sinense,Syringa reticulata,TRUE
+Ligustrum vulgare,Ligustrum lucidum,TRUE
+Ligustrum vulgare,Syringa vulgaris,TRUE
+Olea europaea,Olea europaea,TRUE
+Syringa josikaea,Syringa vulgaris,TRUE
+Syringa komarowii,Syringa vulgaris,TRUE
+Syringa reticulata,Syringa reticulata,TRUE
+Syringa tomentella,Syringa vulgaris,TRUE
+Syringa vulgaris,Olea europaea,TRUE
+Syringa vulgaris,Syringa vulgaris,TRUE
+Averrhoa carambola,Averrhoa carambola,TRUE
+Paeonia broteri,Paeonia jishanensis × P. rockii,TRUE
+Paeonia lactiflora,Paeonia delavayi,TRUE
+Paeonia lactiflora,Paeonia jishanensis × P. rockii,TRUE
+Paeonia officinalis,Paeonia delavayi,TRUE
+Paeonia ostii,Paeonia jishanensis × P. rockii,TRUE
+Oreomecon nudicaulis,Nicotiana benthamiana,FALSE
+Passiflora affinis,Passiflora incarnata,TRUE
+Passiflora alata,Passiflora edulis,TRUE
+Passiflora bicornis,Passiflora incarnata,TRUE
+Passiflora biflora,Passiflora incarnata,TRUE
+Passiflora caerulea,Passiflora edulis,TRUE
+Passiflora caerulea,Passiflora incarnata,TRUE
+Passiflora cincinnata,Passiflora edulis,TRUE
+Passiflora cinnabarina,Passiflora incarnata,TRUE
+Passiflora citrina,Passiflora incarnata,TRUE
+Passiflora coccinea,Passiflora edulis,TRUE
+Passiflora coriacea,Passiflora incarnata,TRUE
+Passiflora edulis,Passiflora edulis,TRUE
+Passiflora edulis,Passiflora giberti,TRUE
+Passiflora giberti,Passiflora edulis,TRUE
+Passiflora giberti,Passiflora incarnata,TRUE
+Passiflora herbertiana,Passiflora incarnata,FALSE
+Passiflora incarnata,Passiflora edulis,TRUE
+Passiflora incarnata,Passiflora incarnata,TRUE
+Passiflora ligularis,Passiflora edulis,TRUE
+Passiflora ligularis,Passiflora ligularis,TRUE
+Passiflora lutea,Passiflora incarnata,TRUE
+Passiflora maliformis,Passiflora edulis,TRUE
+Passiflora mixta,Passiflora incarnata,TRUE
+Passiflora nitida,Passiflora edulis,TRUE
+Passiflora pallida,Passiflora edulis,TRUE
+Passiflora pallida,Passiflora incarnata,TRUE
+Passiflora setacea,Passiflora edulis,TRUE
+Passiflora suberosa,Passiflora edulis,TRUE
+Passiflora subpeltata,Passiflora edulis,TRUE
+Passiflora subpeltata,Passiflora incarnata,TRUE
+Passiflora tenuifila,Passiflora incarnata,TRUE
+Passiflora tripartita,Passiflora edulis,TRUE
+Passiflora tripartita,Passiflora tripartita,TRUE
+Passiflora yucatanensis,Passiflora incarnata,TRUE
+Passiflora gilbertiana × P. jorullensis,Passiflora incarnata,TRUE
+Paulownia fortunei × P. kawakamii,Paulownia fortunei,TRUE
+Paulownia fortunei × P. kawakamii,Paulownia kawakamii,TRUE
+Sesamum indicum,Nicotiana benthamiana,TRUE
+Uapaca kirkiana,Uapaca kirkiana,TRUE
+Abies alba,Abies alba,TRUE
+Abies alba,Abies amabilis,TRUE
+Abies alba,Abies balsamea,TRUE
+Abies alba,Abies concolor,TRUE
+Abies alba,Abies grandis,TRUE
+Abies alba,Abies holophylla,TRUE
+Abies alba,Abies homolepis,TRUE
+Abies alba,Abies koreana,TRUE
+Abies alba,Abies lasiocarpa,TRUE
+Abies alba,Abies nordmanniana,TRUE
+Abies alba,Abies numidica,TRUE
+Abies alba,Abies pinsapo,TRUE
+Abies alba,Abies procera,TRUE
+Abies alba,Abies sachalinensis,TRUE
+Abies alba,Abies sibirica,TRUE
+Abies alba,Abies veitchii,TRUE
+Abies alba,Pinus sylvestris,FALSE
+Abies alba,Pseudotsuga menziesii,FALSE
+Abies balsamea,Abies alba,TRUE
+Abies balsamea,Abies amabilis,TRUE
+Abies balsamea,Abies cephalonica,TRUE
+Abies balsamea,Abies cilicica,TRUE
+Abies balsamea,Abies concolor,TRUE
+Abies balsamea,Abies fargesii,TRUE
+Abies balsamea,Abies fraseri,TRUE
+Abies balsamea,Abies holophylla,TRUE
+Abies balsamea,Abies homolepis,TRUE
+Abies balsamea,Abies koreana,TRUE
+Abies balsamea,Abies lasiocarpa,TRUE
+Abies balsamea,Abies nephrolepis,TRUE
+Abies balsamea,Abies nordmanniana,TRUE
+Abies balsamea,Abies recurvata,TRUE
+Abies balsamea,Abies sachalinensis,TRUE
+Abies balsamea,Abies sibirica,TRUE
+Abies balsamea,Abies veitchii,TRUE
+Abies balsamea,Larix laricina,FALSE
+Abies balsamea,Pinus cembra,TRUE
+Abies balsamea,Pinus koraiensis,TRUE
+Abies balsamea,Pinus peuce,TRUE
+Abies balsamea,Abies cephalonica × A. nordmanniana,TRUE
+Abies balsamea,Abies cilicica × A. nordmanniana,TRUE
+Abies concolor,Abies alba,TRUE
+Abies concolor,Abies cephalonica,TRUE
+Abies concolor,Abies concolor,TRUE
+Abies concolor,Abies grandis,TRUE
+Abies concolor,Abies homolepis,TRUE
+Abies concolor,Abies lasiocarpa,TRUE
+Abies concolor,Abies cilicica × A. nordmanniana,TRUE
+Abies firma,Abies fraseri,TRUE
+Abies firma,Abies homolepis,TRUE
+Abies fraseri,Abies fraseri,TRUE
+Abies grandis,Abies chensiensis,TRUE
+Abies grandis,Abies concolor,TRUE
+Abies homolepis,Abies concolor,TRUE
+Abies homolepis,Abies lasiocarpa,TRUE
+Abies homolepis,Abies procera,TRUE
+Abies koreana,Abies fraseri,TRUE
+Abies lasiocarpa,Abies concolor,TRUE
+Abies lasiocarpa,Abies lasiocarpa,FALSE
+Abies lasiocarpa,Abies procera,TRUE
+Abies lasiocarpa,Abies sibirica,FALSE
+Abies magnifica,Abies cephalonica × A. pinsapo,TRUE
+Abies nordmanniana,Abies alba,TRUE
+Abies nordmanniana,Abies amabilis,TRUE
+Abies nordmanniana,Abies concolor,TRUE
+Abies nordmanniana,Abies fraseri,TRUE
+Abies nordmanniana,Abies grandis,TRUE
+Abies nordmanniana,Abies lasiocarpa,TRUE
+Abies nordmanniana,Abies nordmanniana,TRUE
+Abies nordmanniana,Abies sachalinensis,TRUE
+Abies nordmanniana,Abies sibirica,TRUE
+Abies procera,Abies alba,TRUE
+Abies sibirica,Pinus cembra,TRUE
+Cedrus deodara,Cedrus atlantica,TRUE
+Cedrus deodara,Cedrus deodara,TRUE
+Cedrus libani,Cedrus atlantica,TRUE
+Larix decidua,Larix decidua,TRUE
+Larix decidua,Larix gmelinii,TRUE
+Larix decidua,Larix kaempferi,TRUE
+Larix decidua,Larix laricina,TRUE
+Larix decidua,Larix occidentalis,TRUE
+Larix decidua,Larix sibirica,TRUE
+Larix decidua,Pseudolarix amabilis,TRUE
+Larix decidua,Pseudotsuga menziesii,TRUE
+Larix decidua,Larix decidua × L. kaempferi,TRUE
+Larix kaempferi,Larix decidua,TRUE
+Larix kaempferi,Larix gmelinii,TRUE
+Larix kaempferi,Larix kaempferi,TRUE
+Larix kaempferi,Larix laricina,TRUE
+Larix kaempferi,Larix occidentalis,TRUE
+Larix kaempferi,Larix potaninii,TRUE
+Larix kaempferi,Larix sibirica,TRUE
+Larix kaempferi,Larix decidua × L. kaempferi,TRUE
+Larix laricina,Larix laricina,TRUE
+Larix laricina,Larix sibirica,TRUE
+Larix laricina,Picea abies,FALSE
+Larix occidentalis,Larix occidentalis,TRUE
+Larix sibirica,Larix decidua,TRUE
+Larix sibirica,Larix gmelinii,TRUE
+Larix sibirica,Larix kaempferi,TRUE
+Larix sibirica,Larix laricina,TRUE
+Larix sibirica,Larix occidentalis,TRUE
+Larix sibirica,Larix gmelinii × L. sibirica,TRUE
+Picea abies,Abies procera,FALSE
+Picea abies,Larix decidua,TRUE
+Picea abies,Larix laricina,FALSE
+Picea abies,Larix sibirica,TRUE
+Picea abies,Picea abies,TRUE
+Picea abies,Picea alcoquiana,TRUE
+Picea abies,Picea asperata,TRUE
+Picea abies,Picea breweriana,TRUE
+Picea abies,Picea engelmannii,TRUE
+Picea abies,Picea glehnii,TRUE
+Picea abies,Picea jezoensis,TRUE
+Picea abies,Picea koyamae,TRUE
+Picea abies,Picea laxa,FALSE
+Picea abies,Picea mariana,FALSE
+Picea abies,Picea omorika,TRUE
+Picea abies,Picea orientalis,TRUE
+Picea abies,Picea polita,TRUE
+Picea abies,Picea pungens,TRUE
+Picea abies,Picea sitchensis,TRUE
+Picea abies,Picea wilsonii,TRUE
+Picea abies,Pinus cembra,TRUE
+Picea abies,Pinus mugo,TRUE
+Picea abies,Pinus radiata,TRUE
+Picea abies,Pinus sylvestris,TRUE
+Picea abies,Pseudotsuga menziesii,FALSE
+Picea abies,Picea laxa × P. pungens,TRUE
+Picea engelmannii,Pinus monticola,FALSE
+Picea laxa,Larix laricina,FALSE
+Picea laxa,Picea abies,TRUE
+Picea laxa,Picea laxa,TRUE
+Picea laxa,Picea mariana,TRUE
+Picea laxa,Picea omorika,TRUE
+Picea laxa,Picea orientalis,TRUE
+Picea laxa,Picea pungens,TRUE
+Picea laxa,Picea rubens,TRUE
+Picea laxa,Picea sitchensis,TRUE
+Picea mariana,Larix laricina,FALSE
+Picea mariana,Picea abies,TRUE
+Picea mariana,Picea laxa,FALSE
+Picea mariana,Picea mariana,TRUE
+Picea mariana,Picea rubens,TRUE
+Picea omorika,Picea abies,TRUE
+Picea omorika,Picea breweriana,TRUE
+Picea omorika,Picea sitchensis,TRUE
+Picea orientalis,Picea breweriana,TRUE
+Picea pungens,Picea laxa,TRUE
+Picea pungens,Picea pungens,TRUE
+Picea rubens,Picea rubens,TRUE
+Picea sitchensis,Picea abies,TRUE
+Picea sitchensis,Picea omorika,TRUE
+Picea sitchensis,Picea pungens,TRUE
+Picea sitchensis,Picea sitchensis,TRUE
+Pinus armandi,Pinus armandi,TRUE
+Pinus armandi,Pinus nigra,TRUE
+Pinus attenuata,Pinus halepensis,TRUE
+Pinus attenuata,Pinus ponderosa,TRUE
+Pinus attenuata,Pinus radiata,TRUE
+Pinus banksiana,Pinus banksiana,TRUE
+Pinus banksiana,Pinus kesiya,TRUE
+Pinus brutia,Pinus nigra,TRUE
+Pinus chiapensis,Pinus chiapensis,TRUE
+Pinus contorta,Pinus contorta,TRUE
+Pinus contorta,Pinus densiflora,TRUE
+Pinus contorta,Pinus monticola,TRUE
+Pinus contorta,Pinus mugo,TRUE
+Pinus contorta,Pinus nigra,TRUE
+Pinus contorta,Pinus resinosa,FALSE
+Pinus contorta,Pinus sylvestris,TRUE
+Pinus coulteri,Pinus elliottii,TRUE
+Pinus densiflora,Picea abies,TRUE
+Pinus densiflora,Pinus armandi,TRUE
+Pinus densiflora,Pinus banksiana,TRUE
+Pinus densiflora,Pinus bungeana,TRUE
+Pinus densiflora,Pinus canariensis,TRUE
+Pinus densiflora,Pinus densiflora,TRUE
+Pinus densiflora,Pinus elliottii,TRUE
+Pinus densiflora,Pinus kesiya,TRUE
+Pinus densiflora,Pinus koraiensis,TRUE
+Pinus densiflora,Pinus luchuensis,TRUE
+Pinus densiflora,Pinus parviflora,TRUE
+Pinus densiflora,Pinus pinaster,TRUE
+Pinus densiflora,Pinus pinea,TRUE
+Pinus densiflora,Pinus pungens,TRUE
+Pinus densiflora,Pinus rigida,TRUE
+Pinus densiflora,Pinus strobus,TRUE
+Pinus densiflora,Pinus sylvestris,TRUE
+Pinus densiflora,Pinus tabuliformis,TRUE
+Pinus densiflora,Pinus taeda,TRUE
+Pinus densiflora,Pinus thunbergii,TRUE
+Pinus echinata,Pinus echinata,TRUE
+Pinus elliottii,Betula maximowicziana,TRUE
+Pinus elliottii,Cercidiphyllum japonicum,TRUE
+Pinus elliottii,Maackia amurensis,TRUE
+Pinus elliottii,Abies guatemalensis,TRUE
+Pinus elliottii,Picea abies,TRUE
+Pinus elliottii,Pinus elliottii,TRUE
+Pinus elliottii,Pinus kesiya,TRUE
+Pinus elliottii,Pinus massoniana,TRUE
+Pinus elliottii,Pinus pinaster,TRUE
+Pinus elliottii,Pinus ponderosa,TRUE
+Pinus elliottii,Pinus radiata,TRUE
+Pinus elliottii,Pinus strobus,TRUE
+Pinus elliottii,Pinus taeda,TRUE
+Pinus elliottii,Pinus elliottii × P. palustris,TRUE
+Pinus engelmannii,Pinus engelmannii,TRUE
+Pinus engelmannii,Pinus arizonica × P. engelmannii,TRUE
+Pinus halepensis,Pinus halepensis,TRUE
+Pinus halepensis,Pinus pinaster,TRUE
+Pinus halepensis,Pinus pinea,TRUE
+Pinus halepensis,Pinus ponderosa,TRUE
+Pinus halepensis,Pinus radiata,TRUE
+Pinus jeffreyi,Pinus ponderosa,TRUE
+Pinus jeffreyi,Pinus radiata,TRUE
+Pinus kesiya,Pinus banksiana,TRUE
+Pinus kesiya,Pinus densiflora,TRUE
+Pinus kesiya,Pinus nigra,TRUE
+Pinus kesiya,Pinus taeda,TRUE
+Pinus koraiensis,Pinus densiflora,TRUE
+Pinus koraiensis,Pinus koraiensis,TRUE
+Pinus koraiensis,Pinus rigida,TRUE
+Pinus koraiensis,Pinus thunbergii,TRUE
+Pinus lambertiana,Pinus monticola,TRUE
+Pinus lumholtzii,Pinus halepensis,TRUE
+Pinus massoniana,Pinus massoniana,TRUE
+Pinus monticola,Pinus flexilis,TRUE
+Pinus monticola,Pinus lambertiana,TRUE
+Pinus monticola,Pinus monticola,TRUE
+Pinus monticola,Pinus ayacahuite × P. lambertiana,TRUE
+Pinus mugo,Abies veitchii,TRUE
+Pinus mugo,Larix decidua,TRUE
+Pinus mugo,Picea omorika,TRUE
+Pinus mugo,Pinus armandi,TRUE
+Pinus mugo,Pinus ayacahuite,TRUE
+Pinus mugo,Pinus cembra,TRUE
+Pinus mugo,Pinus contorta,TRUE
+Pinus mugo,Pinus densiflora,TRUE
+Pinus mugo,Pinus flexilis,FALSE
+Pinus mugo,Pinus lambertiana,TRUE
+Pinus mugo,Pinus monticola,TRUE
+Pinus mugo,Pinus mugo,TRUE
+Pinus mugo,Pinus nigra,TRUE
+Pinus mugo,Pinus parviflora,TRUE
+Pinus mugo,Pinus peuce,TRUE
+Pinus mugo,Pinus ponderosa,TRUE
+Pinus mugo,Pinus resinosa,TRUE
+Pinus mugo,Pinus sylvestris,TRUE
+Pinus mugo,Pinus taeda,TRUE
+Pinus mugo,Pinus wallichiana,TRUE
+Pinus muricata,Pinus canariensis,TRUE
+Pinus nigra,Pinus armandi,TRUE
+Pinus nigra,Pinus banksiana,TRUE
+Pinus nigra,Pinus cembra,TRUE
+Pinus nigra,Pinus contorta,TRUE
+Pinus nigra,Pinus jeffreyi,TRUE
+Pinus nigra,Pinus kesiya,TRUE
+Pinus nigra,Pinus koraiensis,TRUE
+Pinus nigra,Pinus nigra,TRUE
+Pinus nigra,Pinus parviflora,TRUE
+Pinus nigra,Pinus peuce,TRUE
+Pinus nigra,Pinus pinaster,TRUE
+Pinus nigra,Pinus ponderosa,TRUE
+Pinus nigra,Pinus sylvestris,TRUE
+Pinus nigra,Pinus taeda,TRUE
+Pinus palustris,Pinus elliottii × P. palustris,TRUE
+Pinus patula,Pinus elliottii,TRUE
+Pinus patula,Pinus patula,TRUE
+Pinus patula,Pinus ponderosa,TRUE
+Pinus patula,Pinus radiata,TRUE
+Pinus pinaster,Pinus radiata,FALSE
+Pinus pinaster,Pinus attenuata × P. radiata,TRUE
+Pinus pinea,Pinus pinaster,TRUE
+Pinus pinea,Pinus pinea,TRUE
+Pinus ponderosa,Pinus elliottii,TRUE
+Pinus ponderosa,Pinus jeffreyi,TRUE
+Pinus ponderosa,Pinus montezumae,TRUE
+Pinus ponderosa,Pinus monticola,FALSE
+Pinus ponderosa,Pinus nigra,TRUE
+Pinus ponderosa,Pinus pinaster,TRUE
+Pinus ponderosa,Pinus ponderosa,TRUE
+Pinus ponderosa,Pinus coulteri × P. jeffreyi,TRUE
+Pinus pseudostrobus,Pinus pseudostrobus,TRUE
+Pinus radiata,Picea abies,TRUE
+Pinus radiata,Pinus attenuata,TRUE
+Pinus radiata,Pinus canariensis,TRUE
+Pinus radiata,Pinus elliottii,TRUE
+Pinus radiata,Pinus jeffreyi,FALSE
+Pinus radiata,Pinus nigra,TRUE
+Pinus radiata,Pinus pinaster,TRUE
+Pinus radiata,Pinus ponderosa,TRUE
+Pinus radiata,Pinus radiata,TRUE
+Pinus radiata,Pinus taeda,TRUE
+Pinus radiata,Pseudotsuga menziesii,TRUE
+Pinus radiata,Pinus attenuata × P. radiata,TRUE
+Pinus resinosa,Larix laricina,FALSE
+Pinus resinosa,Pinus cembra,TRUE
+Pinus resinosa,Pinus koraiensis,TRUE
+Pinus resinosa,Pinus peuce,TRUE
+Pinus resinosa,Pinus strobus,TRUE
+Pinus resinosa,Pinus sylvestris,TRUE
+Pinus rigida,Pinus densiflora,TRUE
+Pinus rigida,Pinus koraiensis,TRUE
+Pinus rigida,Pinus thunbergii,TRUE
+Pinus sibirica,Pinus sibirica,TRUE
+Pinus strobus,Larix laricina,FALSE
+Pinus strobus,Pinus armandi,TRUE
+Pinus strobus,Pinus ayacahuite,TRUE
+Pinus strobus,Pinus cembra,TRUE
+Pinus strobus,Pinus flexilis,TRUE
+Pinus strobus,Pinus koraiensis,TRUE
+Pinus strobus,Pinus lambertiana,TRUE
+Pinus strobus,Pinus monticola,TRUE
+Pinus strobus,Pinus parviflora,TRUE
+Pinus strobus,Pinus peuce,TRUE
+Pinus strobus,Pinus pumila,TRUE
+Pinus strobus,Pinus radiata,TRUE
+Pinus strobus,Pinus resinosa,FALSE
+Pinus strobus,Pinus strobus,TRUE
+Pinus strobus,Pinus wallichiana,TRUE
+Pinus strobus,Pinus ayacahuite × P. monticola,TRUE
+Pinus strobus,Pinus ayacahuite × P. wallichiana,TRUE
+Pinus strobus,Pinus flexilis × P. wallichiana,TRUE
+Pinus strobus,Pinus monticola × P. peuce,TRUE
+Pinus strobus,Pinus monticola × P. strobus,TRUE
+Pinus strobus,Pinus monticola × P. wallichiana,TRUE
+Pinus strobus,Pinus strobus × P. wallichiana,TRUE
+Pinus strobus,Pinus monticola × P. peuce × P. strobus,TRUE
+Pinus sylvestris,Picea abies,TRUE
+Pinus sylvestris,Pinus banksiana,TRUE
+Pinus sylvestris,Pinus cembra,TRUE
+Pinus sylvestris,Pinus contorta,TRUE
+Pinus sylvestris,Pinus densiflora,TRUE
+Pinus sylvestris,Pinus koraiensis,TRUE
+Pinus sylvestris,Pinus mugo,TRUE
+Pinus sylvestris,Pinus nigra,TRUE
+Pinus sylvestris,Pinus parviflora,TRUE
+Pinus sylvestris,Pinus peuce,TRUE
+Pinus sylvestris,Pinus pinaster,TRUE
+Pinus sylvestris,Pinus resinosa,TRUE
+Pinus sylvestris,Pinus rigida,TRUE
+Pinus sylvestris,Pinus sibirica,TRUE
+Pinus sylvestris,Pinus strobus,TRUE
+Pinus sylvestris,Pinus sylvestris,TRUE
+Pinus sylvestris,Pseudotsuga menziesii,FALSE
+Pinus tabuliformis,Pinus tabuliformis,TRUE
+Pinus taeda,Pinus echinata,TRUE
+Pinus taeda,Pinus elliottii,TRUE
+Pinus taeda,Pinus mugo,TRUE
+Pinus taeda,Pinus ponderosa,TRUE
+Pinus taeda,Pinus taeda,TRUE
+Pinus thunbergii,Pinus banksiana,TRUE
+Pinus thunbergii,Pinus densiflora,TRUE
+Pinus thunbergii,Pinus elliottii,TRUE
+Pinus thunbergii,Pinus koraiensis,TRUE
+Pinus thunbergii,Pinus rigida,TRUE
+Pinus thunbergii,Pinus strobus,TRUE
+Pinus thunbergii,Pinus taeda,TRUE
+Pinus uncinata,Pinus densiflora,TRUE
+Pinus uncinata,Pinus mugo,TRUE
+Pinus uncinata,Pinus sylvestris,TRUE
+Pinus virginiana,Pinus taeda,TRUE
+Pinus wallichiana,Pinus cembra,TRUE
+Pseudolarix amabilis,Pseudolarix amabilis,TRUE
+Pseudotsuga macrocarpa,Pseudotsuga menziesii,TRUE
+Pseudotsuga menziesii,Abies grandis,TRUE
+Pseudotsuga menziesii,Pinus monticola,TRUE
+Pseudotsuga menziesii,Pinus sylvestris,FALSE
+Pseudotsuga menziesii,Pseudotsuga macrocarpa,TRUE
+Pseudotsuga menziesii,Pseudotsuga menziesii,TRUE
+Pseudotsuga menziesii,Tsuga heterophylla,TRUE
+Tsuga canadensis,Tsuga canadensis,TRUE
+Tsuga canadensis,Tsuga heterophylla,TRUE
+Tsuga heterophylla,Tsuga canadensis,TRUE
+Tsuga heterophylla,Tsuga heterophylla,TRUE
+Abies sibirica × A. veitchii,Abies concolor,TRUE
+Abies sibirica × A. veitchii,Abies lasiocarpa,TRUE
+Larix gmelinii × L. kaempferi,Larix gmelinii,TRUE
+Pinus attenuata × P. radiata,Pinus radiata,TRUE
+Pinus banksiana × P. contorta,Pinus monticola,FALSE
+Pinus monticola × P. strobus,Pinus monticola,TRUE
+Peperomia arifolia,Piper nigrum,TRUE
+Piper cubeba,Piper nigrum,TRUE
+Piper hispidum,Piper nigrum,TRUE
+Piper nigrum,Piper nigrum,TRUE
+Piper unguiculatum,Piper nigrum,TRUE
+Pittosporum tenuifolium,Pittosporum eugenioides,TRUE
+Pittosporum tenuifolium,Pittosporum tenuifolium,TRUE
+Antirrhinum majus,Nicotiana benthamiana,TRUE
+Platanus occidentalis × P. orientalis,Platanus occidentalis × P. orientalis,TRUE
+Brachypodium distachyon,Nicotiana benthamiana,TRUE
+Cenchrus purpureus,Cenchrus purpureus,TRUE
+Cenchrus purpureus,Urochloa mutica,TRUE
+Megathyrsus maximus,Megathyrsus maximus,TRUE
+Oryza sativa,Oryza sativa,TRUE
+Saccharum officinarum,Saccharum officinarum,TRUE
+Stenotaphrum secundatum,Stenotaphrum secundatum,TRUE
+Triticum aestivum,Triticum aestivum,TRUE
+Urochloa mutica,Urochloa mutica,TRUE
+Zea mays,Zea mays,TRUE
+Zea mays,Nicotiana benthamiana,FALSE
+Fagopyrum esculentum,Nicotiana benthamiana,FALSE
+Persicaria tinctoria,Nicotiana benthamiana,FALSE
+Reynoutria japonica,Nicotiana benthamiana,TRUE
+Cyclamen persicum,Nicotiana benthamiana,FALSE
+Leucadendron coniferum,Leucadendron laureolum × L. salignum,TRUE
+Macadamia tetraphylla,Macadamia integrifolia,TRUE
+Macadamia integrifolia × M. tetraphylla,Macadamia integrifolia,TRUE
+Anemone coronaria,Nicotiana benthamiana,TRUE
+Clematis vitalba,Clematis armandi,TRUE
+Reseda lutea,Nicotiana benthamiana,FALSE
+Ziziphus jujuba,Ziziphus jujuba,TRUE
+Ziziphus mauritiana,Ziziphus mauritiana,TRUE
+Amelanchier alnifolia,Pyrus communis,TRUE
+Amelanchier canadensis,Amelanchier alnifolia,TRUE
+Amelanchier canadensis,Amelanchier canadensis,TRUE
+Amelanchier canadensis,Amelanchier laevis,TRUE
+Amelanchier canadensis,Pyrus communis,TRUE
+Amelanchier canadensis,Amelanchier arborea × A. laevis,TRUE
+Amelanchier ovalis,Pyrus communis,TRUE
+Aria edulis,Aria edulis,TRUE
+Aria edulis,Hedlundia hybrida,TRUE
+Aria edulis,Pyrus communis,TRUE
+Chaenomeles japonica,Pyrus communis,TRUE
+Chaenomeles japonica,Photinia glabra × P. serratifolia,TRUE
+Cotoneaster acuminatus,Pyrus communis,TRUE
+Cotoneaster acutifolius,Pyrus communis,TRUE
+Cotoneaster affinis,Malus domestica,TRUE
+Cotoneaster affinis,Pyrus communis,TRUE
+Cotoneaster bullatus,Cotoneaster adpressus,TRUE
+Cotoneaster bullatus,Cotoneaster apiculatus,TRUE
+Cotoneaster bullatus,Cotoneaster dammeri,TRUE
+Cotoneaster bullatus,Cotoneaster horizontalis,TRUE
+Cotoneaster bullatus,Cotoneaster adpressus × C. horizontalis,TRUE
+Cotoneaster bullatus,Cotoneaster frigidus × C. salicifolius,TRUE
+Cotoneaster frigidus,Cotoneaster adpressus,TRUE
+Cotoneaster frigidus,Cotoneaster apiculatus,TRUE
+Cotoneaster frigidus,Cotoneaster dammeri,TRUE
+Cotoneaster frigidus,Cotoneaster horizontalis,TRUE
+Cotoneaster frigidus,Cotoneaster adpressus × C. horizontalis,TRUE
+Cotoneaster microphyllus,Pyrus communis,TRUE
+Cotoneaster multiflorus,Malus domestica,TRUE
+Cotoneaster nummularius,Malus domestica,TRUE
+Crataegus azarolus,Crataegus azarolus,TRUE
+Crataegus azarolus,Pyrus communis,TRUE
+Crataegus germanica,Eriobotrya japonica,TRUE
+Crataegus laciniata,Pyrus communis,TRUE
+Crataegus marshallii,Crataegus opaca,TRUE
+Crataegus mexicana,Malus domestica,TRUE
+Crataegus mexicana,Pyrus communis,TRUE
+Crataegus monogyna,Aria danubialis,TRUE
+Crataegus monogyna,Aria edulis,TRUE
+Crataegus monogyna,Aria graeca,TRUE
+Crataegus monogyna,Aria pannonica,TRUE
+Crataegus monogyna,Aria thaiszii,TRUE
+Crataegus monogyna,Aria zolyomii,TRUE
+Crataegus monogyna,Crataegus germanica,TRUE
+Crataegus monogyna,Crataegus laevigata,TRUE
+Crataegus monogyna,Crataegus persimilis,TRUE
+Crataegus monogyna,Hedlundia borbasii,TRUE
+Crataegus monogyna,Hedlundia buekkensis,TRUE
+Crataegus monogyna,Hedlundia semipinnata,TRUE
+Crataegus monogyna,Karpatiosorbus adamii,TRUE
+Crataegus monogyna,Karpatiosorbus andreanszkyana,TRUE
+Crataegus monogyna,Karpatiosorbus bakonyensis,TRUE
+Crataegus monogyna,Karpatiosorbus balatonica,TRUE
+Crataegus monogyna,Karpatiosorbus barthae,TRUE
+Crataegus monogyna,Karpatiosorbus borosiana,FALSE
+Crataegus monogyna,Karpatiosorbus degenii,TRUE
+Crataegus monogyna,Karpatiosorbus eugenii-kelleri,TRUE
+Crataegus monogyna,Karpatiosorbus gayeriana,TRUE
+Crataegus monogyna,Karpatiosorbus gerecseensis,TRUE
+Crataegus monogyna,Karpatiosorbus hybrida,TRUE
+Crataegus monogyna,Karpatiosorbus karpatii,TRUE
+Crataegus monogyna,Karpatiosorbus pseudobakonyensis,TRUE
+Crataegus monogyna,Karpatiosorbus pseudolatifolia,TRUE
+Crataegus monogyna,Karpatiosorbus pseudovertesensis,TRUE
+Crataegus monogyna,Karpatiosorbus redliana,TRUE
+Crataegus monogyna,Karpatiosorbus semi-incisa,TRUE
+Crataegus monogyna,Karpatiosorbus simonkaiana,TRUE
+Crataegus monogyna,Karpatiosorbus vertesensis,TRUE
+Crataegus monogyna,Sorbus aucuparia,TRUE
+Crataegus monogyna,Torminalis glaberrima,TRUE
+Crataegus monogyna,Aria edulis × Aronia melanocarpa,TRUE
+Crataegus monogyna,Crataegus calpodendron × C. mexicana,TRUE
+Crataegus monogyna,Photinia glabra × P. serratifolia,TRUE
+Crataegus opaca,Crataegus aestivalis,TRUE
+Crataegus rhipidophylla,Cydonia oblonga,FALSE
+Crataegus rhipidophylla,Malus domestica,TRUE
+Crataegus rhipidophylla,Pyrus communis,TRUE
+Crataegus rhipidophylla,Sorbus aucuparia,FALSE
+Cydonia oblonga,Aria danubialis,TRUE
+Cydonia oblonga,Aria edulis,TRUE
+Cydonia oblonga,Aria graeca,TRUE
+Cydonia oblonga,Aria pannonica,TRUE
+Cydonia oblonga,Aria thaiszii,TRUE
+Cydonia oblonga,Aria zolyomii,TRUE
+Cydonia oblonga,Cormus domestica,TRUE
+Cydonia oblonga,Crataegus azarolus,TRUE
+Cydonia oblonga,Crataegus germanica,TRUE
+Cydonia oblonga,Crataegus mexicana,TRUE
+Cydonia oblonga,Crataegus rhipidophylla,FALSE
+Cydonia oblonga,Cydonia oblonga,TRUE
+Cydonia oblonga,Eriobotrya japonica,TRUE
+Cydonia oblonga,Hedlundia borbasii,TRUE
+Cydonia oblonga,Hedlundia buekkensis,TRUE
+Cydonia oblonga,Hedlundia semipinnata,TRUE
+Cydonia oblonga,Karpatiosorbus adamii,TRUE
+Cydonia oblonga,Karpatiosorbus andreanszkyana,TRUE
+Cydonia oblonga,Karpatiosorbus bakonyensis,TRUE
+Cydonia oblonga,Karpatiosorbus balatonica,TRUE
+Cydonia oblonga,Karpatiosorbus barthae,TRUE
+Cydonia oblonga,Karpatiosorbus borosiana,TRUE
+Cydonia oblonga,Karpatiosorbus degenii,TRUE
+Cydonia oblonga,Karpatiosorbus eugenii-kelleri,TRUE
+Cydonia oblonga,Karpatiosorbus gayeriana,TRUE
+Cydonia oblonga,Karpatiosorbus gerecseensis,TRUE
+Cydonia oblonga,Karpatiosorbus hybrida,TRUE
+Cydonia oblonga,Karpatiosorbus karpatii,TRUE
+Cydonia oblonga,Karpatiosorbus pseudobakonyensis,TRUE
+Cydonia oblonga,Karpatiosorbus pseudolatifolia,TRUE
+Cydonia oblonga,Karpatiosorbus pseudovertesensis,TRUE
+Cydonia oblonga,Karpatiosorbus redliana,TRUE
+Cydonia oblonga,Karpatiosorbus semi-incisa,TRUE
+Cydonia oblonga,Karpatiosorbus simonkaiana,TRUE
+Cydonia oblonga,Karpatiosorbus vertesensis,TRUE
+Cydonia oblonga,Malus domestica,TRUE
+Cydonia oblonga,Pyrus bretschneideri,TRUE
+Cydonia oblonga,Pyrus calleryana,TRUE
+Cydonia oblonga,Pyrus communis,TRUE
+Cydonia oblonga,Pyrus pyrifolia,TRUE
+Cydonia oblonga,Sorbus aucuparia,TRUE
+Cydonia oblonga,Torminalis glaberrima,TRUE
+Cydonia oblonga,Aria edulis × Aronia melanocarpa,TRUE
+Cydonia oblonga,Aria edulis × Pyrus communis,TRUE
+Eriobotrya deflexa,Eriobotrya japonica,TRUE
+Eriobotrya elliptica,Eriobotrya japonica,TRUE
+Eriobotrya fragrans,Eriobotrya japonica,TRUE
+Eriobotrya henryi,Eriobotrya japonica,TRUE
+Eriobotrya japonica,Eriobotrya japonica,TRUE
+Eriobotrya kwangsiensis,Eriobotrya japonica,TRUE
+Eriobotrya prinoides,Eriobotrya japonica,TRUE
+Eriobotrya salwinensis,Eriobotrya japonica,TRUE
+Fragaria chiloensis,Fragaria virginiana,TRUE
+Karpatiosorbus bakonyensis,Hedlundia semipinnata,TRUE
+Karpatiosorbus bakonyensis,Karpatiosorbus adamii,TRUE
+Karpatiosorbus bakonyensis,Karpatiosorbus barthae,TRUE
+Karpatiosorbus bakonyensis,Karpatiosorbus hybrida,TRUE
+Karpatiosorbus bakonyensis,Karpatiosorbus karpatii,TRUE
+Karpatiosorbus bakonyensis,Karpatiosorbus pseudobakonyensis,TRUE
+Karpatiosorbus bakonyensis,Karpatiosorbus pseudolatifolia,TRUE
+Karpatiosorbus bakonyensis,Karpatiosorbus pseudovertesensis,TRUE
+Karpatiosorbus bakonyensis,Karpatiosorbus redliana,TRUE
+Karpatiosorbus bakonyensis,Karpatiosorbus semi-incisa,TRUE
+Karpatiosorbus bakonyensis,Karpatiosorbus simonkaiana,TRUE
+Karpatiosorbus degenii,Hedlundia semipinnata,TRUE
+Karpatiosorbus degenii,Karpatiosorbus adamii,TRUE
+Karpatiosorbus degenii,Karpatiosorbus bakonyensis,TRUE
+Karpatiosorbus degenii,Karpatiosorbus barthae,TRUE
+Karpatiosorbus degenii,Karpatiosorbus hybrida,TRUE
+Karpatiosorbus degenii,Karpatiosorbus karpatii,TRUE
+Karpatiosorbus degenii,Karpatiosorbus pseudobakonyensis,TRUE
+Karpatiosorbus degenii,Karpatiosorbus pseudolatifolia,TRUE
+Karpatiosorbus degenii,Karpatiosorbus pseudovertesensis,TRUE
+Karpatiosorbus degenii,Karpatiosorbus redliana,TRUE
+Karpatiosorbus degenii,Karpatiosorbus semi-incisa,TRUE
+Karpatiosorbus degenii,Karpatiosorbus simonkaiana,TRUE
+Karpatiosorbus pseudobakonyensis,Hedlundia semipinnata,TRUE
+Karpatiosorbus pseudobakonyensis,Karpatiosorbus adamii,TRUE
+Karpatiosorbus pseudobakonyensis,Karpatiosorbus bakonyensis,TRUE
+Karpatiosorbus pseudobakonyensis,Karpatiosorbus barthae,TRUE
+Karpatiosorbus pseudobakonyensis,Karpatiosorbus hybrida,TRUE
+Karpatiosorbus pseudobakonyensis,Karpatiosorbus karpatii,TRUE
+Karpatiosorbus pseudobakonyensis,Karpatiosorbus pseudolatifolia,TRUE
+Karpatiosorbus pseudobakonyensis,Karpatiosorbus pseudovertesensis,TRUE
+Karpatiosorbus pseudobakonyensis,Karpatiosorbus redliana,TRUE
+Karpatiosorbus pseudobakonyensis,Karpatiosorbus semi-incisa,TRUE
+Karpatiosorbus pseudobakonyensis,Karpatiosorbus simonkaiana,TRUE
+Karpatiosorbus pseudolatifolia,Karpatiosorbus degenii,TRUE
+Karpatiosorbus pseudolatifolia,Torminalis glaberrima,FALSE
+Karpatiosorbus semi-incisa,Karpatiosorbus borosiana,FALSE
+Karpatiosorbus semi-incisa,Karpatiosorbus degenii,TRUE
+Karpatiosorbus semi-incisa,Karpatiosorbus eugenii-kelleri,TRUE
+Karpatiosorbus semi-incisa,Karpatiosorbus pseudobakonyensis,TRUE
+Karpatiosorbus semi-incisa,Karpatiosorbus pseudolatifolia,TRUE
+Karpatiosorbus semi-incisa,Karpatiosorbus pseudovertesensis,FALSE
+Karpatiosorbus semi-incisa,Torminalis glaberrima,FALSE
+Malus baccata,Malus domestica,TRUE
+Malus baccata,Pyrus communis,TRUE
+Malus daochengensis,Malus domestica,TRUE
+Malus domestica,Crataegus mexicana,TRUE
+Malus domestica,Crataegus rhipidophylla,FALSE
+Malus domestica,Cydonia oblonga,FALSE
+Malus domestica,Macromeles tschonoskii,TRUE
+Malus domestica,Malus angustifolia,TRUE
+Malus domestica,Malus asiatica,TRUE
+Malus domestica,Malus baccata,TRUE
+Malus domestica,Malus coronaria,TRUE
+Malus domestica,Malus domestica,TRUE
+Malus domestica,Malus florentina,TRUE
+Malus domestica,Malus fusca,TRUE
+Malus domestica,Malus halliana,TRUE
+Malus domestica,Malus honanensis,TRUE
+Malus domestica,Malus hupehensis,TRUE
+Malus domestica,Malus ioensis,TRUE
+Malus domestica,Malus kansuensis,TRUE
+Malus domestica,Malus orientalis,TRUE
+Malus domestica,Malus prattii,TRUE
+Malus domestica,Malus prunifolia,TRUE
+Malus domestica,Malus sikkimensis,TRUE
+Malus domestica,Malus spectabilis,TRUE
+Malus domestica,Malus sylvestris,TRUE
+Malus domestica,Malus toringo,TRUE
+Malus domestica,Malus toringoides,TRUE
+Malus domestica,Malus transitoria,TRUE
+Malus domestica,Malus yunnanensis,TRUE
+Malus domestica,Pyrus communis,TRUE
+Malus domestica,Sorbus aucuparia,TRUE
+Malus domestica,Malus asiatica × M. toringo,TRUE
+Malus domestica,Malus baccata × M. domestica,TRUE
+Malus domestica,Malus baccata × M. prunifolia,TRUE
+Malus domestica,Malus baccata × M. spectabilis,TRUE
+Malus domestica,Malus baccata × M. toringo,TRUE
+Malus domestica,Malus coronaria × M. domestica,TRUE
+Malus domestica,Malus domestica × M. fusca,TRUE
+Malus domestica,Malus domestica × M. ioensis,TRUE
+Malus domestica,Malus domestica × M. spectabilis,TRUE
+Malus domestica,Malus baccata × M. domestica × M. toringo,TRUE
+Malus domestica,Malus baccata × M. prunifolia × M. toringo,TRUE
+Malus domestica,Malus domestica × M. halliana × M. toringo,TRUE
+Malus domestica,Malus domestica × Pyrus communis × Pyrus pyrifolia,TRUE
+Malus domestica,Nicotiana benthamiana,TRUE
+Malus doumeri,Malus domestica,TRUE
+Malus halliana,Malus domestica,TRUE
+Malus hupehensis,Malus domestica,TRUE
+Malus hupehensis,Malus toringoides,FALSE
+Malus indica,Malus domestica,TRUE
+Malus indica,Pyrus communis,TRUE
+Malus ioensis,Malus domestica,TRUE
+Malus prunifolia,Malus domestica,TRUE
+Malus sikkimensis,Malus domestica,TRUE
+Malus sylvestris,Crataegus mexicana,TRUE
+Malus sylvestris,Macromeles tschonoskii,TRUE
+Malus sylvestris,Malus domestica,TRUE
+Malus sylvestris,Malus yunnanensis,TRUE
+Malus toringo,Malus domestica,TRUE
+Malus toringoides,Malus domestica,TRUE
+Malus transitoria,Malus domestica,TRUE
+Malus yunnanensis,Malus domestica,TRUE
+Micromeles alnifolia,Micromeles megalocarpa,TRUE
+Micromeles alnifolia,Pyrus communis,TRUE
+Micromeles lanata,Malus domestica,TRUE
+Micromeles lanata,Pyrus communis,TRUE
+Micromeles meliosmifolia,Micromeles megalocarpa,TRUE
+Photinia glabra,Eriobotrya japonica,TRUE
+Prunus americana,Prunus americana,TRUE
+Prunus americana,Prunus armeniaca,TRUE
+Prunus americana,Prunus insititia,FALSE
+Prunus americana,Prunus munsoniana,TRUE
+Prunus americana,Prunus persica,TRUE
+Prunus americana,Prunus pumila,TRUE
+Prunus americana,Prunus salicina,TRUE
+Prunus americana,Prunus subcordata,TRUE
+Prunus americana,Prunus americana × P. salicina,TRUE
+Prunus americana,Prunus cerasifera × P. spinosa,TRUE
+Prunus amygdalus,Prunus amygdalus,TRUE
+Prunus amygdalus,Prunus armeniaca,TRUE
+Prunus amygdalus,Prunus fasciculata,TRUE
+Prunus amygdalus,Prunus persica,TRUE
+Prunus amygdalus,Prunus salicina,TRUE
+Prunus amygdalus,Prunus americana × P. salicina,TRUE
+Prunus amygdalus,Prunus cerasifera × P. spinosa,TRUE
+Prunus amygdalus,Prunus salicina × P. simonii,TRUE
+Prunus angustifolia,Prunus salicina,TRUE
+Prunus angustifolia,Prunus cerasifera × P. spinosa,TRUE
+Prunus argentea,Prunus amygdalus,TRUE
+Prunus armeniaca,Prunus amygdalus,TRUE
+Prunus armeniaca,Prunus armeniaca,TRUE
+Prunus armeniaca,Prunus cerasifera,TRUE
+Prunus armeniaca,Prunus japonica,TRUE
+Prunus armeniaca,Prunus persica,TRUE
+Prunus armeniaca,Prunus salicina,TRUE
+Prunus armeniaca,Prunus cerasifera × P. pumila,TRUE
+Prunus armeniaca,Prunus cerasifera × P. spinosa,TRUE
+Prunus armeniaca,Prunus salicina × P. simonii,TRUE
+Prunus avium,Prunus amygdalus,FALSE
+Prunus avium,Prunus avium,TRUE
+Prunus avium,Prunus cerasus,TRUE
+Prunus avium,Prunus fruticosa,TRUE
+Prunus avium,Prunus incisa,TRUE
+Prunus avium,Prunus laurocerasus,TRUE
+Prunus avium,Prunus maackii,TRUE
+Prunus avium,Prunus mahaleb,TRUE
+Prunus avium,Prunus persica,FALSE
+Prunus avium,Prunus sargentii,TRUE
+Prunus avium,Prunus serotina,TRUE
+Prunus avium,Prunus serrula,TRUE
+Prunus avium,Prunus serrulata,TRUE
+Prunus avium,Prunus avium × P. canescens,TRUE
+Prunus avium,Prunus avium × P. cerasus,TRUE
+Prunus avium,Prunus avium × P. fruticosa,TRUE
+Prunus avium,Prunus avium × P. mahaleb,TRUE
+Prunus avium,Prunus avium × P. pseudocerasus,TRUE
+Prunus avium,Prunus campanulata × P. incisa,TRUE
+Prunus avium,Prunus canescens × P. cerasus,TRUE
+Prunus avium,Prunus canescens × P. rufoides,TRUE
+Prunus avium,Prunus cerasifera × P. spinosa,FALSE
+Prunus avium,Prunus cerasus × P. fruticosa,TRUE
+Prunus avium,Prunus incisa × P. itosakura,TRUE
+Prunus avium,Prunus incisa × P. serrulata,TRUE
+Prunus avium,Prunus itosakura × P. speciosa,TRUE
+Prunus bokhariensis,Prunus cerasifera × P. spinosa,TRUE
+Prunus bucharica,Prunus amygdalus,TRUE
+Prunus canescens,Prunus avium,TRUE
+Prunus cerasifera,Prunus americana,TRUE
+Prunus cerasifera,Prunus amygdalus,TRUE
+Prunus cerasifera,Prunus andersonii,TRUE
+Prunus cerasifera,Prunus armeniaca,TRUE
+Prunus cerasifera,Prunus avium,TRUE
+Prunus cerasifera,Prunus cerasifera,TRUE
+Prunus cerasifera,Prunus glandulosa,TRUE
+Prunus cerasifera,Prunus hortulana,TRUE
+Prunus cerasifera,Prunus insititia,TRUE
+Prunus cerasifera,Prunus maritima,TRUE
+Prunus cerasifera,Prunus mume,TRUE
+Prunus cerasifera,Prunus munsoniana,TRUE
+Prunus cerasifera,Prunus persica,TRUE
+Prunus cerasifera,Prunus salicina,TRUE
+Prunus cerasifera,Prunus simonii,TRUE
+Prunus cerasifera,Prunus spinosa,TRUE
+Prunus cerasifera,Prunus subcordata,TRUE
+Prunus cerasifera,Prunus triloba,TRUE
+Prunus cerasifera,Prunus cerasifera × P. mume,TRUE
+Prunus cerasifera,Prunus cerasifera × P. pumila,TRUE
+Prunus cerasifera,Prunus cerasifera × P. spinosa,TRUE
+Prunus cerasoides,Prunus avium,TRUE
+Prunus cerasoides,Prunus salicina,TRUE
+Prunus cerasus,Prunus avium,TRUE
+Prunus cerasus,Prunus cerasus,TRUE
+Prunus cerasus,Prunus mahaleb,FALSE
+Prunus cornuta,Prunus salicina,TRUE
+Prunus davidiana,Prunus amygdalus,TRUE
+Prunus davidiana,Prunus persica,TRUE
+Prunus davidiana,Prunus salicina,TRUE
+Prunus davidiana,Prunus cerasifera × P. spinosa,TRUE
+Prunus eburnea,Prunus amygdalus,TRUE
+Prunus elaeagrifolia,Prunus amygdalus,TRUE
+Prunus fasciculata,Prunus amygdalus,FALSE
+Prunus fenzliana,Prunus amygdalus,TRUE
+Prunus fremontii,Prunus amygdalus,FALSE
+Prunus fremontii,Prunus armeniaca,TRUE
+Prunus fruticosa,Prunus avium,TRUE
+Prunus hortulana,Prunus munsoniana,TRUE
+Prunus hortulana,Prunus salicina,TRUE
+Prunus hortulana,Prunus cerasifera × P. spinosa,TRUE
+Prunus incisa,Prunus avium,TRUE
+Prunus insititia,Prunus amygdalus,TRUE
+Prunus insititia,Prunus armeniaca,TRUE
+Prunus insititia,Prunus cerasifera,TRUE
+Prunus insititia,Prunus insititia,TRUE
+Prunus insititia,Prunus mume,TRUE
+Prunus insititia,Prunus persica,TRUE
+Prunus insititia,Prunus salicina,TRUE
+Prunus insititia,Prunus triloba,TRUE
+Prunus insititia,Prunus amygdalus × P. persica,TRUE
+Prunus insititia,Prunus cerasifera × P. spinosa,TRUE
+Prunus kansuensis,Prunus persica,TRUE
+Prunus kotschyi,Prunus amygdalus,TRUE
+Prunus kuramica,Prunus amygdalus,TRUE
+Prunus mahaleb,Prunus avium,TRUE
+Prunus mahaleb,Prunus cerasus,TRUE
+Prunus mahaleb,Prunus fruticosa,TRUE
+Prunus mahaleb,Prunus serrulata,FALSE
+Prunus mahaleb,Prunus avium × P. cerasus,TRUE
+Prunus mahaleb,Prunus avium × P. fruticosa,TRUE
+Prunus mahaleb,Prunus fruticosa × P. mahaleb,TRUE
+Prunus mandshurica,Prunus persica,TRUE
+Prunus maritima,Prunus americana,TRUE
+Prunus maritima,Prunus cerasus,TRUE
+Prunus maritima,Prunus persica,FALSE
+Prunus maritima,Prunus salicina,TRUE
+Prunus maritima,Prunus cerasifera × P. spinosa,TRUE
+Prunus mexicana,Prunus persica,TRUE
+Prunus microcarpa,Prunus armeniaca,TRUE
+Prunus mira,Prunus persica,TRUE
+Prunus mira,Prunus salicina,TRUE
+Prunus mira,Prunus cerasifera × P. spinosa,TRUE
+Prunus mugus,Prunus avium,TRUE
+Prunus mume,Prunus amygdalus,TRUE
+Prunus mume,Prunus armeniaca,TRUE
+Prunus mume,Prunus cerasifera,TRUE
+Prunus mume,Prunus insititia,FALSE
+Prunus mume,Prunus persica,TRUE
+Prunus mume,Prunus salicina,TRUE
+Prunus mume,Prunus cerasifera × P. spinosa,TRUE
+Prunus mume,Prunus salicina × P. simonii,TRUE
+Prunus padus,Prunus avium,TRUE
+Prunus padus,Prunus cerasus,TRUE
+Prunus padus,Prunus laurocerasus,TRUE
+Prunus padus,Prunus padus,TRUE
+Prunus padus,Prunus virginiana,TRUE
+Prunus pensylvanica,Prunus avium,TRUE
+Prunus pensylvanica,Prunus cerasus,TRUE
+Prunus pensylvanica,Prunus avium × P. cerasus,TRUE
+Prunus persica,Prunus americana,FALSE
+Prunus persica,Prunus amygdalus,TRUE
+Prunus persica,Prunus armeniaca,TRUE
+Prunus persica,Prunus avium,FALSE
+Prunus persica,Prunus cerasifera,TRUE
+Prunus persica,Prunus cerasus,FALSE
+Prunus persica,Prunus davidiana,TRUE
+Prunus persica,Prunus insititia,TRUE
+Prunus persica,Prunus mume,TRUE
+Prunus persica,Prunus munsoniana,TRUE
+Prunus persica,Prunus persica,TRUE
+Prunus persica,Prunus salicina,TRUE
+Prunus persica,Prunus simonii,TRUE
+Prunus persica,Prunus subcordata,TRUE
+Prunus persica,Prunus amygdalus × P. persica,TRUE
+Prunus persica,Prunus cerasifera × P. munsoniana,TRUE
+Prunus persica,Prunus cerasifera × P. spinosa,TRUE
+Prunus persica,Prunus davidiana × P. persica,TRUE
+Prunus persica,Prunus salicina × P. simonii,FALSE
+Prunus prostrata,Prunus salicina,TRUE
+Prunus pseudocerasus,Prunus avium,TRUE
+Prunus pseudocerasus,Prunus cerasus,TRUE
+Prunus pumila,Prunus americana,TRUE
+Prunus pumila,Prunus amygdalus,FALSE
+Prunus pumila,Prunus armeniaca,TRUE
+Prunus pumila,Prunus avium,TRUE
+Prunus pumila,Prunus cerasus,TRUE
+Prunus pumila,Prunus insititia,FALSE
+Prunus pumila,Prunus persica,TRUE
+Prunus pumila,Prunus salicina,TRUE
+Prunus pumila,Prunus cerasifera × P. pumila,TRUE
+Prunus pumila,Prunus cerasifera × P. spinosa,TRUE
+Prunus salicina,Prunus amygdalus,TRUE
+Prunus salicina,Prunus armeniaca,FALSE
+Prunus salicina,Prunus cerasifera,TRUE
+Prunus salicina,Prunus persica,TRUE
+Prunus salicina,Prunus salicina,TRUE
+Prunus salicina,Prunus americana × P. salicina,TRUE
+Prunus salicina,Prunus cerasifera × P. spinosa,TRUE
+Prunus salicina,Prunus salicina × P. simonii,TRUE
+Prunus scoparia,Prunus amygdalus,TRUE
+Prunus serotina,Prunus avium,TRUE
+Prunus serotina,Prunus cerasus,TRUE
+Prunus serotina,Prunus serotina,TRUE
+Prunus serrula,Prunus campanulata × P. incisa,TRUE
+Prunus serrulata,Prunus avium,TRUE
+Prunus serrulata,Prunus cerasus,TRUE
+Prunus serrulata,Prunus serrulata,TRUE
+Prunus spartioides,Prunus amygdalus,TRUE
+Prunus spinosa,Prunus amygdalus,TRUE
+Prunus spinosa,Prunus armeniaca,TRUE
+Prunus spinosa,Prunus persica,TRUE
+Prunus spinosa,Prunus cerasifera × P. spinosa,TRUE
+Prunus subcordata,Prunus salicina,TRUE
+Prunus subcordata,Prunus cerasifera × P. spinosa,TRUE
+Prunus tangutica,Prunus amygdalus,TRUE
+Prunus tenella,Prunus insititia,TRUE
+Prunus tenella,Prunus cerasifera × P. spinosa,TRUE
+Prunus texana,Prunus americana,TRUE
+Prunus texana,Prunus angustifolia,TRUE
+Prunus texana,Prunus mexicana,TRUE
+Prunus texana,Prunus munsoniana,TRUE
+Prunus texana,Prunus nigra,TRUE
+Prunus texana,Prunus salicina,TRUE
+Prunus texana,Prunus simonii,TRUE
+Prunus texana,Prunus subcordata,TRUE
+Prunus texana,Prunus cerasifera × P. spinosa,TRUE
+Prunus tomentosa,Prunus amygdalus,FALSE
+Prunus tomentosa,Prunus avium,FALSE
+Prunus tomentosa,Prunus cerasus,FALSE
+Prunus tomentosa,Prunus persica,TRUE
+Prunus tomentosa,Prunus pseudocerasus,TRUE
+Prunus tomentosa,Prunus salicina,TRUE
+Prunus tomentosa,Prunus cerasifera × P. pumila,TRUE
+Prunus tomentosa,Prunus cerasifera × P. spinosa,TRUE
+Prunus triloba,Prunus insititia,TRUE
+Prunus triloba,Prunus cerasifera × P. spinosa,TRUE
+Prunus umbellata,Prunus cerasifera × P. spinosa,TRUE
+Prunus undulata,Prunus salicina,FALSE
+Prunus virginiana,Prunus avium,FALSE
+Prunus virginiana,Prunus cerasus,FALSE
+Prunus virginiana,Prunus virginiana,TRUE
+Prunus webbii,Prunus amygdalus,TRUE
+Pseudocydonia sinensis,Cydonia oblonga,TRUE
+Pseudocydonia sinensis,Pyrus calleryana,TRUE
+Pseudocydonia sinensis,Pyrus communis × P. pyrifolia,FALSE
+Pyracantha crenulata,Malus domestica,TRUE
+Pyrus betulifolia,Pyrus bretschneideri,TRUE
+Pyrus betulifolia,Pyrus calleryana,TRUE
+Pyrus betulifolia,Pyrus communis,TRUE
+Pyrus betulifolia,Pyrus pyrifolia,TRUE
+Pyrus betulifolia,Pyrus ussuriensis,TRUE
+Pyrus betulifolia,Pyrus pyrifolia × P. ussuriensis,TRUE
+Pyrus betulifolia,Malus domestica × Pyrus communis × Pyrus pyrifolia,TRUE
+Pyrus bourgaeana,Pyrus communis,TRUE
+Pyrus bretschneideri,Pyrus pyrifolia,TRUE
+Pyrus calleryana,Cydonia oblonga,TRUE
+Pyrus calleryana,Pyrus calleryana,TRUE
+Pyrus calleryana,Pyrus communis,TRUE
+Pyrus calleryana,Pyrus pyrifolia,TRUE
+Pyrus calleryana,Pyrus salicifolia,TRUE
+Pyrus calleryana,Pyrus communis × P. pyrifolia,TRUE
+Pyrus calleryana,Malus domestica × Pyrus communis × Pyrus pyrifolia,TRUE
+Pyrus communis,Crataegus azarolus,TRUE
+Pyrus communis,Crataegus germanica,TRUE
+Pyrus communis,Crataegus rhipidophylla,TRUE
+Pyrus communis,Cydonia oblonga,TRUE
+Pyrus communis,Malus domestica,TRUE
+Pyrus communis,Peraphyllum ramosissimum,TRUE
+Pyrus communis,Pyrus bretschneideri,TRUE
+Pyrus communis,Pyrus calleryana,TRUE
+Pyrus communis,Pyrus communis,TRUE
+Pyrus communis,Pyrus pyrifolia,TRUE
+Pyrus communis,Pyrus salicifolia,TRUE
+Pyrus communis,Sorbus aucuparia,TRUE
+Pyrus communis,Cydonia oblonga × Pyrus communis,TRUE
+Pyrus communis,Pyrus communis × P. pashia,TRUE
+Pyrus communis,Pyrus communis × P. pyrifolia,TRUE
+Pyrus communis,Malus domestica × Pyrus communis × Pyrus pyrifolia,TRUE
+Pyrus communis,Citrus maxima × C. medica × C. reticulata,TRUE
+Pyrus cordata,Pyrus communis,TRUE
+Pyrus cossonii,Pyrus communis,TRUE
+Pyrus elaeagrifolia,Pyrus communis,TRUE
+Pyrus neoserrulata,Pyrus communis,TRUE
+Pyrus pashia,Malus domestica,TRUE
+Pyrus pashia,Pyrus communis,TRUE
+Pyrus pyrifolia,Cydonia oblonga,TRUE
+Pyrus pyrifolia,Malus domestica,TRUE
+Pyrus pyrifolia,Pyrus communis,TRUE
+Pyrus pyrifolia,Pyrus pyrifolia,TRUE
+Pyrus pyrifolia,Pyrus ussuriensis,TRUE
+Pyrus pyrifolia,Pyrus communis × P. pashia,TRUE
+Pyrus pyrifolia,Pyrus communis × P. pyrifolia,TRUE
+Pyrus pyrifolia,Malus domestica × Pyrus communis × Pyrus pyrifolia,TRUE
+Pyrus spinosa,Pyrus communis,TRUE
+Pyrus syriaca,Pyrus communis,TRUE
+Pyrus ussuriensis,Pyrus calleryana,TRUE
+Pyrus ussuriensis,Pyrus communis,TRUE
+Pyrus ussuriensis,Pyrus pyrifolia,TRUE
+Pyrus ussuriensis,Pyrus salicifolia,TRUE
+Pyrus ussuriensis,Pyrus communis × P. pyrifolia,TRUE
+Pyrus xerophila,Pyrus communis,TRUE
+Rosa canina,Rosa indica,TRUE
+Rosa canina,Rosa pendulina,TRUE
+Rosa chinensis,Rosa indica,TRUE
+Rosa chinensis,Rosa pendulina,TRUE
+Rosa helenae,Rosa pendulina,TRUE
+Rosa indica,Rosa indica,TRUE
+Rosa indica,Rosa pendulina,TRUE
+Rosa indica,Rosa chinensis × R. multiflora × R. pendulina,TRUE
+Rosa luciae,Rosa indica,TRUE
+Rosa multiflora,Rosa indica,TRUE
+Rosa multiflora,Rosa pendulina,TRUE
+Rosa multiflora,Rosa rugosa,TRUE
+Rosa multiflora,Rosa canina × R. gallica × R. moschata,TRUE
+Rosa pendulina,Rosa pendulina,TRUE
+Rosa pendulina,Rosa canina × R. gallica × R. moschata,TRUE
+Scandosorbus intermedia,Amelanchier alnifolia,TRUE
+Scandosorbus intermedia,Amelanchier canadensis,TRUE
+Scandosorbus intermedia,Amelanchier laevis,TRUE
+Scandosorbus intermedia,Aria edulis,TRUE
+Scandosorbus intermedia,Hedlundia hybrida,TRUE
+Scandosorbus intermedia,Amelanchier arborea × A. laevis,TRUE
+Sorbus americana,Malus domestica,FALSE
+Sorbus aucuparia,Aria edulis,TRUE
+Sorbus aucuparia,Crataegus laevigata,TRUE
+Sorbus aucuparia,Crataegus monogyna,TRUE
+Sorbus aucuparia,Crataegus rhipidophylla,TRUE
+Sorbus aucuparia,Cydonia oblonga,TRUE
+Sorbus aucuparia,Malus domestica,TRUE
+Sorbus aucuparia,Pyrus communis,TRUE
+Sorbus aucuparia,Sorbus aucuparia,TRUE
+Sorbus aucuparia,Sorbus commixta,TRUE
+Sorbus aucuparia,Sorbus hupehensis,TRUE
+Sorbus aucuparia,Aronia arbutifolia × A. melanocarpa,TRUE
+Sorbus aucuparia,Sorbus aucuparia × S. discolor,TRUE
+Torminalis glaberrima,Pyrus communis,TRUE
+Amelanchier arborea × A. laevis,Amelanchier alnifolia,TRUE
+Amelanchier arborea × A. laevis,Amelanchier canadensis,TRUE
+Amelanchier arborea × A. laevis,Amelanchier laevis,TRUE
+Amelanchier arborea × A. laevis,Pyrus communis,TRUE
+Amelanchier arborea × A. laevis,Amelanchier arborea × A. laevis,TRUE
+Aria edulis × Pyrus communis,Crataegus monogyna,TRUE
+Aronia arbutifolia × A. melanocarpa,Pyrus communis,TRUE
+Cotoneaster frigidus × C. salicifolius,Cotoneaster adpressus,TRUE
+Cotoneaster frigidus × C. salicifolius,Cotoneaster apiculatus,TRUE
+Cotoneaster frigidus × C. salicifolius,Cotoneaster dammeri,TRUE
+Cotoneaster frigidus × C. salicifolius,Cotoneaster horizontalis,TRUE
+Cotoneaster frigidus × C. salicifolius,Cotoneaster adpressus × C. horizontalis,TRUE
+Cydonia oblonga × Pyrus communis,Pyrus communis,TRUE
+Malus baccata × M. prunifolia,Malus domestica,TRUE
+Malus baccata × M. prunifolia,Malus spectabilis,TRUE
+Malus baccata × M. spectabilis,Malus domestica,TRUE
+Malus baccata × M. toringo,Malus domestica,TRUE
+Malus domestica × M. honanensis,Malus domestica,TRUE
+Malus domestica × M. hupehensis,Malus domestica,TRUE
+Malus domestica × M. toringo,Malus domestica,TRUE
+Malus toringo × M. toringo,Malus domestica,TRUE
+Prunus americana × P. pumila,Prunus cerasifera × P. spinosa,TRUE
+Prunus americana × P. salicina,Prunus salicina,TRUE
+Prunus americana × P. salicina,Prunus cerasifera × P. spinosa,FALSE
+Prunus amygdalus × P. andersonii,Prunus amygdalus,TRUE
+Prunus amygdalus × P. cerasifera,Prunus armeniaca,TRUE
+Prunus amygdalus × P. cerasifera,Prunus persica,TRUE
+Prunus amygdalus × P. cerasifera,Prunus salicina,TRUE
+Prunus amygdalus × P. cerasifera,Prunus cerasifera × P. spinosa,TRUE
+Prunus amygdalus × P. davidiana,Prunus amygdalus,TRUE
+Prunus amygdalus × P. persica,Prunus amygdalus,TRUE
+Prunus amygdalus × P. persica,Prunus armeniaca,TRUE
+Prunus amygdalus × P. persica,Prunus insititia,TRUE
+Prunus amygdalus × P. persica,Prunus persica,TRUE
+Prunus amygdalus × P. persica,Prunus salicina,TRUE
+Prunus amygdalus × P. persica,Prunus spinosa,TRUE
+Prunus amygdalus × P. persica,Prunus cerasifera × P. spinosa,TRUE
+Prunus amygdalus × P. persica,Prunus cerasifera × P. tomentosa,TRUE
+Prunus amygdalus × P. persica,Prunus persica × P. salicina,TRUE
+Prunus amygdalus × P. persica,Prunus pumila × P. salicina,TRUE
+Prunus amygdalus × P. persica,Prunus cerasifera × P. persica × P. salicina,TRUE
+Prunus angustifolia × P. salicina,Prunus persica,TRUE
+Prunus armeniaca × P. cerasifera,Prunus armeniaca,TRUE
+Prunus armeniaca × P. cerasifera,Prunus cerasifera × P. spinosa,TRUE
+Prunus avium × P. canescens,Prunus avium,TRUE
+Prunus avium × P. cerasifera,Prunus persica,TRUE
+Prunus avium × P. cerasifera,Prunus salicina,TRUE
+Prunus avium × P. cerasus,Prunus avium,TRUE
+Prunus avium × P. fruticosa,Prunus avium,TRUE
+Prunus avium × P. mahaleb,Prunus avium,TRUE
+Prunus avium × P. mahaleb,Prunus cerasus,TRUE
+Prunus avium × P. persica,Prunus persica,TRUE
+Prunus avium × P. pseudocerasus,Prunus avium,TRUE
+Prunus avium × P. pseudocerasus,Prunus cerasus,TRUE
+Prunus avium × P. pseudocerasus,Prunus incisa,TRUE
+Prunus avium × P. pseudocerasus,Prunus sargentii,TRUE
+Prunus avium × P. pseudocerasus,Prunus serrula,TRUE
+Prunus avium × P. pseudocerasus,Prunus serrulata,TRUE
+Prunus avium × P. pseudocerasus,Prunus avium × P. pseudocerasus,TRUE
+Prunus avium × P. pseudocerasus,Prunus campanulata × P. incisa,TRUE
+Prunus avium × P. pseudocerasus,Prunus incisa × P. itosakura,TRUE
+Prunus avium × P. pseudocerasus,Prunus itosakura × P. speciosa,TRUE
+Prunus canescens × P. cerasus,Prunus avium,TRUE
+Prunus canescens × P. cerasus,Prunus canescens × P. cerasus,TRUE
+Prunus canescens × P. rufoides,Prunus avium,TRUE
+Prunus cerasifera × P. munsoniana,Prunus amygdalus,TRUE
+Prunus cerasifera × P. munsoniana,Prunus armeniaca,TRUE
+Prunus cerasifera × P. munsoniana,Prunus cerasifera,FALSE
+Prunus cerasifera × P. munsoniana,Prunus hortulana,TRUE
+Prunus cerasifera × P. munsoniana,Prunus insititia,TRUE
+Prunus cerasifera × P. munsoniana,Prunus mexicana,TRUE
+Prunus cerasifera × P. munsoniana,Prunus munsoniana,TRUE
+Prunus cerasifera × P. munsoniana,Prunus persica,TRUE
+Prunus cerasifera × P. munsoniana,Prunus salicina,TRUE
+Prunus cerasifera × P. munsoniana,Prunus simonii,TRUE
+Prunus cerasifera × P. munsoniana,Prunus subcordata,TRUE
+Prunus cerasifera × P. munsoniana,Prunus umbellata,TRUE
+Prunus cerasifera × P. munsoniana,Prunus americana × P. angustifolia,TRUE
+Prunus cerasifera × P. munsoniana,Prunus cerasifera × P. munsoniana,TRUE
+Prunus cerasifera × P. munsoniana,Prunus cerasifera × P. spinosa,TRUE
+Prunus cerasifera × P. persica,Prunus armeniaca,TRUE
+Prunus cerasifera × P. persica,Prunus insititia,TRUE
+Prunus cerasifera × P. persica,Prunus persica,TRUE
+Prunus cerasifera × P. persica,Prunus salicina,TRUE
+Prunus cerasifera × P. persica,Prunus cerasifera × P. spinosa,TRUE
+Prunus cerasifera × P. pumila,Prunus amygdalus,TRUE
+Prunus cerasifera × P. pumila,Prunus insititia,TRUE
+Prunus cerasifera × P. pumila,Prunus persica,TRUE
+Prunus cerasifera × P. pumila,Prunus salicina,TRUE
+Prunus cerasifera × P. pumila,Prunus cerasifera × P. spinosa,TRUE
+Prunus cerasifera × P. salicina,Prunus armeniaca,TRUE
+Prunus cerasifera × P. salicina,Prunus persica,TRUE
+Prunus cerasifera × P. salicina,Prunus salicina,TRUE
+Prunus cerasifera × P. salicina,Prunus cerasifera × P. spinosa,TRUE
+Prunus cerasifera × P. spinosa,Prunus amygdalus,TRUE
+Prunus cerasifera × P. spinosa,Prunus armeniaca,TRUE
+Prunus cerasifera × P. spinosa,Prunus cerasifera,TRUE
+Prunus cerasifera × P. spinosa,Prunus insititia,TRUE
+Prunus cerasifera × P. spinosa,Prunus persica,TRUE
+Prunus cerasifera × P. spinosa,Prunus salicina,TRUE
+Prunus cerasifera × P. spinosa,Prunus simonii,TRUE
+Prunus cerasifera × P. spinosa,Prunus triloba,TRUE
+Prunus cerasifera × P. spinosa,Prunus cerasifera × P. spinosa,TRUE
+Prunus cerasifera × P. tomentosa,Prunus persica,TRUE
+Prunus cerasifera × P. tomentosa,Prunus cerasifera × P. spinosa,TRUE
+Prunus cerasus × P. fruticosa,Prunus avium,TRUE
+Prunus cerasus × P. fruticosa,Prunus cerasus,TRUE
+Prunus cerasus × P. maackii,Prunus avium,TRUE
+Prunus davidiana × P. persica,Prunus amygdalus,TRUE
+Prunus davidiana × P. persica,Prunus armeniaca,TRUE
+Prunus davidiana × P. persica,Prunus persica,TRUE
+Prunus davidiana × P. persica,Prunus cerasifera × P. spinosa,TRUE
+Prunus fruticosa × P. mahaleb,Prunus avium,TRUE
+Prunus incisa × P. itosakura,Prunus incisa × P. itosakura,TRUE
+Prunus incisa × P. serrula,Prunus avium,TRUE
+Prunus incisa × P. serrula,Prunus cerasus,TRUE
+Prunus persica × P. pumila,Prunus amygdalus,TRUE
+Prunus persica × P. salicina,Prunus armeniaca,TRUE
+Prunus persica × P. salicina,Prunus persica,TRUE
+Prunus persica × P. salicina,Prunus salicina,TRUE
+Prunus persica × P. salicina,Prunus cerasifera × P. spinosa,TRUE
+Prunus pumila × P. salicina,Prunus persica,TRUE
+Prunus salicina × P. simonii,Prunus salicina,TRUE
+Prunus salicina × P. simonii,Prunus cerasifera × P. spinosa,TRUE
+Prunus salicina × P. spinosa,Prunus persica,TRUE
+Pyrus calleryana × P. pyrifolia,Pyrus pyrifolia,TRUE
+Pyrus communis × P. elaeagrifolia,Pyrus communis,TRUE
+Pyrus communis × P. pashia,Pyrus communis,TRUE
+Pyrus communis × P. pyrifolia,Pyrus communis,TRUE
+Rosa balsamica × R. canina,Rosa multiflora,TRUE
+Rosa banksiae × R. laevigata,Rosa canina × R. gallica × R. moschata,TRUE
+Rosa chinensis × R. gigantea,Rosa indica,TRUE
+Rosa chinensis × R. gigantea,Rosa pendulina,TRUE
+Rosa chinensis × R. gigantea,Rosa canina × R. gallica × R. moschata,TRUE
+Rosa chinensis × R. moschata,Rosa indica,TRUE
+Rosa chinensis × R. moschata,Rosa pendulina,TRUE
+Prunus amygdalus × P. cerasifera × P. persica,Prunus amygdalus,TRUE
+Prunus amygdalus × P. cerasifera × P. persica,Prunus salicina,TRUE
+Prunus amygdalus × P. davidiana × P. persica,Prunus amygdalus,TRUE
+Prunus amygdalus × P. davidiana × P. persica,Prunus persica,TRUE
+Prunus armeniaca × P. cerasifera × P. pumila,Prunus salicina,TRUE
+Prunus armeniaca × P. pumila × P. salicina,Prunus salicina,TRUE
+Prunus avium × P. canescens × P. tomentosa,Prunus avium,TRUE
+Prunus avium × P. nipponica × P. pseudocerasus,Prunus avium,TRUE
+Prunus cerasifera × P. insititia × P. spinosa,Prunus armeniaca,TRUE
+Prunus cerasifera × P. insititia × P. spinosa,Prunus insititia,TRUE
+Prunus cerasifera × P. insititia × P. spinosa,Prunus persica,TRUE
+Prunus cerasifera × P. insititia × P. spinosa,Prunus salicina,TRUE
+Prunus cerasifera × P. insititia × P. spinosa,Prunus cerasifera × P. spinosa,TRUE
+Prunus cerasifera × P. munsoniana × P. spinosa,Prunus persica,TRUE
+Prunus cerasifera × P. persica × P. salicina,Prunus amygdalus,TRUE
+Prunus cerasifera × P. persica × P. salicina,Prunus armeniaca,TRUE
+Prunus cerasifera × P. persica × P. salicina,Prunus persica,TRUE
+Prunus cerasifera × P. persica × P. salicina,Prunus salicina,TRUE
+Prunus cerasifera × P. persica × P. salicina,Prunus cerasifera × P. spinosa,TRUE
+Prunus cerasifera × P. persica × P. spinosa,Prunus persica,TRUE
+Prunus cerasifera × P. pumila × P. salicina,Prunus persica,TRUE
+Prunus cerasifera × P. salicina × P. spinosa,Prunus insititia,TRUE
+Prunus cerasifera × P. salicina × P. spinosa,Prunus persica,TRUE
+Prunus cerasifera × P. salicina × P. spinosa,Prunus salicina,TRUE
+Prunus cerasifera × P. salicina × P. spinosa,Prunus cerasifera × P. spinosa,TRUE
+Prunus cerasus × P. maackii × P. pensylvanica,Prunus serrulata,TRUE
+Prunus cerasus × P. maackii × P. pensylvanica,Prunus cerasifera × P. pumila,TRUE
+Prunus jamasakura × P. sargentii × P. speciosa,Prunus maximowiczii,TRUE
+Prunus jamasakura × P. sargentii × P. speciosa,Prunus serrulata,TRUE
+Prunus jamasakura × P. sargentii × P. speciosa,Prunus itosakura × P. speciosa,TRUE
+Malus domestica × M. halliana × M. toringo × M. toringo,Malus domestica,TRUE
+Prunus amygdalus × P. armeniaca × P. cerasifera × P. persica,Prunus persica,TRUE
+Prunus cerasifera × P. persica × P. salicina × P. spinosa,Prunus persica,TRUE
+Prunus amygdalus × P. cerasifera × P. davidiana × P. mume × P. persica,Prunus armeniaca,TRUE
+Alberta magna,Alberta magna,TRUE
+Coffea arabica,Coffea canephora,TRUE
+Coffea canephora,Coffea arabica,TRUE
+Coffea canephora,Coffea canephora,TRUE
+Coffea congensis,Coffea arabica,TRUE
+Coffea liberica,Coffea arabica,TRUE
+Coffea liberica,Coffea canephora,TRUE
+Aeglopsis chevalieri,Aegle marmelos,TRUE
+Aeglopsis chevalieri,Citrus maxima × C. reticulata,FALSE
+Afraegle paniculata,Citrus maxima × C. reticulata,FALSE
+Atalantia buxifolia,Citrus maxima × C. reticulata,TRUE
+Atalantia buxifolia,Citrus maxima × C. medica × C. reticulata,TRUE
+Balsamocitrus dawei,Aegle marmelos,TRUE
+Casimiroa edulis,Citrus reticulata,TRUE
+Casimiroa edulis,Citrus maxima × C. reticulata,FALSE
+Citropsis gilletiana,Citrus polyandra,TRUE
+Citropsis gilletiana,Citrus maxima × C. medica × C. reticulata,TRUE
+Citrus glauca,Citrus maxima × C. medica × C. reticulata,TRUE
+Citrus hystrix,Citrus maxima × C. reticulata,TRUE
+Citrus japonica,Citrus japonica,FALSE
+Citrus japonica,Citrus trifoliata,TRUE
+Citrus japonica,Citrus japonica × C. reticulata,TRUE
+Citrus japonica,Citrus maxima × C. reticulata,TRUE
+Citrus japonica,Citrus maxima × C. medica × C. reticulata,FALSE
+Citrus latipes,Citrus reticulata,TRUE
+Citrus maxima,Citrus maxima,TRUE
+Citrus maxima,Citrus reticulata,TRUE
+Citrus maxima,Citrus maxima × C. reticulata,TRUE
+Citrus maxima,Citrus maxima × C. medica × C. reticulata,TRUE
+Citrus medica,Citrus reticulata,TRUE
+Citrus medica,Citrus maxima × C. reticulata,TRUE
+Citrus polyandra,Citrus maxima × C. medica × C. reticulata,TRUE
+Citrus reticulata,Atalantia racemosa,TRUE
+Citrus reticulata,Citrus polyandra,TRUE
+Citrus reticulata,Citrus reticulata,TRUE
+Citrus reticulata,Citrus trifoliata,TRUE
+Citrus reticulata,Citrus hystrix × C. medica,TRUE
+Citrus reticulata,Citrus japonica × C. reticulata,TRUE
+Citrus reticulata,Citrus maxima × C. reticulata,TRUE
+Citrus reticulata,Citrus maxima × C. trifoliata,TRUE
+Citrus reticulata,Citrus medica × C. reticulata,TRUE
+Citrus reticulata,Citrus reticulata × C. trifoliata,TRUE
+Citrus reticulata,Citrus maxima × C. medica × C. reticulata,TRUE
+Citrus reticulata,Citrus maxima × C. reticulata × C. trifoliata,TRUE
+Citrus trifoliata,Citropsis articulata,TRUE
+Citrus trifoliata,Citropsis gilletiana,TRUE
+Citrus trifoliata,Citrus australasica,TRUE
+Citrus trifoliata,Citrus australis,TRUE
+Citrus trifoliata,Citrus garrawayae,TRUE
+Citrus trifoliata,Citrus inodora,TRUE
+Citrus trifoliata,Citrus japonica,TRUE
+Citrus trifoliata,Citrus maxima,TRUE
+Citrus trifoliata,Citrus medica,TRUE
+Citrus trifoliata,Citrus reticulata,TRUE
+Citrus trifoliata,Citrus warburgiana,TRUE
+Citrus trifoliata,Citrus wintersii,TRUE
+Citrus trifoliata,Naringi crenulata,TRUE
+Citrus trifoliata,Citrus japonica × C. reticulata,TRUE
+Citrus trifoliata,Citrus maxima × C. reticulata,TRUE
+Citrus trifoliata,Citrus australasica × C. hystrix × C. medica,TRUE
+Citrus trifoliata,Citrus australasica × C. japonica × C. reticulata,TRUE
+Citrus trifoliata,Citrus cavaleriei × C. maxima × C. reticulata,TRUE
+Citrus trifoliata,Citrus maxima × C. medica × C. reticulata,TRUE
+Citrus trifoliata,Citrus maxima × C. reticulata × C. trifoliata,TRUE
+Citrus trifoliata,Citrus hystrix × C. maxima × C. medica × C. reticulata,TRUE
+Glycosmis pentaphylla,Glycosmis mauritiana,TRUE
+Glycosmis pentaphylla,Glycosmis perakensis,TRUE
+Glycosmis pentaphylla,Glycosmis trichanthera,TRUE
+Naringi crenulata,Citrus maxima × C. reticulata,TRUE
+Naringi crenulata,Citrus maxima × C. medica × C. reticulata,TRUE
+Swinglea glutinosa,Citrus maxima × C. reticulata,FALSE
+Swinglea glutinosa,Citrus maxima × C. medica × C. reticulata,TRUE
+Zanthoxylum ailanthoides,Zanthoxylum piperitum,TRUE
+Zanthoxylum armatum,Zanthoxylum piperitum,TRUE
+Zanthoxylum schinifolium,Zanthoxylum piperitum,TRUE
+Citrus cavaleriei × C. maxima,Citrus maxima × C. reticulata,TRUE
+Citrus cavaleriei × C. trifoliata,Citrus maxima × C. reticulata,TRUE
+Citrus hystrix × C. medica,Aegle marmelos,TRUE
+Citrus hystrix × C. medica,Atalantia buxifolia,TRUE
+Citrus hystrix × C. medica,Atalantia citroides,TRUE
+Citrus hystrix × C. medica,Atalantia monophylla,TRUE
+Citrus hystrix × C. medica,Atalantia racemosa,TRUE
+Citrus hystrix × C. medica,Atalantia roxburghiana,TRUE
+Citrus hystrix × C. medica,Citropsis articulata,TRUE
+Citrus hystrix × C. medica,Citropsis daweana,TRUE
+Citrus hystrix × C. medica,Citropsis gabunensis,TRUE
+Citrus hystrix × C. medica,Citrus australasica,TRUE
+Citrus hystrix × C. medica,Citrus australis,TRUE
+Citrus hystrix × C. medica,Citrus garrawayae,TRUE
+Citrus hystrix × C. medica,Citrus glauca,TRUE
+Citrus hystrix × C. medica,Citrus inodora,TRUE
+Citrus hystrix × C. medica,Citrus medica,TRUE
+Citrus hystrix × C. medica,Citrus reticulata,TRUE
+Citrus hystrix × C. medica,Citrus warburgiana,TRUE
+Citrus hystrix × C. medica,Citrus wintersii,TRUE
+Citrus hystrix × C. medica,Feroniella lucida,TRUE
+Citrus hystrix × C. medica,Limonia acidissima,TRUE
+Citrus hystrix × C. medica,Swinglea glutinosa,TRUE
+Citrus hystrix × C. medica,Citrus hystrix × C. medica,TRUE
+Citrus hystrix × C. medica,Citrus maxima × C. reticulata,TRUE
+Citrus hystrix × C. medica,Citrus maxima × C. medica × C. reticulata,TRUE
+Citrus hystrix × C. medica,Citrus hystrix × C. maxima × C. medica × C. reticulata,TRUE
+Citrus hystrix × C. reticulata,Citrus maxima × C. reticulata,TRUE
+Citrus japonica × C. reticulata,Atalantia monophylla,TRUE
+Citrus japonica × C. reticulata,Citropsis daweana,TRUE
+Citrus japonica × C. reticulata,Citrus australasica,TRUE
+Citrus japonica × C. reticulata,Citrus australis,TRUE
+Citrus japonica × C. reticulata,Citrus cavaleriei,TRUE
+Citrus japonica × C. reticulata,Citrus garrawayae,TRUE
+Citrus japonica × C. reticulata,Citrus inodora,TRUE
+Citrus japonica × C. reticulata,Citrus japonica,TRUE
+Citrus japonica × C. reticulata,Citrus maxima,FALSE
+Citrus japonica × C. reticulata,Citrus polyandra,TRUE
+Citrus japonica × C. reticulata,Citrus reticulata,TRUE
+Citrus japonica × C. reticulata,Citrus trifoliata,TRUE
+Citrus japonica × C. reticulata,Citrus warburgiana,TRUE
+Citrus japonica × C. reticulata,Citrus wintersii,TRUE
+Citrus japonica × C. reticulata,Citrus hystrix × C. medica,TRUE
+Citrus japonica × C. reticulata,Citrus japonica × C. reticulata,TRUE
+Citrus japonica × C. reticulata,Citrus maxima × C. reticulata,TRUE
+Citrus japonica × C. reticulata,Citrus medica × C. reticulata,TRUE
+Citrus japonica × C. reticulata,Citrus hystrix × C. japonica × C. medica,TRUE
+Citrus japonica × C. reticulata,Citrus maxima × C. medica × C. reticulata,TRUE
+Citrus japonica × C. reticulata,Citrus maxima × C. reticulata × C. trifoliata,TRUE
+Citrus japonica × C. reticulata,Citrus hystrix × C. maxima × C. medica × C. reticulata,FALSE
+Citrus japonica × C. reticulata,Citrus japonica × C. maxima × C. reticulata × C. trifoliata,TRUE
+Citrus latipes × C. trifoliata,Citrus maxima × C. reticulata,TRUE
+Citrus maxima × C. reticulata,Atalantia buxifolia,TRUE
+Citrus maxima × C. reticulata,Atalantia ceylanica,TRUE
+Citrus maxima × C. reticulata,Atalantia citroides,TRUE
+Citrus maxima × C. reticulata,Citropsis daweana,TRUE
+Citrus maxima × C. reticulata,Citropsis gabunensis,TRUE
+Citrus maxima × C. reticulata,Citropsis gilletiana,TRUE
+Citrus maxima × C. reticulata,Citrus australasica,TRUE
+Citrus maxima × C. reticulata,Citrus australis,TRUE
+Citrus maxima × C. reticulata,Citrus cavaleriei,TRUE
+Citrus maxima × C. reticulata,Citrus garrawayae,TRUE
+Citrus maxima × C. reticulata,Citrus glauca,TRUE
+Citrus maxima × C. reticulata,Citrus inodora,TRUE
+Citrus maxima × C. reticulata,Citrus japonica,TRUE
+Citrus maxima × C. reticulata,Citrus maxima,TRUE
+Citrus maxima × C. reticulata,Citrus medica,TRUE
+Citrus maxima × C. reticulata,Citrus polyandra,TRUE
+Citrus maxima × C. reticulata,Citrus reticulata,TRUE
+Citrus maxima × C. reticulata,Citrus swinglei,TRUE
+Citrus maxima × C. reticulata,Citrus trifoliata,TRUE
+Citrus maxima × C. reticulata,Citrus warburgiana,TRUE
+Citrus maxima × C. reticulata,Citrus wintersii,TRUE
+Citrus maxima × C. reticulata,Feroniella lucida,TRUE
+Citrus maxima × C. reticulata,Limonia acidissima,TRUE
+Citrus maxima × C. reticulata,Naringi crenulata,TRUE
+Citrus maxima × C. reticulata,Pleiospermium alatum,TRUE
+Citrus maxima × C. reticulata,Pleiospermium littorale,TRUE
+Citrus maxima × C. reticulata,Swinglea glutinosa,TRUE
+Citrus maxima × C. reticulata,Citrus hystrix × C. medica,TRUE
+Citrus maxima × C. reticulata,Citrus hystrix × C. reticulata,TRUE
+Citrus maxima × C. reticulata,Citrus japonica × C. reticulata,TRUE
+Citrus maxima × C. reticulata,Citrus maxima × C. reticulata,TRUE
+Citrus maxima × C. reticulata,Citrus medica × C. reticulata,TRUE
+Citrus maxima × C. reticulata,Citrus hystrix × C. japonica × C. medica,TRUE
+Citrus maxima × C. reticulata,Citrus japonica × C. maxima × C. reticulata,TRUE
+Citrus maxima × C. reticulata,Citrus maxima × C. maxima × C. reticulata,TRUE
+Citrus maxima × C. reticulata,Citrus maxima × C. medica × C. reticulata,TRUE
+Citrus maxima × C. reticulata,Citrus maxima × C. reticulata × C. trifoliata,TRUE
+Citrus maxima × C. reticulata,Citrus hystrix × C. maxima × C. medica × C. reticulata,TRUE
+Citrus maxima × C. reticulata,Nicotiana benthamiana,TRUE
+Citrus maxima × C. trifoliata,Atalantia ceylanica,TRUE
+Citrus maxima × C. trifoliata,Atalantia citroides,TRUE
+Citrus maxima × C. trifoliata,Citrus reticulata,TRUE
+Citrus maxima × C. trifoliata,Swinglea glutinosa,TRUE
+Citrus maxima × C. trifoliata,Citrus maxima × C. reticulata,TRUE
+Citrus maxima × C. trifoliata,Citrus maxima × C. trifoliata,TRUE
+Citrus medica × C. reticulata,Aegle marmelos,TRUE
+Citrus medica × C. reticulata,Aeglopsis chevalieri,TRUE
+Citrus medica × C. reticulata,Atalantia buxifolia,TRUE
+Citrus medica × C. reticulata,Atalantia ceylanica,TRUE
+Citrus medica × C. reticulata,Atalantia citroides,TRUE
+Citrus medica × C. reticulata,Atalantia monophylla,TRUE
+Citrus medica × C. reticulata,Bergera koenigii,TRUE
+Citrus medica × C. reticulata,Citropsis articulata,TRUE
+Citrus medica × C. reticulata,Citropsis daweana,TRUE
+Citrus medica × C. reticulata,Citrus australasica,TRUE
+Citrus medica × C. reticulata,Citrus australis,TRUE
+Citrus medica × C. reticulata,Citrus garrawayae,TRUE
+Citrus medica × C. reticulata,Citrus glauca,TRUE
+Citrus medica × C. reticulata,Citrus inodora,TRUE
+Citrus medica × C. reticulata,Citrus japonica,TRUE
+Citrus medica × C. reticulata,Citrus maxima,TRUE
+Citrus medica × C. reticulata,Citrus medica,TRUE
+Citrus medica × C. reticulata,Citrus reticulata,TRUE
+Citrus medica × C. reticulata,Citrus trifoliata,TRUE
+Citrus medica × C. reticulata,Citrus warburgiana,TRUE
+Citrus medica × C. reticulata,Citrus wintersii,TRUE
+Citrus medica × C. reticulata,Clausena anisata,TRUE
+Citrus medica × C. reticulata,Clausena lansium,TRUE
+Citrus medica × C. reticulata,Feroniella lucida,TRUE
+Citrus medica × C. reticulata,Glycosmis pentaphylla,TRUE
+Citrus medica × C. reticulata,Limonia acidissima,TRUE
+Citrus medica × C. reticulata,Merrillia caloxylon,TRUE
+Citrus medica × C. reticulata,Murraya paniculata,TRUE
+Citrus medica × C. reticulata,Naringi crenulata,TRUE
+Citrus medica × C. reticulata,Pleiospermium littorale,TRUE
+Citrus medica × C. reticulata,Swinglea glutinosa,TRUE
+Citrus medica × C. reticulata,Triphasia trifolia,TRUE
+Citrus medica × C. reticulata,Citrus hystrix × C. medica,TRUE
+Citrus medica × C. reticulata,Citrus japonica × C. reticulata,TRUE
+Citrus medica × C. reticulata,Citrus maxima × C. reticulata,TRUE
+Citrus medica × C. reticulata,Citrus maxima × C. medica × C. reticulata,TRUE
+Citrus medica × C. reticulata,Citrus maxima × C. reticulata × C. trifoliata,TRUE
+Citrus reticulata × C. trifoliata,Citrus reticulata,TRUE
+Citrus reticulata × C. trifoliata,Citrus maxima × C. reticulata,TRUE
+Citrus reticulata × C. trifoliata,Citrus reticulata × C. trifoliata,TRUE
+Citrus australasica × C. japonica × C. reticulata,Citrus maxima × C. reticulata,FALSE
+Citrus australasica × C. japonica × C. reticulata,Citrus maxima × C. medica × C. reticulata,TRUE
+Citrus cavaleriei × C. maxima × C. reticulata,Citrus reticulata,TRUE
+Citrus cavaleriei × C. maxima × C. reticulata,Citrus maxima × C. reticulata,TRUE
+Citrus cavaleriei × C. maxima × C. reticulata,Citrus maxima × C. medica × C. reticulata,TRUE
+Citrus hystrix × C. japonica × C. medica,Citrus reticulata,TRUE
+Citrus hystrix × C. japonica × C. medica,Citrus japonica × C. reticulata,TRUE
+Citrus hystrix × C. japonica × C. medica,Citrus maxima × C. reticulata,TRUE
+Citrus hystrix × C. japonica × C. medica,Citrus maxima × C. medica × C. reticulata,TRUE
+Citrus japonica × C. maxima × C. reticulata,Citrus reticulata,TRUE
+Citrus japonica × C. maxima × C. reticulata,Citrus maxima × C. reticulata,TRUE
+Citrus japonica × C. maxima × C. reticulata,Citrus maxima × C. medica × C. reticulata,TRUE
+Citrus maxima × C. medica × C. reticulata,Atalantia buxifolia,TRUE
+Citrus maxima × C. medica × C. reticulata,Atalantia racemosa,TRUE
+Citrus maxima × C. medica × C. reticulata,Citropsis articulata,TRUE
+Citrus maxima × C. medica × C. reticulata,Citrus japonica,TRUE
+Citrus maxima × C. medica × C. reticulata,Citrus maxima,TRUE
+Citrus maxima × C. medica × C. reticulata,Citrus medica,TRUE
+Citrus maxima × C. medica × C. reticulata,Citrus reticulata,TRUE
+Citrus maxima × C. medica × C. reticulata,Citrus trifoliata,TRUE
+Citrus maxima × C. medica × C. reticulata,Citrus wintersii,TRUE
+Citrus maxima × C. medica × C. reticulata,Clausena excavata,TRUE
+Citrus maxima × C. medica × C. reticulata,Swinglea glutinosa,TRUE
+Citrus maxima × C. medica × C. reticulata,Citrus hystrix × C. medica,TRUE
+Citrus maxima × C. medica × C. reticulata,Citrus japonica × C. reticulata,TRUE
+Citrus maxima × C. medica × C. reticulata,Citrus maxima × C. reticulata,TRUE
+Citrus maxima × C. medica × C. reticulata,Citrus medica × C. reticulata,TRUE
+Citrus maxima × C. medica × C. reticulata,Citrus maxima × C. maxima × C. reticulata,TRUE
+Citrus maxima × C. medica × C. reticulata,Citrus maxima × C. medica × C. reticulata,TRUE
+Citrus maxima × C. medica × C. reticulata,Citrus maxima × C. reticulata × C. trifoliata,TRUE
+Citrus maxima × C. medica × C. reticulata,Citrus hystrix × C. maxima × C. medica × C. reticulata,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Aegle marmelos,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Atalantia buxifolia,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Atalantia citroides,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Atalantia monophylla,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Atalantia racemosa,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Atalantia roxburghiana,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citropsis articulata,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citropsis daweana,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citropsis gabunensis,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citropsis gilletiana,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citrus australasica,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citrus australis,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citrus garrawayae,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citrus glauca,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citrus inodora,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citrus japonica,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citrus maxima,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citrus neocaledonica,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citrus polyandra,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citrus reticulata,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citrus trifoliata,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citrus warburgiana,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citrus wintersii,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Clausena anisata,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Clausena lansium,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Feroniella lucida,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Limonia acidissima,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Naringi crenulata,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Pleiospermium alatum,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Swinglea glutinosa,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Wenzelia dolichophylla,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citrus hystrix × C. medica,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citrus japonica × C. reticulata,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citrus maxima × C. reticulata,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citrus maxima × C. medica × C. reticulata,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citrus maxima × C. reticulata × C. trifoliata,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citrus hystrix × C. maxima × C. medica × C. reticulata,TRUE
+Citrus maxima × C. reticulata × C. trifoliata,Citrus japonica × C. maxima × C. reticulata × C. trifoliata,FALSE
+Citrus glauca × C. maxima × C. medica × C. reticulata,Citrus japonica × C. reticulata,TRUE
+Citrus hystrix × C. maxima × C. medica × C. reticulata,Citrus reticulata,TRUE
+Citrus hystrix × C. maxima × C. medica × C. reticulata,Citrus maxima × C. reticulata,TRUE
+Citrus hystrix × C. maxima × C. medica × C. reticulata,Citrus maxima × C. medica × C. reticulata,TRUE
+Citrus japonica × C. maxima × C. reticulata × C. trifoliata,Citrus maxima × C. reticulata,TRUE
+Citrus maxima × C. medica × C. reticulata × C. trifoliata,Atalantia monophylla,TRUE
+Citrus maxima × C. medica × C. reticulata × C. trifoliata,Swinglea glutinosa,TRUE
+Citrus maxima × C. medica × C. reticulata × C. trifoliata,Citrus maxima × C. reticulata,TRUE
+Citrus maxima × C. medica × C. reticulata × C. trifoliata,Citrus maxima × C. medica × C. reticulata,TRUE
+Populus alba,Populus tremula,TRUE
+Populus alba,Populus alba × P. tremula,TRUE
+Populus alba,Nicotiana benthamiana,TRUE
+Populus balsamifera,Populus lasiocarpa × P. wilsonii,TRUE
+Populus cathayana,Populus cathayana,TRUE
+Populus cathayana,Salix rehderiana,TRUE
+Populus deltoides,Populus deltoides,TRUE
+Populus deltoides,Populus deltoides × P. nigra,TRUE
+Populus heterophylla,Populus laurifolia × P. nigra,TRUE
+Populus lasiocarpa,Populus balsamifera,TRUE
+Populus lasiocarpa,Populus deltoides × P. nigra,TRUE
+Populus lasiocarpa,Populus laurifolia × P. nigra,TRUE
+Populus lasiocarpa,Populus suaveolens × P. tristis,TRUE
+Populus laurifolia,Populus balsamifera,TRUE
+Populus laurifolia,Populus tremula,TRUE
+Populus laurifolia,Populus alba × P. tremula,FALSE
+Populus nigra,Populus alba,FALSE
+Populus nigra,Populus tremula,FALSE
+Populus nigra,Populus tremuloides,TRUE
+Populus nigra,Populus deltoides × P. nigra,TRUE
+Populus suaveolens,Populus tremula,TRUE
+Populus suaveolens,Populus alba × P. tremula,FALSE
+Populus szechuanica,Populus balsamifera,TRUE
+Populus szechuanica,Populus lasiocarpa,TRUE
+Populus szechuanica,Populus wilsonii,TRUE
+Populus szechuanica,Populus deltoides × P. nigra,TRUE
+Populus szechuanica,Populus laurifolia × P. nigra,TRUE
+Populus szechuanica,Populus laurifolia × P. nigra × P. suaveolens,TRUE
+Populus tremula,Populus alba,TRUE
+Populus tremula,Populus grandidentata,FALSE
+Populus tremula,Populus tremuloides,TRUE
+Populus tremula,Populus alba × P. tremula,FALSE
+Populus tremula,Populus deltoides × P. nigra,TRUE
+Populus tremula,Populus tremula × P. tremuloides,TRUE
+Populus tremuloides,Populus tremula,TRUE
+Populus tristis,Populus balsamifera,TRUE
+Populus tristis,Populus tristis,TRUE
+Populus tristis,Populus alba × P. tremula,FALSE
+Populus tristis,Populus laurifolia × P. nigra,TRUE
+Populus wilsonii,Populus alba,FALSE
+Populus wilsonii,Populus balsamifera,TRUE
+Populus wilsonii,Populus nigra,TRUE
+Populus wilsonii,Populus suaveolens,TRUE
+Populus wilsonii,Populus tremula,TRUE
+Populus wilsonii,Populus alba × P. tremula,FALSE
+Populus wilsonii,Populus deltoides × P. nigra,TRUE
+Populus wilsonii,Populus laurifolia × P. nigra,TRUE
+Populus wilsonii,Populus suaveolens × P. tristis,TRUE
+Populus wilsonii,Populus laurifolia × P. nigra × P. suaveolens,TRUE
+Salix babylonica,Nicotiana benthamiana,TRUE
+Salix discolor,Salix caprea,TRUE
+Salix discolor,Salix hastata,TRUE
+Salix discolor,Salix helvetica,TRUE
+Salix discolor,Salix integra,TRUE
+Salix discolor,Salix purpurea,TRUE
+Salix gmelinii,Salix caprea,TRUE
+Salix gmelinii,Salix hastata,TRUE
+Salix gmelinii,Salix helvetica,TRUE
+Salix gmelinii,Salix integra,TRUE
+Salix gmelinii,Salix purpurea,TRUE
+Salix pentandra,Salix pentandra,TRUE
+Salix rehderiana,Populus cathayana,TRUE
+Salix rehderiana,Salix rehderiana,TRUE
+Salix viminalis,Salix acutifolia,TRUE
+Salix viminalis,Salix arbutifolia,TRUE
+Salix viminalis,Salix caprea,TRUE
+Salix viminalis,Salix hastata,TRUE
+Salix viminalis,Salix helvetica,TRUE
+Salix viminalis,Salix integra,TRUE
+Salix viminalis,Salix purpurea,TRUE
+Populus alba × P. tremula,Populus suaveolens,TRUE
+Populus alba × P. tremula,Populus tremula,TRUE
+Populus alba × P. tremula,Populus alba × P. tremula,TRUE
+Populus alba × P. tremula,Populus deltoides × P. nigra,TRUE
+Populus deltoides × P. nigra,Populus deltoides,TRUE
+Populus deltoides × P. nigra,Populus suaveolens,TRUE
+Populus deltoides × P. nigra,Populus tremula,TRUE
+Populus deltoides × P. nigra,Populus tremuloides,TRUE
+Populus deltoides × P. nigra,Populus alba × P. tremula,TRUE
+Populus deltoides × P. nigra,Populus tremula × P. tremuloides,TRUE
+Populus deltoides × P. simonii,Populus deltoides × P. simonii,TRUE
+Populus deltoides × P. suaveolens,Populus tremula,TRUE
+Populus nigra × P. suaveolens,Populus deltoides,TRUE
+Populus nigra × P. suaveolens,Populus tremuloides,FALSE
+Populus tremula × P. tremuloides,Populus tremula × P. tremuloides,TRUE
+Buckleya lanceolata,Nicotiana benthamiana,TRUE
+Santalum album,Santalum lanceolatum,TRUE
+Santalum lanceolatum,Santalum lanceolatum,TRUE
+Acer campestre,Acer campestre,TRUE
+Acer campestre,Acer cappadocicum,TRUE
+Acer campestre,Acer miyabei,TRUE
+Acer campestre,Acer saccharinum,TRUE
+Acer davidii,Acer davidii,TRUE
+Acer davidii,Acer pensylvanicum,TRUE
+Acer davidii,Acer tegmentosum,TRUE
+Acer elegantulum,Acer palmatum,TRUE
+Acer griseum,Acer maximowiczianum,TRUE
+Acer maximowiczianum,Acer griseum,TRUE
+Acer maximowiczianum,Acer heldreichii,TRUE
+Acer negundo,Acer negundo,TRUE
+Acer palmatum,Acer japonicum,TRUE
+Acer palmatum,Acer palmatum,TRUE
+Acer palmatum,Acer shirasawanum,TRUE
+Acer palmatum,Acer sieboldianum,TRUE
+Acer platanoides,Acer amplum,TRUE
+Acer platanoides,Acer cappadocicum,TRUE
+Acer platanoides,Acer lobelii,TRUE
+Acer platanoides,Acer miyabei,TRUE
+Acer platanoides,Acer platanoides,TRUE
+Acer platanoides,Acer rubrum,FALSE
+Acer platanoides,Acer truncatum,TRUE
+Acer pseudoplatanus,Acer amplum,FALSE
+Acer pseudoplatanus,Acer argutum,TRUE
+Acer pseudoplatanus,Acer cappadocicum,TRUE
+Acer pseudoplatanus,Acer carpinifolium,TRUE
+Acer pseudoplatanus,Acer lobelii,FALSE
+Acer pseudoplatanus,Acer negundo,TRUE
+Acer pseudoplatanus,Acer palmatum,FALSE
+Acer pseudoplatanus,Acer pentaphyllum,TRUE
+Acer pseudoplatanus,Acer pseudoplatanus,TRUE
+Acer pseudoplatanus,Acer tataricum,TRUE
+Acer pseudoplatanus,Acer velutinum,TRUE
+Acer rubrum,Acer pentaphyllum,TRUE
+Acer rubrum,Acer rubrum,TRUE
+Acer rubrum,Acer rubrum × A. saccharinum,TRUE
+Acer saccharum,Acer campestre,FALSE
+Acer saccharum,Acer cappadocicum,FALSE
+Acer saccharum,Acer cissifolium,FALSE
+Acer saccharum,Acer grandidentatum,TRUE
+Acer saccharum,Acer griseum,TRUE
+Acer saccharum,Acer leucoderme,FALSE
+Acer saccharum,Acer macrophyllum,FALSE
+Acer saccharum,Acer maximowiczianum,TRUE
+Acer saccharum,Acer miyabei,FALSE
+Acer saccharum,Acer monspessulanum,TRUE
+Acer saccharum,Acer nigrum,TRUE
+Acer saccharum,Acer pictum,FALSE
+Acer saccharum,Acer platanoides,TRUE
+Acer saccharum,Acer pseudoplatanus,TRUE
+Acer saccharum,Acer rubrum,FALSE
+Acer saccharum,Acer saccharum,TRUE
+Acer saccharum,Acer tataricum,TRUE
+Acer saccharum,Acer griseum × A. maximowiczianum,TRUE
+Acer saccharum,Acer griseum × A. pseudoplatanus,TRUE
+Acer saccharum,Acer saccharum × A. triflorum,TRUE
+Acer truncatum,Acer truncatum,TRUE
+Aesculus flava,Aesculus hippocastanum,TRUE
+Aesculus flava,Aesculus turbinata,FALSE
+Aesculus flava,Aesculus flava × A. sylvatica,TRUE
+Aesculus flava,Aesculus flava × A. glabra × A. pavia,TRUE
+Aesculus hippocastanum,Aesculus glabra,TRUE
+Aesculus hippocastanum,Aesculus hippocastanum,TRUE
+Aesculus hippocastanum,Aesculus indica,TRUE
+Aesculus hippocastanum,Aesculus pavia,TRUE
+Aesculus hippocastanum,Aesculus sylvatica,TRUE
+Aesculus hippocastanum,Aesculus turbinata,TRUE
+Aesculus hippocastanum,Aesculus flava × A. sylvatica,TRUE
+Aesculus hippocastanum,Aesculus hippocastanum × A. pavia,TRUE
+Aesculus hippocastanum,Aesculus pavia × A. sylvatica,TRUE
+Aesculus hippocastanum,Aesculus flava × A. glabra × A. pavia,TRUE
+Aesculus hippocastanum,Aesculus flava × A. pavia × A. sylvatica,TRUE
+Aesculus indica,Aesculus indica,TRUE
+Aesculus pavia,Aesculus pavia,TRUE
+Aesculus turbinata,Aesculus glabra,TRUE
+Aesculus turbinata,Aesculus pavia,TRUE
+Aesculus turbinata,Aesculus turbinata,TRUE
+Aesculus turbinata,Aesculus flava × A. sylvatica,TRUE
+Cardiospermum halicacabum,Nicotiana benthamiana,TRUE
+Dimocarpus longan,Dimocarpus longan,TRUE
+Litchi chinensis,Litchi chinensis,TRUE
+Nephelium lappaceum,Nephelium lappaceum,TRUE
+Nephelium ramboutan-ake,Nephelium ramboutan-ake,TRUE
+Aesculus hippocastanum × A. pavia,Aesculus hippocastanum × A. pavia,TRUE
+Madhuca longifolia,Madhuca longifolia,TRUE
+Manilkara hexandra,Manilkara hexandra,TRUE
+Manilkara hexandra,Manilkara zapota,TRUE
+Manilkara zapota,Manilkara zapota,TRUE
+Manilkara zapota,Pouteria sapota,TRUE
+Pouteria sapota,Pouteria sapota,TRUE
+Sideroxylon spinosum,Sideroxylon spinosum,TRUE
+Vitellaria paradoxa,Vitellaria paradoxa,TRUE
+Houttuynia cordata,Nicotiana benthamiana,TRUE
+Schisandra sphenanthera,Vitis amurensis,TRUE
+Alkekengi officinarum,Atropa bella-donna,TRUE
+Atropa bella-donna,Alkekengi officinarum,TRUE
+Atropa bella-donna,Datura ferox,TRUE
+Atropa bella-donna,Datura innoxia,TRUE
+Atropa bella-donna,Nicotiana tabacum,TRUE
+Atropa bella-donna,Petunia integrifolia,TRUE
+Atropa bella-donna,Solanum dulcamara,TRUE
+Atropa bella-donna,Solanum lycopersicum,TRUE
+Atropa bella-donna,Solanum tuberosum,TRUE
+Brugmansia sanguinea,Nicotiana glutinosa,TRUE
+Capsicum annuum,Capsicum annuum,TRUE
+Capsicum annuum,Capsicum baccatum,TRUE
+Capsicum annuum,Nicotiana glauca,TRUE
+Capsicum annuum,Solanum lycopersicum,TRUE
+Capsicum annuum,Solanum melongena,TRUE
+Capsicum annuum,Solanum lycopersicum × S. pimpinellifolium,TRUE
+Capsicum baccatum,Capsicum annuum,TRUE
+Capsicum chacoense,Capsicum annuum,TRUE
+Capsicum chinense,Capsicum annuum,TRUE
+Capsicum chinense,Capsicum chinense,TRUE
+Capsicum chinense,Capsicum frutescens,TRUE
+Capsicum chinense,Solanum lycopersicum,FALSE
+Capsicum frutescens,Capsicum annuum,TRUE
+Capsicum frutescens,Capsicum chinense,TRUE
+Capsicum frutescens,Capsicum frutescens,TRUE
+Capsicum frutescens,Nicotiana glauca,TRUE
+Capsicum frutescens,Solanum lycopersicum,TRUE
+Cestrum diurnum,Cestrum diurnum,TRUE
+Cestrum diurnum,Cestrum nocturnum,TRUE
+Cestrum nocturnum,Cestrum diurnum,TRUE
+Datura ferox,Datura innoxia,TRUE
+Datura ferox,Datura stramonium,TRUE
+Datura ferox,Nicotiana alata × N. forgetiana,TRUE
+Datura innoxia,Atropa bella-donna,TRUE
+Datura innoxia,Datura ferox,TRUE
+Datura innoxia,Solanum tuberosum,FALSE
+Datura metel,Solanum melongena,TRUE
+Datura stramonium,Datura ferox,TRUE
+Datura stramonium,Datura stramonium,TRUE
+Datura stramonium,Nicotiana tabacum,TRUE
+Datura stramonium,Solanum lycopersicum,TRUE
+Datura stramonium,Solanum tuberosum,TRUE
+Datura stramonium,Solanum lycopersicum × S. pimpinellifolium,TRUE
+Datura wrightii,Nicotiana tabacum,TRUE
+Datura wrightii,Solanum tuberosum,TRUE
+Hyoscyamus niger,Hyoscyamus niger,TRUE
+Hyoscyamus niger,Solanum lycopersicum,TRUE
+Lycium barbarum,Solanum lycopersicum,TRUE
+Lycium chinense,Solanum lycopersicum,TRUE
+Lycium chinense,Solanum pimpinellifolium,TRUE
+Nicandra physalodes,Nicandra physalodes,TRUE
+Nicandra physalodes,Solanum lycopersicum,FALSE
+Nicotiana amplexicaulis,Nicotiana amplexicaulis,TRUE
+Nicotiana attenuata,Nicotiana attenuata,TRUE
+Nicotiana benthamiana,Allium sativum,TRUE
+Nicotiana benthamiana,Vinca major,TRUE
+Nicotiana benthamiana,Epipremnum aureum,TRUE
+Nicotiana benthamiana,Dracaena sanderiana,TRUE
+Nicotiana benthamiana,Chrysanthemum lavandulifolium,TRUE
+Nicotiana benthamiana,Glebionis coronaria,TRUE
+Nicotiana benthamiana,Chrysanthemum argyrophyllum × C. dichrum × C. indicum × C. nankingense × C. zawadzkii,TRUE
+Nicotiana benthamiana,Arabidopsis thaliana,TRUE
+Nicotiana benthamiana,Brassica oleracea,TRUE
+Nicotiana benthamiana,Opuntia tuna,TRUE
+Nicotiana benthamiana,Sarcandra glabra,FALSE
+Nicotiana benthamiana,Sedum acre,TRUE
+Nicotiana benthamiana,Cucumis sativus,TRUE
+Nicotiana benthamiana,Glycine max,FALSE
+Nicotiana benthamiana,Lavandula angustifolia,TRUE
+Nicotiana benthamiana,Zea mays,FALSE
+Nicotiana benthamiana,Citrus maxima × C. reticulata,TRUE
+Nicotiana benthamiana,Nicotiana benthamiana,TRUE
+Nicotiana benthamiana,Solanum lycopersicum,TRUE
+Nicotiana benthamiana,Nicotiana clevelandii × N. glutinosa,TRUE
+Nicotiana benthamiana,Petunia axillaris × P. inflata,TRUE
+Nicotiana benthamiana,Vitis coignetiae,TRUE
+Nicotiana glauca,Datura ferox,TRUE
+Nicotiana glauca,Nicotiana glutinosa,TRUE
+Nicotiana glauca,Nicotiana tabacum,TRUE
+Nicotiana glauca,Nicotiana wigandioides,TRUE
+Nicotiana glauca,Solanum betaceum,TRUE
+Nicotiana glutinosa,Nicotiana glauca,TRUE
+Nicotiana glutinosa,Nicotiana tabacum,TRUE
+Nicotiana glutinosa,Solanum lycopersicum,FALSE
+Nicotiana glutinosa,Nicotiana clevelandii × N. glutinosa,TRUE
+Nicotiana langsdorffii,Nicotiana paniculata,TRUE
+Nicotiana paniculata,Nicotiana rustica,TRUE
+Nicotiana rustica,Nicotiana wigandioides,TRUE
+Nicotiana rustica,Solanum lycopersicum,TRUE
+Nicotiana rustica,Solanum tuberosum,TRUE
+Nicotiana suaveolens,Solanum tuberosum,TRUE
+Nicotiana sylvestris,Nicotiana sylvestris,TRUE
+Nicotiana sylvestris,Nicotiana tabacum,TRUE
+Nicotiana sylvestris,Solanum lycopersicum,TRUE
+Nicotiana tabacum,Melilotus albus,TRUE
+Nicotiana tabacum,Datura stramonium,TRUE
+Nicotiana tabacum,Hyoscyamus niger,TRUE
+Nicotiana tabacum,Nicotiana benthamiana,TRUE
+Nicotiana tabacum,Nicotiana glauca,TRUE
+Nicotiana tabacum,Nicotiana glutinosa,TRUE
+Nicotiana tabacum,Nicotiana paniculata,TRUE
+Nicotiana tabacum,Nicotiana plumbaginifolia,TRUE
+Nicotiana tabacum,Nicotiana rustica,TRUE
+Nicotiana tabacum,Nicotiana suaveolens,TRUE
+Nicotiana tabacum,Nicotiana sylvestris,TRUE
+Nicotiana tabacum,Nicotiana tabacum,TRUE
+Nicotiana tabacum,Physalis peruviana,TRUE
+Nicotiana tabacum,Solanum guineense,TRUE
+Nicotiana tabacum,Solanum laciniatum,TRUE
+Nicotiana tabacum,Solanum lycopersicum,TRUE
+Nicotiana tabacum,Solanum tuberosum,TRUE
+Nicotiana tabacum,Nicotiana clevelandii × N. glutinosa,TRUE
+Nicotiana tabacum,Nicotiana sylvestris × N. tabacum,TRUE
+Nicotiana tomentosiformis,Nicotiana tomentosiformis,TRUE
+Nicotiana wigandioides,Nicotiana glauca,TRUE
+Nicotiana wigandioides,Nicotiana rustica,TRUE
+Petunia integrifolia,Nicotiana rustica,TRUE
+Petunia integrifolia,Solanum guineense,TRUE
+Physalis peruviana,Solanum lycopersicum,TRUE
+Physalis peruviana,Solanum melongena,TRUE
+Physalis peruviana,Solanum nigrum,FALSE
+Physalis peruviana,Solanum tuberosum,FALSE
+Solanum acaule,Solanum acaule,TRUE
+Solanum acaule,Solanum tuberosum,TRUE
+Solanum aethiopicum,Solanum lycopersicum,TRUE
+Solanum aethiopicum,Solanum melongena,TRUE
+Solanum americanum,Solanum americanum,TRUE
+Solanum betaceum,Solanum lycopersicum,TRUE
+Solanum chilense,Solanum lycopersicum,TRUE
+Solanum crinitum,Solanum lycopersicum,TRUE
+Solanum demissum,Solanum demissum,TRUE
+Solanum demissum,Solanum tuberosum,TRUE
+Solanum guineense,Datura ferox,TRUE
+Solanum guineense,Nicotiana paniculata,TRUE
+Solanum guineense,Nicotiana tabacum,TRUE
+Solanum guineense,Petunia integrifolia,TRUE
+Solanum guineense,Physalis peruviana,TRUE
+Solanum guineense,Solanum lycopersicum,TRUE
+Solanum guineense,Solanum tuberosum,TRUE
+Solanum habrochaites,Solanum lycopersicum,TRUE
+Solanum habrochaites,Solanum melongena,TRUE
+Solanum habrochaites,Solanum lycopersicum × S. pimpinellifolium,TRUE
+Solanum hirtum,Solanum quitoense,TRUE
+Solanum incanum,Solanum melongena,TRUE
+Solanum laciniatum,Nicotiana tabacum,TRUE
+Solanum laciniatum,Solanum lycopersicum,TRUE
+Solanum lasiocarpum,Solanum lycopersicum,TRUE
+Solanum lycocarpum,Solanum lycopersicum,TRUE
+Solanum lycopersicum,Amaranthus tricolor,FALSE
+Solanum lycopersicum,Arabidopsis thaliana,FALSE
+Solanum lycopersicum,Brassica oleracea,FALSE
+Solanum lycopersicum,Vigna unguiculata,TRUE
+Solanum lycopersicum,Atropa bella-donna,TRUE
+Solanum lycopersicum,Capsicum annuum,TRUE
+Solanum lycopersicum,Capsicum chinense,TRUE
+Solanum lycopersicum,Datura metel,TRUE
+Solanum lycopersicum,Datura stramonium,TRUE
+Solanum lycopersicum,Lycium barbarum,TRUE
+Solanum lycopersicum,Nicandra physalodes,TRUE
+Solanum lycopersicum,Nicotiana benthamiana,TRUE
+Solanum lycopersicum,Nicotiana glutinosa,TRUE
+Solanum lycopersicum,Nicotiana tabacum,TRUE
+Solanum lycopersicum,Solanum betaceum,TRUE
+Solanum lycopersicum,Solanum dulcamara,TRUE
+Solanum lycopersicum,Solanum guineense,TRUE
+Solanum lycopersicum,Solanum lycopersicum,TRUE
+Solanum lycopersicum,Solanum melongena,TRUE
+Solanum lycopersicum,Solanum nigrum,TRUE
+Solanum lycopersicum,Solanum pennellii,TRUE
+Solanum lycopersicum,Solanum peruvianum,TRUE
+Solanum lycopersicum,Solanum pseudocapsicum,TRUE
+Solanum lycopersicum,Solanum tuberosum,TRUE
+Solanum lycopersicum,Solanum villosum,TRUE
+Solanum macrocarpon,Solanum lycopersicum,TRUE
+Solanum macrocarpon,Solanum melongena,TRUE
+Solanum mammosum,Solanum lycopersicum,TRUE
+Solanum mammosum,Solanum melongena,TRUE
+Solanum mauritianum,Solanum betaceum,TRUE
+Solanum melongena,Capsicum chinense,TRUE
+Solanum melongena,Nicotiana tabacum,TRUE
+Solanum melongena,Solanum betaceum,TRUE
+Solanum melongena,Solanum lycopersicum,TRUE
+Solanum melongena,Solanum melongena,TRUE
+Solanum melongena,Solanum nigrum,TRUE
+Solanum melongena,Solanum viarum,TRUE
+Solanum memphiticum,Solanum lycopersicum,TRUE
+Solanum nigrum,Capsicum chinense,TRUE
+Solanum nigrum,Nicotiana langsdorffii,TRUE
+Solanum nigrum,Petunia integrifolia,TRUE
+Solanum nigrum,Physalis peruviana,TRUE
+Solanum nigrum,Solanum betaceum,TRUE
+Solanum nigrum,Solanum lycopersicum,TRUE
+Solanum nigrum,Solanum melongena,TRUE
+Solanum nigrum,Solanum tuberosum,TRUE
+Solanum paniculatum,Solanum melongena,TRUE
+Solanum pennellii,Hylotelephium telephioides,FALSE
+Solanum pennellii,Solanum lycopersicum,TRUE
+Solanum peruvianum,Solanum lycopersicum,TRUE
+Solanum peruvianum,Solanum lycopersicum × S. pimpinellifolium,TRUE
+Solanum pimpinellifolium,Browallia viscosa,TRUE
+Solanum pimpinellifolium,Datura metel,TRUE
+Solanum pimpinellifolium,Datura wrightii,TRUE
+Solanum pimpinellifolium,Solanum lycopersicum,TRUE
+Solanum pimpinellifolium,Solanum melongena,TRUE
+Solanum pimpinellifolium,Solanum lycopersicum × S. pimpinellifolium,TRUE
+Solanum pseudocapsicum,Browallia viscosa,TRUE
+Solanum pseudocapsicum,Datura ferox,TRUE
+Solanum pseudocapsicum,Solanum lycopersicum,FALSE
+Solanum sessiliflorum,Solanum lycopersicum,TRUE
+Solanum sisymbriifolium,Solanum lycopersicum,TRUE
+Solanum sisymbriifolium,Solanum melongena,TRUE
+Solanum stramoniifolium,Solanum lycopersicum,TRUE
+Solanum torvum,Capsicum annuum,TRUE
+Solanum torvum,Solanum lycopersicum,TRUE
+Solanum torvum,Solanum melongena,TRUE
+Solanum tuberosum,Atropa bella-donna,TRUE
+Solanum tuberosum,Datura innoxia,TRUE
+Solanum tuberosum,Datura stramonium,TRUE
+Solanum tuberosum,Nicotiana glauca,TRUE
+Solanum tuberosum,Nicotiana sylvestris,TRUE
+Solanum tuberosum,Nicotiana tabacum,TRUE
+Solanum tuberosum,Nicotiana wigandioides,TRUE
+Solanum tuberosum,Solanum americanum,TRUE
+Solanum tuberosum,Solanum dulcamara,TRUE
+Solanum tuberosum,Solanum lycopersicum,TRUE
+Solanum tuberosum,Solanum melongena,TRUE
+Solanum tuberosum,Solanum pennellii,TRUE
+Solanum tuberosum,Solanum tuberosum,TRUE
+Solanum tuberosum,Solanum lycopersicum × S. pimpinellifolium,TRUE
+Solanum viarum,Solanum lycopersicum,TRUE
+Solanum viarum,Solanum melongena,TRUE
+Solanum villosum,Solanum lycopersicum,TRUE
+Solanum violaceum,Solanum lycopersicum,TRUE
+Solanum virginianum,Solanum lycopersicum,FALSE
+Solanum virginianum,Solanum melongena,TRUE
+Nicotiana sylvestris × N. tabacum,Nicotiana tabacum,TRUE
+Nicotiana sylvestris × N. tabacum,Nicotiana sylvestris × N. tabacum,TRUE
+Petunia axillaris × P. inflata,Petunia axillaris × P. inflata,TRUE
+Solanum aethiopicum × S. incanum,Solanum melongena,TRUE
+Solanum aethiopicum × S. melongena,Solanum lycopersicum,TRUE
+Solanum aethiopicum × S. melongena,Solanum melongena,TRUE
+Solanum aethiopicum × S. violaceum,Solanum melongena,TRUE
+Solanum cheesmaniae × S. lycopersicum,Solanum lycopersicum,TRUE
+Solanum chmielewskii × S. lycopersicum,Solanum lycopersicum,TRUE
+Solanum galapagense × S. lycopersicum,Solanum lycopersicum,TRUE
+Solanum grandiflorum × S. melongena,Solanum melongena,TRUE
+Solanum habrochaites × S. lycopersicum,Solanum lycopersicum,TRUE
+Solanum habrochaites × S. lycopersicum,Solanum melongena,TRUE
+Solanum incanum × S. melongena,Solanum lycopersicum,TRUE
+Solanum incanum × S. melongena,Solanum melongena,TRUE
+Solanum lycopersicum × S. pennellii,Solanum lycopersicum,TRUE
+Solanum lycopersicum × S. pimpinellifolium,Solanum lycopersicum,TRUE
+Solanum melongena × S. memphiticum,Solanum lycopersicum,TRUE
+Solanum melongena × S. sessile,Solanum melongena,TRUE
+Solanum melongena × S. sisymbriifolium,Solanum melongena,TRUE
+Solanum melongena × S. torvum,Solanum melongena,TRUE
+Solanum melongena × S. violaceum,Solanum melongena,TRUE
+Solanum torvum × S. violaceum,Solanum melongena,TRUE
+Halesia carolina,Halesia diptera,TRUE
+Taxus baccata,Taxus baccata,TRUE
+Torreya grandis,Torreya grandis,TRUE
+Camellia crapnelliana,Camellia oleifera,TRUE
+Camellia drupifera,Camellia azalea,TRUE
+Camellia drupifera,Camellia oleifera,TRUE
+Camellia japonica,Camellia azalea,TRUE
+Camellia japonica,Camellia reticulata,TRUE
+Camellia oleifera,Camellia azalea,TRUE
+Camellia oleifera,Camellia japonica,TRUE
+Camellia oleifera,Camellia oleifera,TRUE
+Camellia oleifera,Camellia sinensis,TRUE
+Camellia sasanqua,Camellia japonica,TRUE
+Camellia semiserrata,Camellia oleifera,TRUE
+Camellia sinensis,Camellia oleifera,TRUE
+Camellia sinensis,Camellia sinensis,TRUE
+Camellia taliensis,Camellia sinensis,TRUE
+Tropaeolum majus,Tropaeolum peregrinum,TRUE
+Tropaeolum peregrinum,Tropaeolum majus,TRUE
+Ulmus americana,Ulmus alata,TRUE
+Ulmus americana,Ulmus davidiana,TRUE
+Ulmus americana,Ulmus glabra,TRUE
+Ulmus americana,Ulmus laevis,TRUE
+Ulmus americana,Ulmus minor,TRUE
+Ulmus americana,Ulmus parvifolia,TRUE
+Ulmus americana,Ulmus thomasii,TRUE
+Ulmus americana,Ulmus glabra × U. minor,TRUE
+Ulmus glabra,Ulmus glabra,TRUE
+Ulmus glabra,Ulmus minor,TRUE
+Ulmus glabra,Ulmus parvifolia,TRUE
+Ulmus glabra,Ulmus glabra × U. minor,TRUE
+Ulmus minor,Ulmus minor,TRUE
+Ulmus parvifolia,Ulmus pumila,TRUE
+Ulmus parvifolia,Ulmus glabra × U. minor,TRUE
+Ulmus pumila,Ulmus glabra,TRUE
+Ulmus pumila,Ulmus glabra × U. minor,TRUE
+Ulmus pumila,Ulmus glabra × U. wallichiana,TRUE
+Zelkova serrata,Zelkova serrata,TRUE
+Ulmus minor × U. pumila,Ulmus glabra,TRUE
+Ulmus minor × U. pumila,Ulmus minor × U. pumila,TRUE
+Urtica dioica,Cannabis sativa,FALSE
+Viburnum dentatum,Viburnum carlesii,TRUE
+Viburnum dentatum,Viburnum carlesii × V. utile,TRUE
+Viburnum dentatum,Viburnum farreri × V. grandiflorum,TRUE
+Viburnum dilatatum,Viburnum carlesii,TRUE
+Viburnum dilatatum,Viburnum carlesii × V. utile,TRUE
+Viburnum lantana,Viburnum carlesii,TRUE
+Viburnum lantana,Viburnum carlesii × V. utile,TRUE
+Viburnum opulus,Viburnum carlesii,TRUE
+Viburnum opulus,Viburnum carlesii × V. utile,TRUE
+Viburnum setigerum,Viburnum carlesii,TRUE
+Viburnum lantana × V. rhytidophyllum,Viburnum carlesii,TRUE
+Viburnum rhytidophyllum × V. utile,Viburnum prunifolium,TRUE
+Viburnum rhytidophyllum × V. utile,Viburnum rufidulum,TRUE
+Viola altaica × V. lutea × V. tricolor,Nicotiana benthamiana,TRUE
+Vitis aestivalis,Vitis vinifera,TRUE
+Vitis aestivalis,Vitis labrusca × V. vinifera,TRUE
+Vitis berlandieri,Vitis vinifera,TRUE
+Vitis californica,Vitis vinifera,TRUE
+Vitis cinerea,Vitis vinifera,TRUE
+Vitis coignetiae,Nicotiana benthamiana,TRUE
+Vitis girdiana,Vitis palmata,TRUE
+Vitis labrusca,Vitis vinifera,TRUE
+Vitis palmata,Vitis girdiana,TRUE
+Vitis piasezkii,Vitis vinifera,TRUE
+Vitis riparia,Vitis riparia,TRUE
+Vitis riparia,Vitis rupestris,TRUE
+Vitis riparia,Vitis vinifera,TRUE
+Vitis rotundifolia,Vitis rupestris,TRUE
+Vitis rotundifolia,Vitis vinifera,TRUE
+Vitis rupestris,Vitis riparia,TRUE
+Vitis rupestris,Vitis rupestris,TRUE
+Vitis rupestris,Vitis vinifera,TRUE
+Vitis vinifera,Vitis riparia,TRUE
+Vitis vinifera,Vitis rupestris,TRUE
+Vitis vinifera,Vitis vinifera,TRUE
+Vitis vinifera,Vitis berlandieri × V. rupestris,TRUE
+Vitis vulpina,Vitis vinifera,TRUE
+Vitis acerifolia × V. berlandieri,Vitis vinifera,TRUE
+Vitis acerifolia × V. riparia,Vitis vinifera,TRUE
+Vitis acerifolia × V. vinifera,Vitis vinifera,TRUE
+Vitis berlandieri × V. riparia,Vitis vinifera,TRUE
+Vitis berlandieri × V. rupestris,Vitis labrusca,TRUE
+Vitis berlandieri × V. rupestris,Vitis vinifera,TRUE
+Vitis berlandieri × V. rupestris,Vitis berlandieri × V. rupestris,TRUE
+Vitis berlandieri × V. vinifera,Vitis vinifera,TRUE
+Vitis cinerea × V. riparia,Vitis vinifera,TRUE
+Vitis labrusca × V. riparia,Vitis vinifera,TRUE
+Vitis mustangensis × V. rupestris,Vitis vinifera,TRUE
+Vitis riparia × V. rupestris,Vitis vinifera,TRUE
+Vitis riparia × V. vinifera,Vitis vinifera,TRUE
+Vitis rotundifolia × V. rupestris,Vitis vinifera,TRUE
+Vitis rotundifolia × V. vinifera,Vitis vinifera,TRUE
+Vitis rupestris × V. vinifera,Vitis vinifera,TRUE
+Vitis acerifolia × V. berlandieri × V. vinifera,Vitis vinifera,TRUE
+Vitis berlandieri × V. riparia × V. rupestris,Vitis vinifera,TRUE
+Vitis berlandieri × V. riparia × V. vinifera,Vitis vinifera,TRUE
+Vitis berlandieri × V. rupestris × V. vinifera,Vitis vinifera,TRUE
+Vitis mustangensis × V. riparia × V. rupestris,Vitis vinifera,TRUE
+Vitis riparia × V. rupestris × V. tiliifolia,Vitis vinifera,TRUE
+Vitis riparia × V. rupestris × V. vinifera,Vitis vinifera,TRUE
+Vitis riparia × V. rupestris × V. vulpina,Vitis vinifera,TRUE
+Vitis acerifolia × V. labrusca × V. riparia × V. vinifera,Vitis vinifera,TRUE
+Vitis acerifolia × V. mustangensis × V. rupestris × V. vinifera,Vitis vinifera,TRUE
+Vitis aestivalis × V. mustangensis × V. riparia × V. rupestris,Vitis vinifera,TRUE
+Vitis berlandieri × V. mustangensis × V. rupestris × V. vinifera,Vitis vinifera,TRUE
+Vitis berlandieri × V. riparia × V. rupestris × V. vinifera,Vitis vinifera,TRUE
+Vitis berlandieri × V. riparia × V. rupestris × V. vulpina,Vitis vinifera,TRUE
+Vitis berlandieri × V. rotundifolia × V. rupestris × V. vinifera,Vitis vinifera,TRUE
+Vitis riparia × V. rupestris × V. tiliifolia × V. vulpina,Vitis vinifera,TRUE
+Vitis riparia × V. rupestris × V. tiliifolia × V. vulpina,Vitis labrusca × V. vinifera,TRUE
+Vitis acerifolia × V. labrusca × V. mustangensis × V. riparia × V. rupestris × V. vinifera,Vitis vinifera,TRUE

@@ -16,13 +16,17 @@ process CURATE_RESULTS {
     path protein_alignments
     path candidate_check
     path species_tree
+    path gene_trees
     path interproscan
+    path signalp
+    path deeptmhmm
 
     output:
     path "index.html", emit: html
     path "genomes.html", emit: genomes
     path "protein_alignments.html", emit: proteins
     path "codon_alignments.html", emit: codons
+    path "structures.html", emit: structures
     path "tables", emit: tables
     path "README.txt", emit: readme
     path "versions.yml", emit: versions
@@ -54,6 +58,14 @@ process CURATE_RESULTS {
         echo "Curated report has no species tree file" >&2
     fi
 
+    GENE_ARG=""
+    if [ -d "${gene_trees}" ]; then
+        GENE_ARG="--gene-trees ${gene_trees}"
+        echo "Curated report will draw OrthoFinder gene trees from ${gene_trees}" >&2
+    else
+        echo "Curated report has no OrthoFinder gene-tree directory" >&2
+    fi
+
     curate_results.py \\
         --families ${families} \\
         --wide-identity ${wide} \\
@@ -64,12 +76,21 @@ process CURATE_RESULTS {
         --identity-matrix-pairs ${matrix_pairs} \\
         --identity-matrix-labels ${matrix_labels} \\
         \$TREE_ARG \\
+        \$GENE_ARG \\
         --runtime-seconds ${runtimeSeconds} \\
         --outdir .
 
     IPS_ARG=""
+    SP_ARG=""
+    TM_ARG=""
     if [ -s "${interproscan}" ]; then
         IPS_ARG="--interproscan ${interproscan}"
+    fi
+    if [ -s "${signalp}" ]; then
+        SP_ARG="--signalp ${signalp}"
+    fi
+    if [ -s "${deeptmhmm}" ]; then
+        TM_ARG="--deeptmhmm ${deeptmhmm}"
     fi
 
     write_summary_pages.py \\
@@ -80,6 +101,8 @@ process CURATE_RESULTS {
         --families ${families} \\
         --protein-alignments ${protein_alignments} \\
         \$IPS_ARG \\
+        \$SP_ARG \\
+        \$TM_ARG \\
         --outdir .
     # Family table cells are the closest protein to the reference, not the species average.
 

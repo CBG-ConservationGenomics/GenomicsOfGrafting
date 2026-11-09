@@ -6,19 +6,17 @@ Link a **bidirectional scion×rootstock graft-outcome matrix** to sequence chang
 
 ## Input matrix
 
-Long TSV (preferred):
+The table is `data/graft_outcomes_11-09-2026.tsv`. A short copy of the same columns is `data/graft_outcomes.example.tsv`.
 
 ```text
-scion	rootstock	outcome
-Sly	Nbe	compatible
-Nbe	Sly	compatible
-Sly	Ath	incompatible
+Rootstock,Scion,success
+Solanum lycopersicum,Nicotiana benthamiana,TRUE
+Arabidopsis thaliana,Solanum lycopersicum,FALSE
 ```
 
-Outcomes: `compatible` | `incompatible` | `delayed_failure`  
-Species IDs must match pipeline ids (`Sly`, `Ath`, `Nbe`, `Cpe`).
+`success` is `TRUE` or `FALSE`. Names are scientific names (`Genus species`). A hybrid such as `Solanum lycopersicum × S. pimpinellifolium` is not treated as `Solanum lycopersicum`. The pipeline matches a name to a species id in `conf/species.yaml` only when the binomial is exact.
 
-Example: `data/graft_outcomes.example.tsv`
+A run does not have to include every species in that file. `10_graft_phenotype/traits/analyzed_species.tsv` lists the species on the OrthoFinder tree and whether each one has a row in the graft table. Pairs used for divergence are the ones where both species were in the run.
 
 ## Analyses implemented
 
@@ -28,8 +26,8 @@ Example: `data/graft_outcomes.example.tsv`
 | **Pairwise divergence** | Scion–rootstock protein %ID per selected OG | `divergence/graft_pair_divergence.tsv` |
 | **Divergence vs phenotype** | Mann–Whitney + partial Mantel (protein divergence \| species distance) | `divergence/divergence_vs_phenotype.tsv` |
 | **Ancestral reconstruction** | IQ-TREE `-asr`; AA changes on branches; flag phenotype-shift branches | `asr/<OG>/*.asr_substitutions.tsv` |
-| **Convergence** | PCOC / CSUBST if installed (else skipped with log) | `convergence/<OG>/` |
-| **Selection** | HyPhy BUSTED, aBSREL, MEME, RELAX on pipeline codon MSAs | `selection/<OG>/` |
+| **Convergence** | PCOC on the protein alignment, CSUBST on the codon alignment. Images are pulled when the programs are not on PATH | `convergence/<OG>/` |
+| **Selection** | HyPhy BUSTED, aBSREL, MEME, RELAX on pipeline codon MSAs. `-profile conda` installs HyPhy from `conf/hyphy.yml` | `selection/<OG>/` |
 | **Rank candidates** | Priority score combining the above | `graft_candidate_ranking.tsv` |
 
 In `main.nf`, this ranking is produced **before** the AlphaFold handoff. High-scoring OGs get lower `fold_rank` in `08_alphafold_inputs/` (fold first). Trim the GPU queue with `--af_max_ogs` / `--af_min_priority_score`.
@@ -47,7 +45,7 @@ In `main.nf`, this ranking is produced **before** the AlphaFold handoff. High-sc
 
 ```bash
 nextflow run workflows/graft_phenotype.nf -profile hpc,conda \
-  --graft_matrix data/graft_outcomes.tsv \
+  --graft_matrix data/graft_outcomes_11-09-2026.tsv \
   --species_tree results/03_orthofinder/OrthoFinder/Results_*/Species_Tree/SpeciesTree_rooted.txt \
   --og_list results/05_selected_orthogroups/selected_orthogroups.txt \
   --alignments_dir results/03_orthofinder/OrthoFinder/Results_*/MultipleSequenceAlignments \
@@ -69,11 +67,13 @@ nextflow run workflows/graft_phenotype.nf -profile hpc,conda \
 
 Optional override with external codon MSAs: `--codon_alignments_dir path/to/codon_alns`.
 
+HyPhy is installed by `-profile conda` from `conf/hyphy.yml` the first time the selection step runs. PCOC and CSUBST are not in that environment. The convergence step runs a copy already on `PATH`, or pulls `carinerey/pcoc` and `quay.io/biocontainers/csubst:1.14.4--py311h04f3980_0` with Docker or Singularity/Apptainer. The compute node needs network access for that first pull. CSUBST reads the codon alignments in `05b_codon_alignments/`; PCOC reads the protein alignment. Each orthogroup still gets a row in `convergence/<OG>/*.convergence_summary.tsv` when an image cannot be pulled.
+
 ### From `main.nf`
 
 ```bash
 --run_graft_phenotype true \
---graft_matrix data/graft_outcomes.tsv
+--graft_matrix data/graft_outcomes_11-09-2026.tsv
 ```
 
 ## Lineage traits

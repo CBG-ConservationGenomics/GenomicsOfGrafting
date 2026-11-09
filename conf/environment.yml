@@ -21,6 +21,7 @@ dependencies:
   - eggnog-mapper>=2.1
   - busco>=5.4
   - iqtree>=2.2
+  # Selection also installs HyPhy from conf/hyphy.yml under -profile conda.
   - hyphy>=2.5
   - ncbi-datasets-cli
   - curl

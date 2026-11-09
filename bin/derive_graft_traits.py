@@ -3,8 +3,10 @@
 
 Inputs
 ------
-- Long TSV: scion, rootstock, outcome
-  or square matrix TSV (rows=scion, cols=rootstock)
+- CSV or TSV: Rootstock, Scion, success (TRUE/FALSE), as in
+  data/graft_outcomes_11-09-2026.tsv
+- Or the older long table: scion, rootstock, outcome
+- Or a square matrix (rows=scion, columns=rootstock)
 - OrthoFinder species tree (Newick); tip labels may be proteome filenames
   (e.g. Sly.clean) — we map to species ids.
 
@@ -22,10 +24,9 @@ from __future__ import annotations
 import argparse
 import csv
 import re
+import sys
 from collections import defaultdict
 from pathlib import Path
-
-from Bio import Phylo
 
 
 OUTCOME_MAP = {
@@ -41,13 +42,28 @@ OUTCOME_MAP = {
     "delayed": "delayed_failure",
     "delayed-failure": "delayed_failure",
     "late_failure": "delayed_failure",
+    "true": "compatible",
+    "yes": "compatible",
+    "y": "compatible",
+    "t": "compatible",
+    "1": "compatible",
+    "false": "incompatible",
+    "no": "incompatible",
+    "n": "incompatible",
+    "f": "incompatible",
+    "0": "incompatible",
 }
 
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--matrix", required=True, help="Graft outcome matrix (long or square TSV)")
+    p.add_argument("--matrix", required=True, help="Graft outcome table (Rootstock, Scion, success)")
     p.add_argument("--species-tree", required=True, help="OrthoFinder SpeciesTree Newick")
+    p.add_argument(
+        "--species-yaml",
+        default=None,
+        help="conf/species.yaml, used to match Genus species names to the ids in this run",
+    )
     p.add_argument("--outdir", required=True)
     p.add_argument(
         "--broad-threshold",
@@ -106,18 +122,21 @@ def load_matrix(path: str) -> list[dict]:
     header = [h.strip() for h in rows[0]]
 
     long_cols = {c.lower() for c in header}
-    if {"scion", "rootstock", "outcome"}.issubset(long_cols):
-        # long format
+    outcome_col = "outcome" if "outcome" in long_cols else "success" if "success" in long_cols else ""
+    if {"scion", "rootstock"}.issubset(long_cols) and outcome_col:
         idx = {h.lower(): i for i, h in enumerate(header)}
         out = []
         for r in rows[1:]:
-            if len(r) < 3:
+            if len(r) <= max(idx["scion"], idx["rootstock"], idx[outcome_col]):
+                continue
+            raw = r[idx[outcome_col]].strip()
+            if not raw:
                 continue
             out.append(
                 {
                     "scion": r[idx["scion"]].strip(),
                     "rootstock": r[idx["rootstock"]].strip(),
-                    "outcome": normalize_outcome(r[idx["outcome"]]),
+                    "outcome": normalize_outcome(raw),
                 }
             )
         return out
@@ -145,16 +164,92 @@ def load_matrix(path: str) -> list[dict]:
     return out
 
 
-def tip_species_map(tree: Phylo.BaseTree.Tree) -> dict[str, str]:
-    """Original tip name → cleaned species id."""
-    tips = [c.name for c in tree.get_terminals() if c.name]
-    known = set()
-    # first pass: strip extensions
-    cleaned = {}
-    for t in tips:
-        cleaned[t] = normalize_species_id(t)
-        known.add(cleaned[t])
-    return cleaned
+def load_species_catalog(path: str | None) -> list[dict]:
+    """id, genus, and species from conf/species.yaml."""
+    if not path:
+        return []
+    file = Path(path)
+    if not file.is_file() or file.stat().st_size == 0:
+        return []
+    text = file.read_text()
+    try:
+        import yaml
+    except ImportError:
+        yaml = None
+    if yaml is not None:
+        data = yaml.safe_load(text) or {}
+        rows = []
+        for item in data.get("species") or []:
+            if item.get("id") and item.get("genus") and item.get("species"):
+                rows.append(
+                    {
+                        "id": str(item["id"]).strip(),
+                        "genus": str(item["genus"]).strip(),
+                        "species": str(item["species"]).strip(),
+                    }
+                )
+        if rows:
+            return rows
+    rows = []
+    current: dict | None = None
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        match = re.match(r"-\s+id:\s*(\S+)", stripped)
+        if match:
+            if current and current.get("id"):
+                rows.append(current)
+            current = {"id": match.group(1)}
+            continue
+        if current is None:
+            continue
+        field = re.match(r"(genus|species):\s*[\"']?([^\"'#]+)", stripped)
+        if field:
+            current[field.group(1)] = field.group(2).strip()
+    if current and current.get("id"):
+        rows.append(current)
+    return [row for row in rows if row.get("genus") and row.get("species")]
+
+
+def binomial_index(catalog: list[dict]) -> dict[str, str]:
+    """'genus species' in lower case → pipeline species id. Exact names only."""
+    index = {}
+    for row in catalog:
+        index[f"{row['genus']} {row['species']}".lower()] = row["id"]
+    return index
+
+
+def pipeline_species_id(label: str, ids: set[str], binomials: dict[str, str]) -> str:
+    """Map a tree tip or a graft-table name onto a pipeline species id when it is one."""
+    name = label.strip().strip("'\"")
+    name = re.sub(r"\.(clean|faa|fasta|fa|fas|proteins|pep|aa|txt)$", "", name, flags=re.I)
+    if "|" in name:
+        name = name.split("|", 1)[0]
+    for sid in ids:
+        if name.lower() == sid.lower():
+            return sid
+    return binomials.get(" ".join(name.split()).lower(), name)
+
+
+def coverage_rows(analyzed: list[dict], pairs: list[dict]) -> list[dict]:
+    """One row per species in this run, and whether the graft table records it."""
+    rows = []
+    for species in analyzed:
+        sid = species["species_id"]
+        hits = [pair for pair in pairs if pair["scion"] == sid or pair["rootstock"] == sid]
+        rows.append(
+            {
+                "species_id": sid,
+                "scientific_name": species.get("scientific_name") or "",
+                "in_graft_outcomes": "yes" if hits else "no",
+                "n_as_scion": sum(pair["scion"] == sid for pair in hits),
+                "n_as_rootstock": sum(pair["rootstock"] == sid for pair in hits),
+                "n_success": sum(pair["outcome"] == "compatible" for pair in hits),
+                "n_failure": sum(pair["outcome"] != "compatible" for pair in hits),
+            }
+        )
+    return rows
 
 
 def clade_trait_majority(clade, tip_traits: dict[str, int]) -> float | None:
@@ -171,31 +266,65 @@ def main() -> None:
     out.mkdir(parents=True, exist_ok=True)
     success = {x.strip() for x in args.success_outcomes.split(",") if x.strip()}
 
-    pairs_raw = load_matrix(args.matrix)
-    species_in_matrix = sorted(
-        {p["scion"] for p in pairs_raw} | {p["rootstock"] for p in pairs_raw}
-    )
-    known = set(species_in_matrix)
+    from Bio import Phylo
 
-    # Normalize matrix species ids
-    pairs = []
-    for p in pairs_raw:
-        pairs.append(
-            {
-                "scion": normalize_species_id(p["scion"], known),
-                "rootstock": normalize_species_id(p["rootstock"], known),
-                "outcome": p["outcome"],
-            }
-        )
+    pairs_raw = load_matrix(args.matrix)
+    catalog = load_species_catalog(args.species_yaml)
+    catalog_ids = {row["id"] for row in catalog}
+    binomials = binomial_index(catalog)
+    names = {row["id"]: f"{row['genus']} {row['species']}" for row in catalog}
+
+    def as_id(label: str) -> str:
+        return pipeline_species_id(label, catalog_ids, binomials)
+
+    pairs_all = [
+        {"scion": as_id(pair["scion"]), "rootstock": as_id(pair["rootstock"]), "outcome": pair["outcome"]}
+        for pair in pairs_raw
+    ]
 
     tree = Phylo.read(args.species_tree, "newick")
-    tip_map = tip_species_map(tree)
-    # Relabel tips to species ids
+    analyzed_ids = []
     for tip in tree.get_terminals():
-        if tip.name:
-            tip.name = normalize_species_id(tip_map.get(tip.name, tip.name), known)
+        if not tip.name:
+            continue
+        sid = as_id(tip.name)
+        tip.name = sid
+        if sid not in analyzed_ids:
+            analyzed_ids.append(sid)
+    analyzed = [
+        {"species_id": sid, "scientific_name": names.get(sid, "")}
+        for sid in analyzed_ids
+    ]
+    analyzed_set = set(analyzed_ids)
+    coverage = coverage_rows(analyzed, pairs_all)
+    with open(out / "analyzed_species.tsv", "w", newline="") as fh:
+        fields = [
+            "species_id",
+            "scientific_name",
+            "in_graft_outcomes",
+            "n_as_scion",
+            "n_as_rootstock",
+            "n_success",
+            "n_failure",
+        ]
+        writer = csv.DictWriter(fh, fieldnames=fields, delimiter="\t")
+        writer.writeheader()
+        writer.writerows(coverage)
+    print(f"[derive_graft_traits] {len(coverage)} species analyzed in this run", file=sys.stderr)
+    for row in coverage:
+        name = row["scientific_name"] or row["species_id"]
+        print(
+            f"[derive_graft_traits] {row['species_id']} ({name}): "
+            f"in graft outcomes: {row['in_graft_outcomes']}"
+            f" (scion {row['n_as_scion']}, rootstock {row['n_as_rootstock']},"
+            f" success {row['n_success']}, failure {row['n_failure']})",
+            file=sys.stderr,
+        )
 
-    # Pair table + reciprocity
+    # Divergence and the trait table use pairs whose two species were both analyzed.
+    pairs = [
+        pair for pair in pairs_all if pair["scion"] in analyzed_set and pair["rootstock"] in analyzed_set
+    ]
     pair_index = {(p["scion"], p["rootstock"]): p["outcome"] for p in pairs}
     pair_rows = []
     for p in pairs:

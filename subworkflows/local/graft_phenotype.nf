@@ -14,9 +14,14 @@ workflow GRAFT_PHENOTYPE {
     ch_alignments_dir  // path
     ch_og_alns         // tuple(og_id, alignment) — optional empty
     ch_codon_alns      // tuple(og_id, codon_aln, tree) — optional empty
+    ch_codon_dir       // codon alignment directory, or an empty file when none were built
 
     main:
-    DERIVE_GRAFT_TRAITS(ch_matrix, ch_species_tree)
+    DERIVE_GRAFT_TRAITS(
+        ch_matrix,
+        ch_species_tree,
+        Channel.fromPath(params.species_yaml, checkIfExists: true)
+    )
 
     GRAFT_PAIR_DIVERGENCE(
         DERIVE_GRAFT_TRAITS.out.pairs,
@@ -55,7 +60,8 @@ workflow GRAFT_PHENOTYPE {
 
         RUN_CONVERGENCE(
             ch_conv_in,
-            DERIVE_GRAFT_TRAITS.out.foreground.first()
+            DERIVE_GRAFT_TRAITS.out.foreground.first(),
+            ch_codon_dir
         )
         ch_conv = RUN_CONVERGENCE.out.summary.map { _og, f -> f }.collect()
     } else {

@@ -1,4 +1,4 @@
-# GraftingGeneFamilies
+q# GraftingGeneFamilies
 
 Nextflow pipeline for **plant gene-family analysis** in a grafting / scion–rootstock context.
 
@@ -61,7 +61,6 @@ Produce:
 - Full production run with real GOI list + real graft matrix  
 - Confirm server paths for eggNOG DB, InterProScan, SignalP, BUSCO download cache  
 - DeepTMHMM / BioLib availability on the server  
-- Install PCOC / CSUBST if convergence tests are required  
 - Supply or verify CDS completeness for all four species after QC reports  
 - AlphaFold: install LocalColabFold on the GPU box; tune `conf/gpu.config`  
 - Optional: automate CDS for more species; ChimeraX/PyMOL scripts for AF diffs  
@@ -274,16 +273,15 @@ Enable with `--run_graft_phenotype true` or run `workflows/graft_phenotype.nf` a
 
 Runs **before** the AlphaFold handoff so ASR / divergence / HyPhy ranking can prioritize what to fold.
 
-Input matrix (bidirectional): `data/graft_outcomes.example.tsv`
+Input matrix: `data/graft_outcomes_11-09-2026.tsv`
 
 ```text
-scion	rootstock	outcome
-Sly	Nbe	compatible
-Nbe	Sly	compatible
-Sly	Ath	incompatible
+Rootstock,Scion,success
+Solanum lycopersicum,Nicotiana benthamiana,TRUE
+Arabidopsis thaliana,Solanum lycopersicum,FALSE
 ```
 
-Outcomes: `compatible` | `incompatible` | `delayed_failure`
+`success` is `TRUE` or `FALSE`. Names are scientific names. Only the species in the current run are compared, and `10_graft_phenotype/traits/analyzed_species.tsv` records each of those species and whether the graft table has an entry for it.
 
 Analyses:
 
@@ -292,8 +290,8 @@ Analyses:
 | Lineage + pair traits | “Broad scion/rootstock,” reciprocity, phenotype-shift branches |
 | IQ-TREE `-asr` | AA changes; flag those on phenotype-shift branches |
 | Pair divergence + partial Mantel | Does protein divergence predict failure **beyond** species relatedness? |
-| HyPhy (BUSTED, aBSREL, MEME, RELAX) | Selection on codon MSAs (foreground = broad-grafting tips) |
-| PCOC / CSUBST | Convergence (if installed) |
+| HyPhy (BUSTED, aBSREL, MEME, RELAX) | Selection on codon MSAs (foreground = broad-grafting tips). `-profile conda` installs it from `conf/hyphy.yml` |
+| PCOC / CSUBST | Convergence. The step pulls `carinerey/pcoc` and the CSUBST Biocontainer when those programs are not already on PATH |
 | Ranking | `graft_candidate_ranking.tsv` → feeds AlphaFold handoff priority |
 
 Details: [`docs/graft_phenotype.md`](docs/graft_phenotype.md).
@@ -313,11 +311,19 @@ See [`docs/alphafold_plan.md`](docs/alphafold_plan.md).
 
 ### 12. Curated report
 
-Written at the end of `main.nf` to `results/11_curated/`. Open `index.html` in a browser to search, sort, and expand each orthogroup. The pairwise identity heatmap in each family is ordered like the OrthoFinder species tree, and that tree is drawn beside the matrix so percent identity can be read against phylogenetic distance. The counts at the top are literature genes placed in an orthogroup, species included in the job, species whose proteins were downloaded from NCBI or a URL, and the time from job start until the report was written. `genomes.html` shows proteins and CDS per genome, a BUSCO composition bar, and a BUSCO heatmap. `protein_alignments.html` shows the OrthoFinder amino-acid alignment for each selected orthogroup. When InterProScan ran, each domain is drawn as a labeled bar on the residues it covers, and the same bars are drawn on `codon_alignments.html`. `codon_alignments.html` shows each CDS alignment projected onto that protein MSA. The `tables/` folder holds copies of the family table, the wide % identity table, and, when those steps ran, the graft ranking, BUSCO summary, codon report, and AlphaFold queue.
+Written at the end of `main.nf` to `results/11_curated/`. Open `index.html` in a browser to search, sort, and expand each orthogroup. The OrthoFinder species tree is drawn at the top of the family table. Open a family to see its pairwise identity heatmap beside that family's OrthoFinder gene tree. The counts at the top are literature genes placed in an orthogroup, species included in the job, species whose proteins were downloaded from NCBI or a URL, and the time from job start until the report was written. `genomes.html` shows proteins and CDS per genome, a BUSCO composition bar, and a BUSCO heatmap. `protein_alignments.html` shows the OrthoFinder amino-acid alignment for each selected orthogroup. Checkboxes show or hide InterPro domains, SignalP signal peptides, DeepTMHMM transmembrane helices, and N-glycosylation sequons when those predictions exist. `codon_alignments.html` shows each CDS alignment projected onto that protein MSA, with the same checkboxes. `structures.html` opens AlphaFold models in Mol*. Choose the model files, or the superimposed PDBs plus the reference model, and color them by pLDDT, by those same domain tracks, or by amino-acid differences. The `tables/` folder holds copies of the family table, the wide % identity table, and, when those steps ran, the graft ranking, BUSCO summary, codon report, and AlphaFold queue.
 
 ---
 
 ## How to run
+
+### Server paths and options
+
+Copy `conf/server.config.example` to `conf/server.config` on the server. That example already has the eggNOG, InterProScan, and SignalP paths, 40 OrthoFinder threads, the candidate CDS file, graft phenotype, and HyPhy. The pipeline reads `conf/server.config` when the file exists. It is not committed. A flag on the command line still overrides the file, which is how each run picks its own `--outdir`.
+
+```bash
+cp conf/server.config.example conf/server.config
+```
 
 ### Main pipeline (HPC)
 
@@ -325,50 +331,20 @@ Written at the end of `main.nf` to `results/11_curated/`. Open `index.html` in a
 conda env create -f conf/environment.yml   # or rely on -profile conda
 export NXF_OPTS='-Xms1g -Xmx8g'
 
-# data/grafting_candidates.txt needs the two-column format:
-# gene name, then genus and species (see section 6).
-nextflow run main.nf \
-  -profile hpc,conda \
-  --genes_of_interest data/grafting_candidates.txt \
-  --outdir results \
-  --eggnog_data_dir /home/general/Databases/Annotation/eggnog/ \
-  --interproscan_dir /home/general/Databases/Annotation/interproscan \
-  --signalp_bin /path/to/signalp \
-  --busco_download_path /path/to/busco_downloads \
-  --orthofinder_threads 32
+screen -L nextflow run main.nf -profile hpc,conda --outdir test_out8
 ```
 
-Confirm the resolved genes against your characterized CDS file (see section 6). `data/candidate_cds.example.fna` only shows the header format:
+`conf/server.config` supplies the gene list, `data/candidate_cds.example.fna`, the graft table, HyPhy, and the database paths. Resume the same folder with `-resume`:
 
 ```bash
-nextflow run main.nf -profile hpc,conda \
-  --genes_of_interest data/genes_of_interest.txt \
-  --candidate_cds data/candidate_cds.fna \
-  --outdir results
-```
-
-Resume after a fix:
-
-```bash
-nextflow run main.nf -profile hpc,conda ... -resume
-```
-
-### With graft phenotype + HyPhy
-
-```bash
-nextflow run main.nf -profile hpc,conda \
-  ... \
-  --run_graft_phenotype true \
-  --graft_matrix data/graft_outcomes.tsv \
-  --build_codon_alignments true \
-  --run_hyphy true
+screen -L nextflow run main.nf -profile hpc,conda --outdir test_out8 -resume
 ```
 
 ### Standalone graft phenotype (after OrthoFinder exists)
 
 ```bash
 nextflow run workflows/graft_phenotype.nf -profile hpc,conda \
-  --graft_matrix data/graft_outcomes.tsv \
+  --graft_matrix data/graft_outcomes_11-09-2026.tsv \
   --species_tree results/03_orthofinder/OrthoFinder/Results_*/Species_Tree/SpeciesTree_rooted.txt \
   --og_list results/05_selected_orthogroups/selected_orthogroups.txt \
   --alignments_dir results/03_orthofinder/OrthoFinder/Results_*/MultipleSequenceAlignments \
@@ -417,10 +393,12 @@ nextflow run workflows/compare_structures.nf -profile hpc,conda \
 | `--reference_species_id` | `auto` | Fallback species if the characterized protein is absent from the alignment |
 | `--build_codon_alignments` | `true` | Build codon MSAs from CDS + protein MSAs |
 | `--run_graft_phenotype` | `false` | ASR/selection/ranking; runs before the AF handoff |
-| `--graft_matrix` | example TSV | Scion×rootstock outcomes |
-| `--run_hyphy` | `false` | Selection tests (needs codon MSAs) |
+| `--graft_matrix` | `data/graft_outcomes_11-09-2026.tsv` | Rootstock, scion, and TRUE/FALSE success |
+| `--run_hyphy` | `false` | Selection tests (needs codon MSAs). `-profile conda` installs HyPhy from `conf/hyphy.yml` |
 | `--run_asr` | `true` | IQ-TREE ancestral reconstruction |
-| `--run_convergence` | `true` | PCOC/CSUBST if installed |
+| `--run_convergence` | `true` | PCOC and CSUBST; images are pulled if the programs are not on PATH |
+| `--pcoc_image` | `carinerey/pcoc` | PCOC image used by the convergence step |
+| `--csubst_image` | `quay.io/biocontainers/csubst:1.14.4--py311h04f3980_0` | CSUBST image used by the convergence step |
 | `--prepare_alphafold` | `true` | Write the AF handoff as the last CPU step |
 | `--af_min_priority_score` | `0` | Min phenotype score to stage an OG |
 | `--af_max_ogs` | `0` | Cap OGs sent to GPU (`0` = no cap) |
@@ -428,7 +406,7 @@ nextflow run workflows/compare_structures.nf -profile hpc,conda \
 | `--eggnog_cpus` | profile default | CPUs for `emapper.py` (`24` on `-profile hpc`) |
 | `--eggnog_extra` | empty | Extra `emapper.py` args, e.g. faster Diamond search |
 
-Annotation / DB paths: `--eggnog_data_dir`, `--interproscan_dir`, `--signalp_bin`, `--busco_download_path`.
+Database paths and any of the options above can be set in `conf/server.config` (copy `conf/server.config.example`). The matching flags are `--eggnog_data_dir`, `--interproscan_dir`, `--signalp_bin`, `--deeptmhmm_bin`, `--busco_download_path`, and `--usalign_bin`.
 
 ---
 
@@ -449,7 +427,7 @@ Annotation / DB paths: `--eggnog_data_dir`, `--interproscan_dir`, `--signalp_bin
 | `10_graft_phenotype/` | Traits, ASR, divergence tests, ranking (before the handoff) |
 | `08_alphafold_inputs/` | GPU handoff package (written last; folder number kept) |
 | `09_structure_comparison/` | RMSD, substitutions, superimposed PDBs (after GPU folding) |
-| `11_curated/` | Family report (`index.html`), genome and BUSCO page (`genomes.html`), protein alignments (`protein_alignments.html`), codon alignments (`codon_alignments.html`), and copies of the tables |
+| `11_curated/` | Family report (`index.html`), genome and BUSCO page (`genomes.html`), protein alignments (`protein_alignments.html`), codon alignments (`codon_alignments.html`), AlphaFold viewer (`structures.html`), and copies of the tables |
 
 ---
 
@@ -462,6 +440,8 @@ GraftingGeneFamilies/
 ├── conf/
 │   ├── species.yaml                 # Species, URLs, accessions, BUSCO lineage
 │   ├── environment.yml              # Conda dependencies
+│   ├── hyphy.yml                    # HyPhy env for the selection step
+│   ├── server.config.example       # Copy to server.config for paths and options
 │   ├── base.config / hpc.config / gpu.config
 ├── modules/local/                   # Nextflow process modules
 ├── subworkflows/local/
@@ -475,7 +455,8 @@ GraftingGeneFamilies/
 │   ├── genes_of_interest.txt
 │   ├── candidate_cds.example.fna    # Header example; nucleotides are placeholders
 │   ├── grafting_candidates.txt      # Your GOI list on the server
-│   └── graft_outcomes.example.tsv
+│   ├── graft_outcomes.example.tsv
+│   └── graft_outcomes_11-09-2026.tsv
 ├── docs/
 │   ├── alphafold_plan.md
 │   ├── graft_phenotype.md
@@ -490,14 +471,14 @@ GraftingGeneFamilies/
 | Component | Notes |
 |-----------|--------|
 | Nextflow ≥ 23.04 | Installed on `curie` |
-| Conda env | `conf/environment.yml` (OrthoFinder, BUSCO, IQ-TREE, HyPhy, Biopython, …) |
+| Conda env | `conf/environment.yml` (OrthoFinder, BUSCO, IQ-TREE, Biopython, …). HyPhy is installed for the selection step from `conf/hyphy.yml` when `-profile conda` is on |
 | eggNOG DB | `--eggnog_data_dir` |
 | InterProScan | `--interproscan_dir` |
 | SignalP 6 | Licensed binary; `--signalp_bin` |
 | BUSCO lineages | Prefer shared `--busco_download_path` |
 | DeepTMHMM | BioLib or local install |
 | LocalColabFold | GPU server only |
-| PCOC / CSUBST | Optional; convergence steps skip cleanly if missing |
+| PCOC / CSUBST | Pulled during the convergence step (`carinerey/pcoc` and the CSUBST Biocontainer) when Docker or Singularity/Apptainer is available. The summary records a failed row if the pull cannot run |
 | USalign / TMalign | Optional TM-score in structure comparison |
 
 ---

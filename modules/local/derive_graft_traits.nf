@@ -5,6 +5,7 @@ process DERIVE_GRAFT_TRAITS {
     input:
     path matrix
     path species_tree
+    path species_yaml
 
     output:
     path "traits/pair_outcomes.tsv", emit: pairs
@@ -13,6 +14,7 @@ process DERIVE_GRAFT_TRAITS {
     path "traits/species_tree.annotated.nwk", emit: tree
     path "traits/species_distance.tsv", emit: sp_distance
     path "traits/foreground_tips.txt", emit: foreground
+    path "traits/analyzed_species.tsv", emit: analyzed
     path "versions.yml", emit: versions
 
     script:
@@ -23,6 +25,7 @@ process DERIVE_GRAFT_TRAITS {
     derive_graft_traits.py \\
         --matrix ${matrix} \\
         --species-tree ${species_tree} \\
+        --species-yaml ${species_yaml} \\
         --outdir traits \\
         --broad-threshold ${params.graft_broad_threshold} \\
         --foreground-trait ${params.graft_foreground_trait}

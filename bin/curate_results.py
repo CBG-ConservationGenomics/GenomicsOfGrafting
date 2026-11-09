@@ -34,7 +34,12 @@ def parse_args() -> argparse.Namespace:
     p.add_argument(
         "--species-tree",
         default=None,
-        help="OrthoFinder SpeciesTree_rooted.txt (Newick), used to order the identity heatmap",
+        help="OrthoFinder SpeciesTree_rooted.txt (Newick), drawn above the species columns",
+    )
+    p.add_argument(
+        "--gene-trees",
+        default=None,
+        help="OrthoFinder Gene_Trees directory. Each family's tree is drawn beside its identity matrix",
     )
     p.add_argument("--candidate-check", default=None, help="candidate_cds_check.tsv")
     p.add_argument(
@@ -377,14 +382,171 @@ def reorder_matrix(matrix: dict, species_order: list[str]) -> dict:
         )
 
     indices = sorted(range(len(species)), key=sort_key)
+    return _permute_matrix(matrix, indices)
+
+
+def reorder_matrix_by_sequence(matrix: dict, sequence_order: list[str]) -> dict:
+    """Put proteins in gene-tree order. Sequences missing from the tree stay at the end."""
+    rank = {sid: i for i, sid in enumerate(sequence_order)}
+    unknown = len(sequence_order)
+    indices = sorted(
+        range(len(matrix["full"])),
+        key=lambda i: (rank.get(matrix["full"][i], unknown), i),
+    )
+    return _permute_matrix(matrix, indices)
+
+
+def _permute_matrix(matrix: dict, indices: list[int]) -> dict:
     values = matrix["values"]
     return {
         "labels": [matrix["labels"][i] for i in indices],
         "full": [matrix["full"][i] for i in indices],
-        "species": [species[i] for i in indices],
+        "species": [matrix["species"][i] for i in indices],
         "reference": [matrix["reference"][i] for i in indices],
         "values": [[values[i][j] for j in indices] for i in indices],
     }
+
+
+def _id_key(value: str) -> str:
+    return value.strip().strip("'\"").replace("|", "_")
+
+
+def load_sequence_aliases(gene_dir: Path) -> dict[str, str]:
+    """OrthoFinder internal id (0_42) to the original sequence id, when that file is staged."""
+    mapping: dict[str, str] = {}
+    candidates = [
+        gene_dir / "SequenceIDs.txt",
+        gene_dir.parent / "SequenceIDs.txt",
+        gene_dir.parent / "WorkingDirectory" / "SequenceIDs.txt",
+    ]
+    for path in candidates:
+        if not path.is_file() or path.stat().st_size == 0:
+            continue
+        for line in path.read_text(errors="replace").splitlines():
+            if ":" not in line:
+                continue
+            internal, original = line.split(":", 1)
+            original = original.strip().split()[0].rstrip(",")
+            if internal.strip() and original:
+                mapping[internal.strip()] = original
+        break
+    return mapping
+
+
+def match_gene_tip(tip: str, seq_ids: list[str], aliases: dict[str, str]) -> str | None:
+    """Map a gene-tree tip onto a protein id from the identity matrix."""
+    raw = tip.strip().strip("'\"")
+    if not raw or not seq_ids:
+        return None
+    options = [raw]
+    mapped = aliases.get(raw)
+    if mapped and mapped not in options:
+        options.append(mapped)
+    exact = set(seq_ids)
+    for option in options:
+        if option in exact:
+            return option
+    grouped: dict[str, list[str]] = {}
+    tails: dict[str, list[str]] = {}
+    for seq_id in seq_ids:
+        grouped.setdefault(_id_key(seq_id), []).append(seq_id)
+        tails.setdefault(_id_key(seq_id.split("|")[-1]), []).append(seq_id)
+    for option in options:
+        hits = grouped.get(_id_key(option))
+        if hits and len(set(hits)) == 1:
+            return hits[0]
+    for option in options:
+        hits = tails.get(_id_key(option.split("|")[-1]))
+        if hits and len(set(hits)) == 1:
+            return hits[0]
+    return None
+
+
+def find_gene_tree(directory: Path, og: str) -> Path | None:
+    for name in (f"{og}_tree.txt", f"{og}.treefile", f"{og}_tree.nwk", f"{og}.nwk"):
+        path = directory / name
+        if path.is_file() and path.stat().st_size:
+            return path
+    for path in sorted(directory.glob(f"{og}_tree.*")):
+        if path.is_file() and path.stat().st_size and path.suffix.lower() not in {".log", ".html"}:
+            return path
+    return None
+
+
+def load_gene_tree(path: Path, seq_ids: list[str], aliases: dict[str, str]) -> tuple[dict | None, str]:
+    """Ladderized gene tree whose tips are identity-matrix sequence ids."""
+    try:
+        tree = parse_newick(path.read_text())
+        tree.ladderize()
+    except Exception as exc:
+        return None, f"could not read {path.name}: {exc}"
+    assigned: dict[int, str] = {}
+    used: set[str] = set()
+    unmatched: list[str] = []
+    order: list[str] = []
+    for tip in tree.terminals():
+        hit = match_gene_tip(tip.name or "", seq_ids, aliases)
+        if hit and hit not in used:
+            used.add(hit)
+            assigned[id(tip)] = hit
+            order.append(hit)
+        elif tip.name:
+            unmatched.append(tip.name)
+
+    def payload(clade: _Clade) -> dict | None:
+        if not clade.children:
+            name = assigned.get(id(clade))
+            if not name:
+                return None
+            return {"name": name, "length": round(float(clade.length), 8), "children": []}
+        children = []
+        for child in clade.children:
+            node = payload(child)
+            if node:
+                children.append(node)
+        if not children:
+            return None
+        if len(children) == 1:
+            only = children[0]
+            return {
+                "name": only["name"],
+                "length": round(float(clade.length) + float(only["length"]), 8),
+                "children": only["children"],
+            }
+        return {"name": "", "length": round(float(clade.length), 8), "children": children}
+
+    root = payload(tree)
+    if root is None or len(order) < 2:
+        preview = ", ".join(unmatched[:8]) or "none"
+        return None, f"gene tree tips did not match proteins in {path.stem} (tips: {preview})"
+    return {"order": order, "root": root}, ""
+
+
+def load_gene_trees(
+    directory: str | None,
+    matrices: dict[str, dict],
+) -> tuple[dict[str, dict], dict[str, str]]:
+    """One gene tree per orthogroup that has both a matrix and a Newick file."""
+    trees: dict[str, dict] = {}
+    notes: dict[str, str] = {}
+    if not directory:
+        return trees, notes
+    root = Path(directory)
+    if not root.is_dir():
+        return trees, notes
+    aliases = load_sequence_aliases(root)
+    for og, matrix in matrices.items():
+        path = find_gene_tree(root, og)
+        if path is None:
+            notes[og] = f"no OrthoFinder gene tree file for {og}"
+            continue
+        tree, note = load_gene_tree(path, matrix.get("full") or [], aliases)
+        if tree is None:
+            notes[og] = note
+            print(f"[curate_results] {og}: {note}", file=sys.stderr)
+            continue
+        trees[og] = tree
+    return trees, notes
 
 
 def load_candidate_check(path: str | None) -> list[dict]:
@@ -590,10 +752,15 @@ def write_readme(path: Path, copied: list[str]) -> None:
         "Open index.html in a browser. The page is self-contained:",
         "search, sort, and expand a row for annotation and phenotype detail.",
         "genomes.html has protein counts and BUSCO. protein_alignments.html",
-        "shows the OrthoFinder amino-acid alignments, with InterPro domains",
-        "as labeled bars when that annotation ran. codon_alignments.html",
-        "shows the CDS alignments projected onto those protein MSAs, with the",
-        "same domain bars.",
+        "shows the OrthoFinder amino-acid alignments. Checkboxes on that page",
+        "show or hide InterPro domains, signal peptides, transmembrane helices,",
+        "and N-glycosylation sequons when those predictions exist.",
+        "codon_alignments.html uses the same checkboxes on the codon alignment.",
+        "structures.html opens AlphaFold models in Mol*. Load the superimposed",
+        "PDBs from 09_structure_comparison/superimposed together with the",
+        "reference model so orthologs overlap. The page colors by pLDDT,",
+        "by the same domain tracks as the alignments, or by amino-acid",
+        "differences from substitutions.tsv.",
         "",
         "tables/",
     ]
@@ -875,6 +1042,7 @@ HTML = r"""<!DOCTYPE html>
       <a href="genomes.html">Genomes</a>
       <a href="protein_alignments.html">Protein alignments</a>
       <a href="codon_alignments.html">Codon alignments</a>
+      <a href="structures.html">Structures</a>
     </nav>
   </div>
 </header>
@@ -1044,16 +1212,11 @@ function matrixSpecies(m) {
   if (m.species && m.species.length === m.labels.length) return m.species;
   return m.full.map(id => id.includes("|") ? id.split("|")[0] : "");
 }
-function matrixFollowsTree(m) {
-  if (!DATA.species_tree || !DATA.species_tree.order) return false;
-  const known = new Set(DATA.species_tree.order);
-  return matrixSpecies(m).some(sid => known.has(sid));
-}
 function matrixHtml(row) {
   const m = row.matrix;
   if (!m || !m.labels || !m.labels.length) return "";
   const species = matrixSpecies(m);
-  const onTree = matrixFollowsTree(m);
+  const onTree = !!(row.gene_tree && row.gene_tree.root);
   const head = m.labels.map((label, i) => {
     const mark = m.reference[i] ? " *" : "";
     return `<th class="col${m.reference[i] ? " ref" : ""}" title="${esc(m.full[i])}"><span>${esc(label)}${mark}</span></th>`;
@@ -1067,18 +1230,20 @@ function matrixHtml(row) {
       const title = `${m.labels[i]} vs ${m.labels[j]}: ${fmt(val, 1)}%`;
       return `<td class="cell" style="background:${style.background};color:${style.color}" title="${esc(title)}">${fmt(val, 1)}</td>`;
     }).join("");
-    return `<tr data-species="${esc(species[i] || "")}"><th class="rowlab${m.reference[i] ? " ref" : ""}" title="${esc(m.full[i])}">${esc(label)}${mark}</th>${cells}</tr>`;
+    return `<tr data-seq="${esc(m.full[i])}" data-species="${esc(species[i] || "")}"><th class="rowlab${m.reference[i] ? " ref" : ""}" title="${esc(m.full[i])}">${esc(label)}${mark}</th>${cells}</tr>`;
   }).join("");
   const scale = [60, 70, 80, 90, 100].map(n => {
     const style = heatColor(n);
     return `<i style="background:${style.background}"></i><span>${n}%</span>`;
   }).join("");
   const note = onTree
-    ? "Rows and columns follow the OrthoFinder species tree, top to bottom and left to right. The tree on the left uses those branch lengths, so closer species sit together. The characterized protein is marked *. Homologs from the same species share one tip. A species absent from the tree is listed after the tips."
-    : "Pairwise identity for every protein in this alignment. The characterized protein is marked * and listed first. Homologs from the same species each have their own row.";
+    ? "Rows and columns follow this family's OrthoFinder gene tree, top to bottom and left to right. The tree on the left uses those branch lengths. The characterized protein is marked *. A protein absent from the tree is listed after the tips."
+    : (row.gene_tree_status
+      ? `Pairwise identity for every protein in this alignment. Gene tree was not drawn. ${row.gene_tree_status}`
+      : "Pairwise identity for every protein in this alignment. The characterized protein is marked * and listed first. Homologs from the same species each have their own row.");
   const table = `<table class="heat"><thead><tr><th></th>${head}</tr></thead><tbody>${body}</tbody></table>`;
   const fig = onTree
-    ? `<div class="heat-fig"><svg class="heat-tree" width="168" height="1" role="img" aria-label="OrthoFinder species tree"></svg><div class="heat-scroll">${table}</div></div>`
+    ? `<div class="heat-fig" data-og="${esc(row.orthogroup)}"><svg class="heat-tree" width="168" height="1" role="img" aria-label="OrthoFinder gene tree"></svg><div class="heat-scroll">${table}</div></div>`
     : table;
   return `<div class="heat-wrap">
     <p class="heat-note">${note}</p>
@@ -1207,16 +1372,22 @@ function alignColumnTree() {
   })(pruned);
 }
 function alignTrees() {
-  if (!DATA.species_tree || !DATA.species_tree.root) return;
-  const known = new Set(DATA.species_tree.order || []);
   document.querySelectorAll(".heat-fig").forEach(fig => {
     const svg = fig.querySelector("svg.heat-tree");
     const table = fig.querySelector("table.heat");
     if (!svg || !table) return;
+    const og = fig.getAttribute("data-og");
+    const family = (DATA.families || []).find(row => row.orthogroup === og);
+    const tree = family && family.gene_tree;
+    if (!tree || !tree.root) {
+      svg.remove();
+      return;
+    }
+    const known = new Set(tree.order || []);
     const figTop = fig.getBoundingClientRect().top;
     const entries = [];
     table.querySelectorAll("tbody tr").forEach((tr, index) => {
-      const sid = tr.getAttribute("data-species") || "";
+      const sid = tr.getAttribute("data-seq") || "";
       if (!known.has(sid)) return;
       const box = tr.getBoundingClientRect();
       entries.push({
@@ -1240,7 +1411,7 @@ function alignTrees() {
       svg.remove();
       return;
     }
-    let pruned = pruneTree(DATA.species_tree.root, present);
+    let pruned = pruneTree(tree.root, present);
     if (!pruned) {
       svg.remove();
       return;
@@ -1304,7 +1475,7 @@ function alignTrees() {
     const head = table.querySelector("thead");
     const headBottom = head ? head.getBoundingClientRect().bottom - figTop : 0;
     if (headBottom > 36 || !measured) {
-      svg.appendChild(svgEl("text", { x: String(pad), y: "16" })).textContent = "species tree";
+      svg.appendChild(svgEl("text", { x: String(pad), y: "16" })).textContent = "gene tree";
     }
     if (phylogram && (headBottom > 36 || !measured)) {
       const step = niceDistance(maxX);
@@ -1369,8 +1540,8 @@ function detail(row) {
   if (row.fold_rank !== null) add("AlphaFold queue", `fold rank ${fmt(row.fold_rank, 0)}`);
   const min = row.min_id === null ? "—" : fmt(row.min_id, 1);
   const max = row.max_id === null ? "—" : fmt(row.max_id, 1);
-  const matrixOrder = DATA.species_tree
-    ? "the matrix below keeps every homolog, in OrthoFinder species-tree order."
+  const matrixOrder = row.gene_tree
+    ? "the matrix below keeps every homolog, in this family's OrthoFinder gene-tree order."
     : "the matrix below keeps every homolog.";
   add("% identity to reference", `Closest protein is ${max}%. The most distant protein is ${min}%. Each species column is that closest protein, and ${matrixOrder}`);
   return `<tr class="detail"><td></td><td colspan="${columns().length}"><dl class="detail-grid">${items.join("")}</dl>${matrixHtml(row)}</td></tr>`;
@@ -1431,8 +1602,9 @@ document.getElementById("stats").innerHTML = cards.map(([label, value, tip]) =>
 const bits = [`Report date ${esc(DATA.generated)}.`];
 bits.push("Genes mined are the literature genes placed in an orthogroup. Species in the run are the proteomes included in this job. Proteomes downloaded counts remote NCBI or URL fetches, not a local file. Run time is from job start until this report.");
 bits.push("Each species column is the closest protein from that species to the reference, and Best %ID is the single closest protein in the family. Darker green is higher identity.");
-if (DATA.species_tree) bits.push("The OrthoFinder species tree is drawn above the species columns and beside each family's identity heatmap. Branch lengths are the species-tree distances.");
+if (DATA.species_tree) bits.push("The OrthoFinder species tree is drawn at the top of the table. Branch lengths are the species-tree distances.");
 else if (DATA.species_tree_status) bits.push("Species tree was not drawn. " + DATA.species_tree_status);
+bits.push("Open a family to see its identity heatmap. When OrthoFinder wrote a gene tree for that family, the heatmap follows the gene tree and the tree is drawn beside the matrix.");
 if (DATA.has_ranking) bits.push("Priority adds ASR substitutions on phenotype-shift branches, divergence beyond species relatedness, HyPhy hits, and convergence.");
 if (DATA.has_folding) bits.push("Fold rank is the AlphaFold queue order (1 is first).");
 if (DATA.candidate_check) bits.push(`Characterized CDS check: ${DATA.candidate_check.n_match} of ${DATA.candidate_check.n} reference sequences match the annotation CDS and protein. See tables/candidate_cds_check.tsv.`);
@@ -1565,8 +1737,16 @@ def main() -> None:
                 matrices[og] = reorder_matrix(matrix, species_tree["order"])
         rank = {sid: i for i, sid in enumerate(species_tree["order"])}
         species.sort(key=lambda sp: (rank.get(sp["id"], len(rank)), sp["id"]))
+    gene_trees, gene_notes = load_gene_trees(args.gene_trees, matrices)
+    for og, gene_tree in gene_trees.items():
+        matrices[og] = reorder_matrix_by_sequence(matrices[og], gene_tree["order"])
     for rec in records:
         rec["matrix"] = matrices.get(rec["orthogroup"])
+        gene_tree = gene_trees.get(rec["orthogroup"])
+        if gene_tree:
+            rec["gene_tree"] = gene_tree
+        elif rec["orthogroup"] in gene_notes:
+            rec["gene_tree_status"] = gene_notes[rec["orthogroup"]]
     payload = {
         "generated": date.today().isoformat(),
         "species": species,

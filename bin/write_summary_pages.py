@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import html
+import json
 import re
 import shutil
 from dataclasses import dataclass
@@ -21,6 +22,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--families", default="", help="gene_families_of_interest.tsv, for the protein page")
     p.add_argument("--protein-alignments", default="", help="OrthoFinder MultipleSequenceAlignments directory")
     p.add_argument("--interproscan", default="", help="InterProScan TSV; domains are drawn on the alignments")
+    p.add_argument("--signalp", default="", help="SignalP table or GFF; signal peptides are drawn on the alignments")
+    p.add_argument("--deeptmhmm", default="", help="DeepTMHMM topology table; transmembrane helices are drawn on the alignments")
     p.add_argument("--outdir", required=True)
     return p.parse_args()
 
@@ -232,6 +235,21 @@ SHELL = """<!DOCTYPE html>
   .domrow .tick, .domrow .codon {{ line-height: 0; }}
   .dom {{ display: inline-block; width: 1ch; height: 0.48em; vertical-align: top; }}
   .dom.on {{ border-radius: 1px; }}
+  .track-toggles {{
+    position: sticky; top: 0.6rem; z-index: 3;
+    display: flex; flex-wrap: wrap; gap: 0.45rem; margin: 1rem 0 0;
+  }}
+  .domain-toggle {{
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 0.4rem 0.85rem;
+    box-shadow: 0 6px 18px rgba(28, 25, 21, 0.08);
+    font-size: 0.92rem;
+  }}
+  body.hide-interpro .kind-interpro,
+  body.hide-signal .kind-signal,
+  body.hide-transmembrane .kind-transmembrane,
+  body.hide-glycan .kind-glycan {{ display: none; }}
   .footer-note {{ color: var(--muted); font-size: 0.82rem; padding: 0.8rem 0 1.6rem; }}
   @media (max-width: 800px) {{
     .stats {{ grid-template-columns: 1fr 1fr; }}
@@ -264,6 +282,7 @@ def nav(active: str) -> str:
         ("genomes", "genomes.html", "Genomes"),
         ("proteins", "protein_alignments.html", "Protein alignments"),
         ("codons", "codon_alignments.html", "Codon alignments"),
+        ("structures", "structures.html", "Structures"),
     ]
     parts = []
     for key, href, label in items:
@@ -582,6 +601,7 @@ def render_codons(
     )
     table_rows = []
     blocks = []
+    present: set[str] = set()
     for row in report:
         og = row.get("Orthogroup") or ""
         status = row.get("status") or ""
@@ -613,8 +633,10 @@ def render_codons(
                 lookup = lambda name, index=domain_index, ids=seq_ids or {}: domains_for(name, index, ids)
                 legend = domain_legend(records, lookup)
             note = f"{len(records)} sequences, {comma(length)} nucleotides. Codons are grouped in threes. A, C, G, and T keep their own color, and a gap is a hyphen."
-            if legend:
-                note += " Colored bars are InterPro domains, labeled at the left, transferred from the protein alignment."
+            found = kinds_on(records, lookup)
+            present |= found
+            if found:
+                note += feature_sentence(found) + " The bars use the protein coordinates."
             blocks.append(
                 f'''<section class="panel" id="og-{esc(og)}">
                   <h2>{esc(og)}</h2>
@@ -650,12 +672,13 @@ def render_codons(
         </table>
       </div>
     </section>'''
+    toggle = domain_toggle(present)
     return page(
         "Codon alignments",
         "Codon alignments",
         "CDS sequences projected onto the protein alignments for the selected orthogroups.",
         "codons",
-        card_html + table + "".join(blocks),
+        card_html + toggle + table + "".join(blocks),
         "An unassigned orthogroup has no protein alignment, so there is no codon alignment to show.",
     )
 
@@ -724,6 +747,16 @@ class Domain:
     label: str
     start: int
     end: int
+    kind: str = "interpro"
+
+
+TRACKS = (
+    ("interpro", "InterPro domains"),
+    ("signal", "Signal peptides"),
+    ("transmembrane", "Transmembrane helices"),
+    ("glycan", "N-glycosylation"),
+)
+_GLYCAN = re.compile(r"N[^P][ST]")
 
 
 DOMAIN_COLORS = (
@@ -802,7 +835,7 @@ def parse_interpro(path: str | Path | None) -> dict[str, list[Domain]]:
         if not protein or not accession or not label:
             continue
         grouped.setdefault(protein, {}).setdefault(accession, []).append(
-            Domain(accession, label, start, end)
+            Domain(accession, label, start, end, "interpro")
         )
     index: dict[str, list[Domain]] = {}
     for protein, by_acc in grouped.items():
@@ -822,6 +855,183 @@ def parse_interpro(path: str | Path | None) -> dict[str, list[Domain]]:
         for key in id_keys(protein):
             index.setdefault(key, domains)
     return index
+
+
+def _index_domains(by_protein: dict[str, list[Domain]]) -> dict[str, list[Domain]]:
+    index: dict[str, list[Domain]] = {}
+    for protein, domains in by_protein.items():
+        cleaned = _merge_domains(domains)
+        for key in id_keys(protein):
+            index.setdefault(key, cleaned)
+    return index
+
+
+def _merge_domains(domains: list[Domain]) -> list[Domain]:
+    groups: dict[tuple[str, str], list[Domain]] = {}
+    for domain in domains:
+        key = (domain.kind, domain.accession) if domain.kind == "interpro" else (domain.kind, domain.label)
+        groups.setdefault(key, []).append(domain)
+    merged: list[Domain] = []
+    for hits in groups.values():
+        hits.sort(key=lambda item: (item.start, item.end))
+        current = hits[0]
+        for nxt in hits[1:]:
+            if nxt.start <= current.end + 1:
+                label = current.label if len(current.label) >= len(nxt.label) else nxt.label
+                current = Domain(current.accession, label, current.start, max(current.end, nxt.end), current.kind)
+            else:
+                merged.append(current)
+                current = nxt
+        merged.append(current)
+    merged.sort(key=lambda item: (item.start, item.end, item.kind, item.label))
+    return merged
+
+
+def combine_indexes(*indexes: dict[str, list[Domain]]) -> dict[str, list[Domain]]:
+    merged: dict[str, list[Domain]] = {}
+    for index in indexes:
+        for key, domains in index.items():
+            merged[key] = _merge_domains(merged.get(key, []) + list(domains))
+    return merged
+
+
+def _cs_end(text: str) -> int | None:
+    match = re.search(r"(\d+)\s*[-–]\s*(\d+)", text)
+    if not match:
+        return None
+    end = int(match.group(1))
+    return end if end >= 1 else None
+
+
+def parse_signalp(path: str | Path | None) -> dict[str, list[Domain]]:
+    """Signal peptides from SignalP's table or GFF. The bar covers residues 1 through the cleavage site."""
+    file = Path(path) if path else None
+    if file is None or not file.is_file() or file.stat().st_size == 0:
+        return {}
+    lines = [line for line in file.read_text(errors="replace").splitlines() if line.strip() and not line.startswith("##")]
+    data = [line for line in lines if not line.startswith("#")]
+    if data and _looks_like_gff(data[0]):
+        return _signal_gff(data)
+    return _signal_table(lines)
+
+
+def _looks_like_gff(line: str) -> bool:
+    parts = line.split("\t")
+    if len(parts) < 5:
+        return False
+    try:
+        start, end = int(parts[3]), int(parts[4])
+    except ValueError:
+        return False
+    return end >= start and "signal" in parts[2].lower()
+
+
+def _signal_gff(lines: list[str]) -> dict[str, list[Domain]]:
+    by_protein: dict[str, list[Domain]] = {}
+    for line in lines:
+        parts = line.split("\t")
+        if len(parts) < 5 or "signal" not in parts[2].lower():
+            continue
+        try:
+            start, end = int(parts[3]), int(parts[4])
+        except ValueError:
+            continue
+        if start < 1 or end < start:
+            continue
+        protein = parts[0].split()[0]
+        by_protein.setdefault(protein, []).append(Domain("SignalP", "Signal peptide", start, end, "signal"))
+    return _index_domains(by_protein)
+
+
+def _signal_table(lines: list[str]) -> dict[str, list[Domain]]:
+    header: list[str] | None = None
+    rows: list[list[str]] = []
+    for line in lines:
+        raw = line[1:].strip() if line.startswith("#") else line
+        if "\t" not in raw:
+            continue
+        parts = raw.split("\t")
+        names = [part.strip().lstrip("#").strip().lower() for part in parts]
+        if header is None and ({"id", "prediction", "cs position"} & set(names)):
+            header = names
+            continue
+        rows.append(parts)
+    by_protein: dict[str, list[Domain]] = {}
+    for parts in rows:
+        if header:
+            values = {name: (parts[i] if i < len(parts) else "") for i, name in enumerate(header)}
+            protein = (values.get("id") or parts[0]).split()[0]
+            prediction = (values.get("prediction") or "").strip().lower()
+            cleavage = values.get("cs position") or ""
+        else:
+            protein = parts[0].split()[0]
+            prediction = parts[1].strip().lower() if len(parts) > 1 else ""
+            cleavage = ""
+        if not protein or protein.lower() in {"id", "protein"}:
+            continue
+        if prediction.startswith("other"):
+            continue
+        end = _cs_end(cleavage) or _cs_end("\t".join(parts))
+        if end is None:
+            continue
+        if prediction and not (prediction.startswith("sp") or "signal" in prediction) and not cleavage:
+            continue
+        by_protein.setdefault(protein, []).append(Domain("SignalP", "Signal peptide", 1, end, "signal"))
+    return _index_domains(by_protein)
+
+
+def parse_deeptmhmm(path: str | Path | None) -> dict[str, list[Domain]]:
+    """Transmembrane helices, and signal stretches, from a DeepTMHMM topology string."""
+    file = Path(path) if path else None
+    if file is None or not file.is_file() or file.stat().st_size == 0:
+        return {}
+    by_protein: dict[str, list[Domain]] = {}
+    for line in file.read_text(errors="replace").splitlines():
+        if not line.strip() or line.startswith("#"):
+            continue
+        parts = line.split("\t")
+        protein = parts[0].split()[0]
+        if protein.lower() in {"id", "protein", "protein_id"}:
+            continue
+        topology = parts[1].strip() if len(parts) > 1 else ""
+        domains = _topology_domains(topology)
+        if domains:
+            by_protein.setdefault(protein, []).extend(domains)
+    return _index_domains(by_protein)
+
+
+def _topology_domains(topology: str) -> list[Domain]:
+    compact = re.sub(r"\s+", "", topology)
+    if re.fullmatch(r"[SIOMsiom]+", compact or "") and len(compact) >= 4:
+        domains = []
+        for match in re.finditer(r"S+", compact, re.IGNORECASE):
+            domains.append(Domain("SignalP", "Signal peptide", match.start() + 1, match.end(), "signal"))
+        for match in re.finditer(r"M+", compact, re.IGNORECASE):
+            domains.append(Domain("TM", "Transmembrane helix", match.start() + 1, match.end(), "transmembrane"))
+        return domains
+    domains = []
+    for match in re.finditer(
+        r"(signal(?:\s*peptide)?|tm(?:helix)?|transmembrane)[^\d]{0,16}(\d+)\s*[-:]\s*(\d+)",
+        topology,
+        re.IGNORECASE,
+    ):
+        start, end = int(match.group(2)), int(match.group(3))
+        if start < 1 or end < start:
+            continue
+        if match.group(1).lower().startswith("s"):
+            domains.append(Domain("SignalP", "Signal peptide", start, end, "signal"))
+        else:
+            domains.append(Domain("TM", "Transmembrane helix", start, end, "transmembrane"))
+    return domains
+
+
+def glycan_domains(seq: str) -> list[Domain]:
+    """N-X-S/T sequons on the ungapped protein. X is any residue except proline."""
+    residues = [char for char in seq if char not in "-."]
+    return [
+        Domain("NXS/T", "N-glycosylation", match.start() + 1, match.end(), "glycan")
+        for match in _GLYCAN.finditer("".join(residues).upper())
+    ]
 
 
 def load_sequence_ids(align_dir: Path | None) -> dict[str, str]:
@@ -908,9 +1118,21 @@ def domain_rows_html(
     aln_len: int,
 ) -> str:
     spans = column_spans(seq, domains, codon=(group == 3))
-    window_end = start + width
+    by_kind: dict[str, list[tuple[int, int, Domain]]] = {}
+    for span in spans:
+        by_kind.setdefault(span[2].kind, []).append(span)
+    order = [kind for kind, _label in TRACKS if kind in by_kind]
+    order.extend(kind for kind in by_kind if kind not in order)
     rows = []
     wrapper = "codon" if group == 3 else "tick"
+    window_end = start + width
+    for kind in order:
+        rows.extend(_domain_lane_rows(by_kind[kind], start, width, group, aln_len, window_end, wrapper))
+    return "".join(rows)
+
+
+def _domain_lane_rows(spans, start, width, group, aln_len, window_end, wrapper) -> list[str]:
+    rows = []
     for lane in _pack_lanes(spans):
         visible = [span for span in lane if span[1] >= start and span[0] < window_end]
         if not visible:
@@ -937,29 +1159,81 @@ def domain_rows_html(
                     )
             cells_html.append(f'<span class="{wrapper}">' + "".join(cells) + "</span>")
         label = " · ".join(labels)
+        kind = visible[0][2].kind
         rows.append(
-            f'<div class="domrow" title="{esc(label)}"><span class="lab">{esc(label)}</span>{"".join(cells_html)}</div>'
+            f'<div class="domrow kind-{esc(kind)}" title="{esc(label)}"><span class="lab">{esc(label)}</span>{"".join(cells_html)}</div>'
         )
-    return "".join(rows)
+    return rows
 
 
 def domain_legend(records: list[tuple[str, str]], domains_for_name) -> str:
     seen: list[Domain] = []
-    accessions: set[str] = set()
+    accessions: set[tuple[str, str]] = set()
     for name, _seq in records:
         for domain in domains_for_name(name):
-            if domain.accession in accessions:
+            key = (domain.kind, domain.accession)
+            if key in accessions:
                 continue
-            accessions.add(domain.accession)
+            accessions.add(key)
             seen.append(domain)
     if not seen:
         return ""
     pills = []
     for domain in seen:
         pills.append(
-            f'<span><i style="background:{domain_color(domain.accession)}"></i>{esc(domain.label)}</span>'
+            f'<span class="kind-{esc(domain.kind)}"><i style="background:{domain_color(domain.accession)}"></i>{esc(domain.label)}</span>'
         )
-    return '<div class="legend-pills">' + "".join(pills) + "</div>"
+    return '<div class="legend-pills domain-legend">' + "".join(pills) + "</div>"
+
+
+_TRACK_SCRIPT = """<script>
+(function () {
+  document.querySelectorAll("[data-track]").forEach(function (box) {
+    var kind = box.getAttribute("data-track");
+    var key = "graft-track-" + kind;
+    var saved = null;
+    try { saved = localStorage.getItem(key); } catch (err) {}
+    var on = saved === null ? true : saved === "1";
+    box.checked = on;
+    document.body.classList.toggle("hide-" + kind, !on);
+    box.addEventListener("change", function () {
+      document.body.classList.toggle("hide-" + kind, !box.checked);
+      try { localStorage.setItem(key, box.checked ? "1" : "0"); } catch (err) {}
+    });
+  });
+})();
+</script>"""
+
+
+def domain_toggle(kinds: set[str]) -> str:
+    """One checkbox per predicted feature, so each kind of bar can be hidden."""
+    boxes = []
+    for kind, label in TRACKS:
+        if kind not in kinds:
+            continue
+        boxes.append(
+            f'<label class="domain-toggle"><input type="checkbox" data-track="{esc(kind)}" checked> {esc(label)}</label>'
+        )
+    if not boxes:
+        return ""
+    return '<div class="track-toggles">' + "".join(boxes) + _TRACK_SCRIPT + "</div>"
+
+
+def feature_sentence(kinds: set[str]) -> str:
+    labels = [label for kind, label in TRACKS if kind in kinds]
+    if not labels:
+        return ""
+    return " Colored bars are " + ", ".join(labels) + ". Each checkbox shows or hides that kind of bar."
+
+
+def kinds_on(records: list[tuple[str, str]], lookup) -> set[str]:
+    found: set[str] = set()
+    if lookup is None:
+        return found
+    for name, _seq in records:
+        for domain in lookup(name):
+            found.add(domain.kind)
+    return found
 
 
 def find_protein_alignment(align_dir: Path | None, og: str) -> Path | None:
@@ -981,6 +1255,22 @@ def find_protein_alignment(align_dir: Path | None, og: str) -> Path | None:
         if hit.suffix.lower() in {".fa", ".faa", ".fasta", ".aln"} and hit.stat().st_size:
             return hit
     return None
+
+
+def glycans_from_alignments(align_dir: Path | None, ogs: list[str]) -> dict[str, list[Domain]]:
+    """N-glycosylation sequons read from the protein alignments."""
+    by_protein: dict[str, list[Domain]] = {}
+    if align_dir is None:
+        return {}
+    for og in ogs:
+        path = find_protein_alignment(align_dir, og)
+        if path is None:
+            continue
+        for name, seq in read_fasta(path, nucleotide=False):
+            hits = glycan_domains(seq)
+            if hits:
+                by_protein.setdefault(name, []).extend(hits)
+    return _index_domains(by_protein)
 
 
 def selected_orthogroups(families_path: str, codon_report: list[dict]) -> list[str]:
@@ -1005,6 +1295,7 @@ def render_proteins(
     shown = 0
     n_seq = 0
     missing = 0
+    present: set[str] = set()
     table_rows = []
     blocks = []
     for og in ogs:
@@ -1046,8 +1337,10 @@ def render_proteins(
             f"{len(records)} sequences, {comma(length)} columns. Residues are grouped in tens. "
             "Hydrophobic residues are green, polar residues gold, positive blue, negative rust, and glycine gray."
         )
-        if legend:
-            note += " Colored bars under a sequence are its InterPro domains. The name is at the left of the bar."
+        found = kinds_on(records, lookup)
+        present |= found
+        if found:
+            note += feature_sentence(found)
         blocks.append(
             f'''<section class="panel" id="aa-{esc(og)}">
               <h2>{esc(og)}</h2>
@@ -1082,13 +1375,473 @@ def render_proteins(
         </table>
       </div>
     </section>'''
+    toggle = domain_toggle(present)
     return page(
         "Protein alignments",
         "Protein alignments",
         "Amino-acid alignments of the selected orthogroups.",
         "proteins",
-        card_html + table + "".join(blocks),
+        card_html + toggle + table + "".join(blocks),
         "An unassigned orthogroup has no protein alignment.",
+    )
+
+
+def orthogroup_titles(families_path: str) -> dict[str, str]:
+    titles: dict[str, str] = {}
+    for row in read_tsv(families_path):
+        og = (row.get("Orthogroup") or "").strip()
+        title = (row.get("genes_of_interest") or "").strip()
+        if og and title and og not in titles:
+            titles[og] = title
+    return titles
+
+
+def structure_catalog(
+    ogs: list[str],
+    align_dir: Path | None,
+    domain_index: dict[str, list[Domain]],
+    seq_ids: dict[str, str],
+    titles: dict[str, str],
+) -> dict:
+    """Orthogroups, members, and domain ranges for the Mol* page."""
+    families = []
+    for og in ogs:
+        path = find_protein_alignment(align_dir, og)
+        members = []
+        if path is not None:
+            for name, seq in read_fasta(path, nucleotide=False):
+                domains = []
+                for domain in domains_for(name, domain_index, seq_ids):
+                    domains.append(
+                        {
+                            "kind": domain.kind,
+                            "accession": domain.accession,
+                            "label": domain.label,
+                            "start": domain.start,
+                            "end": domain.end,
+                            "color": domain_color(domain.accession),
+                        }
+                    )
+                members.append(
+                    {
+                        "id": name,
+                        "label": short_label(name),
+                        "length": len(seq.replace("-", "").replace(".", "")),
+                        "domains": domains,
+                    }
+                )
+        families.append({"og": og, "title": titles.get(og, ""), "members": members})
+    return {
+        "families": families,
+        "tracks": [{"kind": kind, "label": label} for kind, label in TRACKS],
+    }
+
+
+_VIEWER_SCRIPT = r"""
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/molstar@5.13.1/build/viewer/molstar.css">
+<style>
+  .viewer-layout { display: grid; grid-template-columns: 18rem 1fr; gap: 1rem; align-items: start; }
+  .viewer-controls label { display: block; margin: 0.35rem 0; font-size: 0.86rem; }
+  .viewer-controls select, .viewer-controls input[type="file"] { width: 100%; }
+  #molstar { position: relative; height: 72vh; min-height: 520px; background: white; border-radius: 12px; overflow: hidden; }
+  .plddt i { display: inline-block; width: 0.7rem; height: 0.7rem; border-radius: 2px; margin-right: 0.25rem; vertical-align: -1px; }
+  .member-list { max-height: 16rem; overflow: auto; margin: 0.4rem 0 0.8rem; }
+  @media (max-width: 800px) { .viewer-layout { grid-template-columns: 1fr; } }
+</style>
+<section class="panel">
+  <div class="viewer-layout">
+    <div class="viewer-controls">
+      <label>Orthogroup
+        <select id="og"></select>
+      </label>
+      <div class="member-list" id="members"></div>
+      <label>Color
+        <select id="color-mode">
+          <option value="plddt">pLDDT confidence</option>
+          <option value="domains">Functional domains</option>
+          <option value="differences">Amino-acid differences</option>
+        </select>
+      </label>
+      <div id="track-boxes"></div>
+      <label>Model files
+        <input id="model-files" type="file" accept=".pdb,.cif,.ent,.mmcif" multiple>
+      </label>
+      <label>Or a folder of models
+        <input id="model-folder" type="file" webkitdirectory multiple>
+      </label>
+      <label>Differences table
+        <input id="subs-file" type="file" accept=".tsv,.txt">
+      </label>
+      <p class="note" id="structure-status">Choose the AlphaFold or superimposed PDB files for this orthogroup.</p>
+    </div>
+    <div>
+      <div id="molstar"></div>
+      <div class="legend-pills plddt">
+        <span><i style="background:#0053d6"></i>Very high (≥90)</span>
+        <span><i style="background:#65cbf3"></i>Confident (70–90)</span>
+        <span><i style="background:#ffdb13"></i>Low (50–70)</span>
+        <span><i style="background:#ff7d45"></i>Very low (&lt;50)</span>
+      </div>
+      <div class="legend-pills" id="domain-legend"></div>
+    </div>
+  </div>
+</section>
+<script type="application/json" id="structure-catalog">__CATALOG__</script>
+<script src="https://cdn.jsdelivr.net/npm/molstar@5.13.1/build/viewer/molstar.js"></script>
+<script>
+const CATALOG = JSON.parse(document.getElementById("structure-catalog").textContent);
+const statusEl = document.getElementById("structure-status");
+let viewer = null;
+let files = [];
+let substitutions = [];
+let liveUrls = [];
+
+function safeName(value) {
+  return String(value || "").replace(/[^A-Za-z0-9._-]+/g, "_");
+}
+function setStatus(text) { statusEl.textContent = text; }
+function hasWebGL() {
+  try {
+    const canvas = document.createElement("canvas");
+    return !!(canvas.getContext("webgl2") || canvas.getContext("webgl"));
+  } catch (err) {
+    return false;
+  }
+}
+function plddtColor(value) {
+  if (value >= 90) return "#0053d6";
+  if (value >= 70) return "#65cbf3";
+  if (value >= 50) return "#ffdb13";
+  return "#ff7d45";
+}
+function pdbResidueScores(text) {
+  const scores = [];
+  let last = null;
+  for (const line of text.split(/\r?\n/)) {
+    if (!line.startsWith("ATOM") && !line.startsWith("HETATM")) continue;
+    const atom = line.slice(12, 16).trim();
+    if (atom !== "CA") continue;
+    const resSeq = parseInt(line.slice(22, 26), 10);
+    const bfactor = parseFloat(line.slice(60, 66));
+    if (!resSeq || Number.isNaN(bfactor) || resSeq === last) continue;
+    last = resSeq;
+    scores.push({ pos: resSeq, color: plddtColor(bfactor) });
+  }
+  return scores;
+}
+function runsOf(scores) {
+  const runs = [];
+  for (const item of scores) {
+    const prev = runs[runs.length - 1];
+    if (prev && prev.color === item.color && item.pos === prev.end + 1) prev.end = item.pos;
+    else runs.push({ start: item.pos, end: item.pos, color: item.color });
+  }
+  return runs;
+}
+function matchScore(fileName, member) {
+  const lower = fileName.toLowerCase();
+  const safeId = safeName(member.id).toLowerCase();
+  const tail = safeName(member.id.split("|").pop()).toLowerCase();
+  let score = 0;
+  if (safeId && lower.includes(safeId)) score = 5;
+  else if (tail.length >= 4 && lower.includes(tail)) score = 3;
+  if (!score) return 0;
+  const on = lower.indexOf("__on__");
+  if (on >= 0) {
+    const before = lower.slice(0, on);
+    if (before.includes(safeId) || (tail.length >= 4 && before.includes(tail))) score += 2;
+    else score -= 2;
+  }
+  return score;
+}
+function assignFiles(chosen, members) {
+  const pairs = [];
+  for (const member of members) {
+    let best = null;
+    let bestScore = 0;
+    for (const file of chosen) {
+      const score = matchScore(file.name, member);
+      if (score > bestScore) {
+        best = file;
+        bestScore = score;
+      }
+    }
+    if (best && bestScore >= 3) pairs.push({ member, file: best, score: bestScore });
+  }
+  const kept = [];
+  const claimed = new Map();
+  for (const pair of pairs.sort((a, b) => b.score - a.score)) {
+    if (claimed.has(pair.file)) continue;
+    claimed.set(pair.file, pair.member.id);
+    kept.push(pair);
+  }
+  return kept;
+}
+function selectedMembers(family) {
+  const boxes = document.querySelectorAll("#members input:checked");
+  const ids = new Set(Array.from(boxes).map(box => box.value));
+  return family.members.filter(member => ids.has(member.id));
+}
+function activeTracks() {
+  return new Set(Array.from(document.querySelectorAll("[data-structure-track]:checked")).map(box => box.getAttribute("data-structure-track")));
+}
+function currentFamily() {
+  return CATALOG.families.find(family => family.og === document.getElementById("og").value) || null;
+}
+function colorNodes(text, member, mode) {
+  if (mode === "domains") {
+    const tracks = activeTracks();
+    return member.domains.filter(domain => tracks.has(domain.kind)).map(domain => ({
+      kind: "color",
+      params: {
+        color: domain.color,
+        selector: { beg_auth_seq_id: domain.start, end_auth_seq_id: domain.end }
+      }
+    }));
+  }
+  if (mode === "differences") {
+    const positions = new Set();
+    for (const row of substitutions) {
+      if (row.reference === member.id && row.ref_pos) positions.add(row.ref_pos);
+      if (row.ortholog === member.id && row.orth_pos) positions.add(row.orth_pos);
+    }
+    return Array.from(positions).sort((a, b) => a - b).map(pos => ({
+      kind: "color",
+      params: { color: "#9b2226", selector: { auth_seq_id: pos } }
+    }));
+  }
+  return runsOf(pdbResidueScores(text)).map(run => ({
+    kind: "color",
+    params: {
+      color: run.color,
+      selector: { beg_auth_seq_id: run.start, end_auth_seq_id: run.end }
+    }
+  }));
+}
+function tooltipNodes(member, mode) {
+  if (mode !== "domains") return [];
+  const tracks = activeTracks();
+  return member.domains.filter(domain => tracks.has(domain.kind)).map(domain => ({
+    kind: "component",
+    params: { selector: { beg_auth_seq_id: domain.start, end_auth_seq_id: domain.end } },
+    children: [
+      { kind: "tooltip", params: { text: domain.label + " " + domain.accession + " (" + domain.start + "-" + domain.end + ")" } },
+      { kind: "label", params: { text: domain.label } }
+    ]
+  }));
+}
+function structureNode(url, fileName, text, member, mode) {
+  const lower = fileName.toLowerCase();
+  const format = lower.endsWith(".cif") || lower.endsWith(".mmcif") ? "mmcif" : "pdb";
+  const colors = colorNodes(text, member, mode);
+  if (!colors.length) colors.push({ kind: "color", params: { color: "#c5bfb4", selector: "all" } });
+  return {
+    kind: "download",
+    params: { url },
+    children: [{
+      kind: "parse",
+      params: { format },
+      children: [{
+        kind: "structure",
+        params: { type: "model" },
+        children: [
+          {
+            kind: "component",
+            params: { selector: "polymer" },
+            children: [{
+              kind: "representation",
+              params: { type: "cartoon" },
+              children: colors
+            }]
+          },
+          ...tooltipNodes(member, mode)
+        ]
+      }]
+    }]
+  };
+}
+async function showFamily() {
+  const family = currentFamily();
+  if (!viewer || !family) return;
+  const members = selectedMembers(family);
+  const pairs = assignFiles(files, members);
+  const mode = document.getElementById("color-mode").value;
+  if (!pairs.length) {
+    setStatus(files.length
+      ? "None of the loaded files match the checked sequences. Superimposed files look like Orthogroup__ortholog__on__reference.pdb."
+      : "Choose the AlphaFold PDBs, or the superimposed folder plus the reference model.");
+    return;
+  }
+  const children = [{ kind: "canvas", params: { background_color: "#f7f4ee" } }];
+  const urls = [];
+  for (const pair of pairs) {
+    const text = await pair.file.text();
+    const url = URL.createObjectURL(new Blob([text], { type: "chemical/x-pdb" }));
+    urls.push(url);
+    children.push(structureNode(url, pair.file.name, text, pair.member, mode));
+  }
+  const state = {
+    metadata: { version: "1", timestamp: new Date().toISOString(), title: family.og },
+    root: { kind: "root", children }
+  };
+  try {
+    await viewer.loadMvsData(JSON.stringify(state), "mvsj");
+    for (const url of liveUrls) URL.revokeObjectURL(url);
+    liveUrls = urls;
+    const fitted = pairs.some(pair => pair.file.name.toLowerCase().includes("__on__"));
+    setStatus("Showing " + pairs.length + " model" + (pairs.length === 1 ? "" : "s") + " for " + family.og + ". "
+      + (fitted
+        ? "Fitted models overlap the reference when that reference PDB is included."
+        : "These coordinates are shown as stored. Load superimposed PDBs to put orthologs in one frame."));
+  } catch (err) {
+    for (const url of urls) URL.revokeObjectURL(url);
+    setStatus("Mol* could not draw these models. " + (err && err.message ? err.message : err));
+  }
+  const legend = document.getElementById("domain-legend");
+  const seen = new Set();
+  legend.replaceChildren();
+  if (mode === "domains") {
+    for (const pair of pairs) {
+      for (const domain of pair.member.domains) {
+        const key = domain.accession + domain.label;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const span = document.createElement("span");
+        const swatch = document.createElement("i");
+        swatch.style.background = domain.color;
+        span.append(swatch, document.createTextNode(domain.label));
+        legend.append(span);
+      }
+    }
+  }
+}
+function fillMembers() {
+  const family = currentFamily();
+  const box = document.getElementById("members");
+  box.replaceChildren();
+  if (!family) return;
+  family.members.forEach((member, index) => {
+    const label = document.createElement("label");
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.value = member.id;
+    input.checked = index < 6;
+    input.addEventListener("change", () => { showFamily(); });
+    label.append(input, " " + member.label);
+    box.append(label);
+  });
+}
+function readFiles(list) {
+  files = Array.from(list || []);
+  showFamily();
+}
+function parseSubstitutions(text) {
+  const lines = text.split(/\r?\n/).filter(line => line.trim());
+  if (!lines.length) return [];
+  const header = lines[0].split("\t");
+  const col = name => header.indexOf(name);
+  const rows = [];
+  for (const line of lines.slice(1)) {
+    const cells = line.split("\t");
+    const refPos = parseInt(cells[col("ref_seq_pos")], 10);
+    const orthPos = parseInt(cells[col("orth_seq_pos")], 10);
+    rows.push({
+      og: cells[col("Orthogroup")] || "",
+      reference: cells[col("reference_id")] || "",
+      ortholog: cells[col("ortholog_id")] || "",
+      ref_pos: Number.isNaN(refPos) ? null : refPos,
+      orth_pos: Number.isNaN(orthPos) ? null : orthPos
+    });
+  }
+  return rows.filter(row => !currentFamily() || !row.og || row.og === currentFamily().og);
+}
+function fillTracks() {
+  const box = document.getElementById("track-boxes");
+  for (const track of CATALOG.tracks) {
+    const label = document.createElement("label");
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.checked = true;
+    input.setAttribute("data-structure-track", track.kind);
+    input.addEventListener("change", () => { if (document.getElementById("color-mode").value === "domains") showFamily(); });
+    label.append(input, " " + track.label);
+    box.append(label);
+  }
+}
+async function boot() {
+  const select = document.getElementById("og");
+  for (const family of CATALOG.families) {
+    const option = document.createElement("option");
+    option.value = family.og;
+    option.textContent = family.title ? family.og + " — " + family.title : family.og;
+    select.append(option);
+  }
+  fillTracks();
+  fillMembers();
+  select.addEventListener("change", () => { fillMembers(); showFamily(); });
+  document.getElementById("color-mode").addEventListener("change", () => { showFamily(); });
+  document.getElementById("model-files").addEventListener("change", event => readFiles(event.target.files));
+  document.getElementById("model-folder").addEventListener("change", event => readFiles(event.target.files));
+  document.getElementById("subs-file").addEventListener("change", async event => {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    substitutions = parseSubstitutions(await file.text());
+    if (document.getElementById("color-mode").value === "differences") showFamily();
+    else setStatus("Loaded " + substitutions.length + " amino-acid differences. Choose that color mode to draw them.");
+  });
+  if (!hasWebGL()) {
+    setStatus("This browser has no WebGL, so Mol* cannot draw structures.");
+    return;
+  }
+  if (!window.molstar || !molstar.Viewer) {
+    setStatus("Mol* did not load. Open this page with network access so the viewer script can be fetched.");
+    return;
+  }
+  viewer = await molstar.Viewer.create("molstar", {
+    layoutIsExpanded: false,
+    layoutShowControls: false,
+    layoutShowSequence: true,
+    layoutShowLog: false,
+    viewportShowExpand: true
+  });
+  window.showStructureFamily = showFamily;
+  window.loadStructureText = async function (name, text) {
+    files = [{ name: name, text: async () => text }];
+    await showFamily();
+    return statusEl.textContent;
+  };
+}
+boot();
+</script>
+"""
+
+
+def render_structures(
+    ogs: list[str],
+    align_dir: Path | None,
+    domain_index: dict[str, list[Domain]],
+    seq_ids: dict[str, str],
+    titles: dict[str, str],
+) -> str:
+    catalog = structure_catalog(ogs, align_dir, domain_index, seq_ids, titles)
+    payload = json.dumps(catalog).replace("<", "\\u003c")
+    n_members = sum(len(family["members"]) for family in catalog["families"])
+    n_domains = sum(len(member["domains"]) for family in catalog["families"] for member in family["members"])
+    body = _VIEWER_SCRIPT.replace("__CATALOG__", payload)
+    return page(
+        "Structures",
+        "Structures",
+        "AlphaFold models for each orthogroup, drawn with Mol*. pLDDT uses the B-factor written by AlphaFold. Domain ranges are the same InterPro, signal-peptide, transmembrane, and N-glycosylation tracks as the alignment pages.",
+        "structures",
+        cards(
+            [
+                (comma(len(catalog["families"])), "Orthogroups"),
+                (comma(n_members), "Sequences"),
+                (comma(n_domains), "Domain ranges"),
+            ]
+        )
+        + body,
+        "Load superimposed PDBs from 09_structure_comparison/superimposed together with the reference model so orthologs share one coordinate frame. Mol* is fetched from jsDelivr when the page opens.",
     )
 
 
@@ -1115,14 +1868,21 @@ def main() -> None:
         protein_dir = None
     ogs = selected_orthogroups(args.families, report)
     rows = genome_rows(provenance, busco)
-    domain_index = parse_interpro(args.interproscan)
+    domain_index = combine_indexes(
+        parse_interpro(args.interproscan),
+        parse_signalp(args.signalp),
+        parse_deeptmhmm(args.deeptmhmm),
+        glycans_from_alignments(protein_dir, ogs),
+    )
     seq_ids = load_sequence_ids(protein_dir)
+    titles = orthogroup_titles(args.families)
     (outdir / "genomes.html").write_text(render_genomes(rows))
     (outdir / "protein_alignments.html").write_text(render_proteins(ogs, protein_dir, domain_index, seq_ids))
     (outdir / "codon_alignments.html").write_text(render_codons(report, codon_dir, domain_index, seq_ids))
+    (outdir / "structures.html").write_text(render_structures(ogs, protein_dir, domain_index, seq_ids, titles))
     copy_table(args.busco, outdir / "tables" / "busco_summary.tsv")
     copy_table(args.codon_report, outdir / "tables" / "codon_alignment_report.tsv")
-    print(f"[write_summary_pages] {len(rows)} genomes, {len(ogs)} protein alignments, {len(report)} codon rows → {outdir}")
+    print(f"[write_summary_pages] {len(rows)} genomes, {len(ogs)} protein alignments, {len(report)} codon rows, structures.html → {outdir}")
 
 
 if __name__ == "__main__":

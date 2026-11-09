@@ -1,6 +1,7 @@
 process HYPHY_SELECTION {
     tag "${og_id}"
     label 'process_high'
+    conda "${projectDir}/conf/hyphy.yml"
     publishDir "${params.outdir}/10_graft_phenotype/selection/${og_id}", mode: 'copy'
 
     input:
@@ -45,7 +46,7 @@ process HYPHY_SELECTION {
     if [ "\$STATUS" != "ok" ]; then
         write_row "${og_id}" HYPHY "" "\$NOTE" skipped
     elif ! command -v hyphy >/dev/null 2>&1; then
-        write_row "${og_id}" HYPHY "" "hyphy not on PATH" skipped
+        write_row "${og_id}" HYPHY "" "hyphy not on PATH; -profile conda installs conf/hyphy.yml" skipped
     else
         BRANCH_ARGS=""
         if [ "\$N_FG" -gt 0 ]; then

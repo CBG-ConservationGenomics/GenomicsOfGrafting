@@ -1,21 +1,7 @@
-# Bidirectional graft outcome matrix (example — replace with your data)
-# Format: scion  rootstock  outcome
-# Outcomes: compatible | incompatible | delayed_failure
-# Species IDs: Sly, Ath, Nbe, Cpe
-scion	rootstock	outcome
-Sly	Sly	compatible
-Sly	Ath	compatible
-Sly	Nbe	compatible
-Sly	Cpe	compatible
-Ath	Sly	incompatible
-Ath	Ath	compatible
-Ath	Nbe	incompatible
-Ath	Cpe	incompatible
-Nbe	Sly	compatible
-Nbe	Ath	compatible
-Nbe	Nbe	compatible
-Nbe	Cpe	delayed_failure
-Cpe	Sly	incompatible
-Cpe	Ath	incompatible
-Cpe	Nbe	incompatible
-Cpe	Cpe	compatible
+# Same columns as data/graft_outcomes_11-09-2026.tsv
+# Rootstock, Scion, success. success is TRUE or FALSE.
+# Names are scientific names. A hybrid is not the same species as either parent.
+Rootstock,Scion,success
+Solanum lycopersicum,Nicotiana benthamiana,TRUE
+Arabidopsis thaliana,Solanum lycopersicum,FALSE
+Nicotiana benthamiana,Solanum lycopersicum × S. pimpinellifolium,TRUE
