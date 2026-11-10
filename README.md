@@ -1,8 +1,8 @@
-q# GraftingGeneFamilies
+# GraftingGeneFamilies
 
 Nextflow pipeline for **plant gene-family analysis** in a grafting / scion–rootstock context.
 
-It downloads proteomes and CDS for a set of species, QC’s them, gates annotation quality with BUSCO, builds orthogroups with OrthoFinder, pulls out families containing genes of interest, annotates those proteins, and computes protein % identity. Optionally it then links a bidirectional graft-outcome matrix to candidate sequence changes via ancestral reconstruction, selection, convergence, and divergence tests. The AlphaFold handoff is the last CPU step, so the GPU queue can be limited to families that ranking (or % identity, if phenotype is off) actually selects.
+It downloads proteomes and CDS for a set of species, QC’s them, gates annotation quality with BUSCO, builds orthogroups with OrthoFinder, pulls out families containing genes of interest, annotates those proteins, and computes protein % identity. Optionally it then links a bidirectional graft-outcome matrix to candidate sequence changes via ancestral reconstruction, selection, convergence, and divergence tests. The AlphaFold handoff is the last CPU step, so the GPU queue can be limited to families that ranking (or % identity, when evolutionary patterns are off) actually selects.
 
 **Status:** v0.1 — the core workflow is implemented and has been run on the HPC (`curie`). `conf/server.config.example` is loaded on every run and already sets the eggNOG, InterProScan, and SignalP paths, 40 OrthoFinder threads, evolutionary patterns, and HyPhy. A finished production run through the AlphaFold handoff is still ahead.
 
@@ -39,8 +39,8 @@ Produce:
 | **CDS QC** | Match retained proteins; trim transcript ORFs to protein sequence |
 | **BUSCO gate** | Protein mode (`embryophyta_odb10`); exclude species below Complete % threshold (default 90%) |
 | **OrthoFinder** | MSA mode; emits OGs, alignments, species tree, gene trees |
-| **GOI selection** | Mixed-species ID list (`Solyc…`, `Ath:AT…`, `Nbe:…`, `Cpe:XP_…`) |
-| **Candidate CDS check** | Optional characterized CDS FASTA; confirms the annotation CDS and protein for each resolved gene |
+| **GOI selection** | Gene symbol or locus id, optionally with genus and species. A bare AGI, Solyc, Niben, or Cp locus names its species |
+| **Candidate CDS check** | Optional characterized CDS FASTA. A resolved gene missing from that file is looked up in the CDS downloaded with the genome |
 | **Codon MSAs** | Protein-alignment-guided projection of CDS (pal2nal-style) → `05b_codon_alignments/` |
 | **Annotation** | eggNOG-mapper, InterProScan, SignalP, DeepTMHMM on selected OG proteins |
 | **% identity** | From OrthoFinder MSAs; reference = matched GOI (`auto`) or fixed species |
@@ -196,7 +196,9 @@ XP_023545678.1	Cucurbita pepo
 | Column | Meaning |
 |--------|---------|
 | 1 | Gene symbol (`WOX4`) or locus ID (`Solyc04g078650`, `AT1G46480`) |
-| 2 | Genus and species (`Solanum lycopersicum`). A short id such as `Sly` is also accepted |
+| 2 | Genus and species (`Solanum lycopersicum`). A short id such as `Sly` is also accepted. A gene symbol after the species is ignored |
+
+A locus id can stand alone. `At1g46480` is Arabidopsis, `Solyc04g078650` is tomato, a `Niben` id is *N. benthamiana*, and a locus that starts with `Cp` is *C. pepo*. `data/genes_of_interest.txt` is the file the pipeline reads. `data/genes_of_interest_11-09-2026.tsv` is a dated copy with a species on every line.
 
 Symbols and locus IDs are normalized before they are compared with the annotation. `Solyc04g078650` matches the protein `Solyc04g078650.4.1`. A dotted BAC gene name such as `F8D20.60` stays whole, so the clone name is not shared by every gene on that BAC. An AGI id such as `AT4G35550` stays on the gene whose `locus_tag` is that id. A species prefix is removed (`SlWOX4` is searched as `WOX4`, and `GH9B3` matches the synonym `ATGH9B3`). A symbol matches a GFF gene symbol when the annotation has one. It also matches a functional description that uses the expanded family name and the same number: ITAG stores tomato WOX4 as “wuschel related homobox 4”, with no `WOX4` token. A `-like` name is not matched to a different number (`WRKY70-like` does not become WRKY80). The protein that matched is stored as `reference_member` and is the reference for % identity, the family table, and AlphaFold pairs. How each name resolved is written to `gene_id_crosswalk.tsv`. If several literature genes fall in one orthogroup, the first one in this file is the reference. A characterized gene that OrthoFinder left unassigned is still selected, under an `UNASSIGNED_` id, so annotation can run on that protein.
 
@@ -209,7 +211,7 @@ Gene names can resolve to the wrong locus. To check that, pass a FASTA of the CD
 ATGG...
 ```
 
-The gene name and the rest of the header are separated by a tab. After the tab, spaces separate the genus and species, the locus id, and the annotation name. The species is `Arabidopsis thaliana`. `AT4G35550.1` and `TAIR10` are not part of the species. The record matches a candidate listed as `WOX13` or as `AT4G35550`. A species is required when the same symbol is listed for more than one species. `data/candidate_cds.example.fna` shows this layout; its nucleotides are placeholders, not real genes.
+The gene name and the rest of the header are separated by a tab. After the tab, spaces separate the genus and species, the locus id, and the annotation name. The species is `Arabidopsis thaliana`. `AT4G35550.1` and `TAIR10` are not part of the species. The record matches a candidate listed as `WOX13` or as `AT4G35550`. A species is required when the same symbol is listed for more than one species. `data/candidate_cds.example.fna` uses this layout and holds the CDS for WOX13, GH9B3, VND7, and PAT1.
 
 The pipeline translates that CDS and aligns it to the cleaned annotation protein chosen for the gene. It also aligns the nucleotides to the cleaned annotation CDS. NCBI `cds_from_genomic` records (`lcl|NC_..._cds_NP_195280.1_1`, with `[protein_id=NP_195280.1]`) are renamed to the same cleaned id as that protein. A terminal stop codon is ignored. Both identities default to a 98% minimum (`--candidate_cds_min_protein_identity`, `--candidate_cds_min_cds_identity`). Lower the CDS threshold when the published cDNA and the genome annotation differ by synonymous substitutions.
 
@@ -310,7 +312,7 @@ See [`docs/alphafold_plan.md`](docs/alphafold_plan.md).
 
 ### 12. Curated report
 
-Written at the end of `main.nf` to `results/11_curated/`. Open `index.html` in a browser to search, sort, and expand each orthogroup. The OrthoFinder species tree is drawn at the top of the family table. Open a family to see its pairwise identity heatmap beside that family's OrthoFinder gene tree. The counts at the top are literature genes placed in an orthogroup, species included in the job, species whose proteins were downloaded from NCBI or a URL, and the time from job start until the report was written. `genomes.html` shows proteins and CDS per genome, a BUSCO composition bar, and a BUSCO heatmap. `protein_alignments.html` shows the OrthoFinder amino-acid alignment for each selected orthogroup. Checkboxes show or hide InterPro domains, SignalP signal peptides, DeepTMHMM transmembrane helices, and N-glycosylation sequons when those predictions exist. `codon_alignments.html` shows each CDS alignment projected onto that protein MSA, with the same checkboxes. `structures.html` opens AlphaFold models in Mol*. Choose the model files, or the superimposed PDBs plus the reference model, and color them by pLDDT, by those same domain tracks, or by amino-acid differences. The `tables/` folder holds copies of the family table, the wide % identity table, and, when those steps ran, the graft ranking, BUSCO summary, codon report, and AlphaFold queue.
+Written at the end of `main.nf` to `results/11_curated/`. Open `index.html` in a browser to search, sort, and expand each orthogroup. The OrthoFinder species tree is drawn at the top of the family table. Open a family to see its pairwise identity heatmap beside that family's OrthoFinder gene tree. The counts at the top are literature genes placed in an orthogroup, species included in the job, proteomes fetched from NCBI or a URL (a local file is not counted), and the time from job start until the report was written. `genomes.html` shows proteins and CDS per genome, a BUSCO composition bar, and a BUSCO heatmap. `protein_alignments.html` shows the OrthoFinder amino-acid alignment for each selected orthogroup. Checkboxes show or hide InterPro domains, SignalP signal peptides, DeepTMHMM transmembrane helices, and N-glycosylation sequons when those predictions exist. `codon_alignments.html` shows each CDS alignment projected onto that protein MSA, with the same checkboxes. `structures.html` opens AlphaFold models in Mol*. Choose the model files, or the superimposed PDBs plus the reference model, and color them by pLDDT, by those same domain tracks, or by amino-acid differences. The `tables/` folder holds copies of the family table, the wide % identity table, and, when those steps ran, the graft ranking, BUSCO summary, codon report, and AlphaFold queue.
 
 ---
 
@@ -370,6 +372,8 @@ nextflow run workflows/compare_structures.nf -profile hpc,conda \
 
 ## Important parameters
 
+These defaults come from `nextflow.config`. `conf/server.config.example` is loaded on every run and replaces several of them: it sets the candidate CDS example, 40 OrthoFinder threads, evolutionary patterns, HyPhy, and `data/graft_outcomes.example.tsv`. A flag on the command line still wins.
+
 | Parameter | Default | Meaning |
 |-----------|---------|---------|
 | `--genes_of_interest` | `data/genes_of_interest.txt` | `gene<TAB>Genus species` for each characterized gene |
@@ -398,7 +402,7 @@ nextflow run workflows/compare_structures.nf -profile hpc,conda \
 | `--prepare_alphafold` | `true` | Write the AF handoff as the last CPU step |
 | `--af_min_priority_score` | `0` | Min phenotype score to stage an OG |
 | `--af_max_ogs` | `0` | Cap OGs sent to GPU (`0` = no cap) |
-| `--orthofinder_threads` | `16` | OrthoFinder CPUs |
+| `--orthofinder_threads` | `16` | OrthoFinder CPUs. The hpc profile sets 32, and the loaded example sets 40 |
 | `--eggnog_cpus` | profile default | CPUs for `emapper.py` (`24` on `-profile hpc`) |
 | `--eggnog_extra` | empty | Extra `emapper.py` args, e.g. faster Diamond search |
 
@@ -449,8 +453,9 @@ GraftingGeneFamilies/
 │   └── graft_phenotype.nf           # Standalone evolutionary patterns
 ├── bin/                             # Python helpers (on PATH in Nextflow)
 ├── data/
-│   ├── genes_of_interest.txt
-│   ├── candidate_cds.example.fna    # Header example; nucleotides are placeholders
+│   ├── genes_of_interest.txt        # Gene list the pipeline reads
+│   ├── genes_of_interest_11-09-2026.tsv
+│   ├── candidate_cds.example.fna    # WOX13, GH9B3, VND7, and PAT1
 │   ├── grafting_candidates.txt      # Your GOI list on the server
 │   ├── graft_outcomes.example.tsv
 │   └── graft_outcomes_11-09-2026.tsv
@@ -467,7 +472,7 @@ GraftingGeneFamilies/
 
 | Component | Notes |
 |-----------|--------|
-| Nextflow ≥ 23.04 | Installed on `curie` |
+| Nextflow ≥ 23.04 | Installed on `curie` (25.10.3). The config loads `conf/server.config.example` directly so that version can parse it |
 | Conda env | `conf/environment.yml` (OrthoFinder, BUSCO, IQ-TREE, Biopython, …). HyPhy is installed for the selection step from `conf/hyphy.yml` when `-profile conda` is on |
 | eggNOG DB | `--eggnog_data_dir` |
 | InterProScan | `--interproscan_dir` |
